@@ -8,6 +8,8 @@ import { statuses } from './statuses.js'
 import RichTextField from './RichTextField.jsx'
 import CoverField from './CoverField.jsx'
 import TagField from './TagField.jsx'
+import FeaturedDialog from './FeaturedDialog.jsx'
+import { featuredArticleLimit } from '../data/site.js'
 import './ArticleEditor.css'
 
 const emptyForm = {
@@ -133,6 +135,7 @@ export default function ArticleEditor() {
   const [loading, setLoading] = useState(Boolean(id))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
+  const [crowded, setCrowded] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
@@ -179,46 +182,101 @@ export default function ArticleEditor() {
     setPrevious(null)
   }
 
+  async function persist() {
+    const payload = toPayload(form)
+    let articleId = id
+    let failure = null
+
+    if (id) {
+      const { error } = await supabase.from('articles').update(payload).eq('id', id)
+      failure = error
+    } else {
+      const { data, error } = await supabase
+        .from('articles')
+        .insert({ ...payload, author_email: session.user.email })
+        .select('id')
+        .single()
+
+      failure = error
+      articleId = data?.id
+    }
+
+    if (!failure) {
+      failure = await saveTags(articleId, tags)
+    }
+
+    if (failure) {
+      setError(`Mentés sikertelen: ${failure.message}`)
+      return
+    }
+
+    setPrevious(saved)
+    setSaved({ form, tags })
+
+    if (!id) {
+      navigate(`/admin/cikkek/${articleId}`, { replace: true })
+    }
+  }
+
+  async function otherFeatured() {
+    const { data, error: lookupError } = await supabase
+      .from('articles')
+      .select('id, title, published_at')
+      .eq('featured', true)
+      .order('published_at', { ascending: false })
+
+    if (lookupError) {
+      setError(`A kiemelt cikkek lekérdezése nem sikerült: ${lookupError.message}`)
+      return null
+    }
+
+    return data.filter((article) => article.id !== id)
+  }
+
   async function handleSubmit(event) {
     event.preventDefault()
     setSaving(true)
     setError(null)
 
-    const payload = toPayload(form)
-    let articleId = id
+    try {
+      if (form.featured && !saved?.form.featured) {
+        const others = await otherFeatured()
+
+        if (!others) {
+          return
+        }
+
+        if (others.length >= featuredArticleLimit) {
+          setCrowded(others)
+          return
+        }
+      }
+
+      await persist()
+    } catch (failure) {
+      setError(`Mentés sikertelen: ${failure.message}`)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  async function replaceFeatured(dropId) {
+    setCrowded(null)
+    setSaving(true)
+    setError(null)
 
     try {
-      let failure = null
+      const { error: dropError } = await supabase
+        .from('articles')
+        .update({ featured: false })
+        .eq('id', dropId)
 
-      if (id) {
-        const { error } = await supabase.from('articles').update(payload).eq('id', id)
-        failure = error
-      } else {
-        const { data, error } = await supabase
-          .from('articles')
-          .insert({ ...payload, author_email: session.user.email })
-          .select('id')
-          .single()
-
-        failure = error
-        articleId = data?.id
-      }
-
-      if (!failure) {
-        failure = await saveTags(articleId, tags)
-      }
-
-      if (failure) {
-        setError(`Mentés sikertelen: ${failure.message}`)
+      if (dropError) {
+        setError(`A kiemelés levétele nem sikerült: ${dropError.message}`)
         return
       }
 
-      setPrevious(saved)
-      setSaved({ form, tags })
-
-      if (!id) {
-        navigate(`/admin/cikkek/${articleId}`, { replace: true })
-      }
+      await persist()
     } catch (failure) {
       setError(`Mentés sikertelen: ${failure.message}`)
     } finally {
@@ -246,6 +304,14 @@ export default function ArticleEditor() {
 
   return (
     <form className="editor" onSubmit={handleSubmit}>
+      {crowded && (
+        <FeaturedDialog
+          articles={crowded}
+          onPick={replaceFeatured}
+          onCancel={() => setCrowded(null)}
+        />
+      )}
+
       <div className="editor-head">
         <div>
           <Link to="/admin/cikkek" className="editor-back">
@@ -419,6 +485,10 @@ export default function ArticleEditor() {
             />
             Kiemelt cikk
           </label>
+
+          <p className="editor-hint">
+            Egyszerre legfeljebb {featuredArticleLimit} cikk lehet kiemelt.
+          </p>
 
           {id && canEdit && (
             <div className="editor-delete">

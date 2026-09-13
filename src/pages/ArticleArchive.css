@@ -1,0 +1,83 @@
+.archive-list {
+  display: grid;
+  gap: 1px;
+  background: var(--graphite);
+  border-block: 1px solid var(--graphite);
+}
+
+.archive-item {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.4rem 1.2rem;
+  background: var(--black);
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.archive-item:hover {
+  background: var(--ink);
+}
+
+.archive-meta {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  color: var(--smoke);
+}
+
+.archive-item h3 {
+  font-size: 1.32rem;
+  line-height: 1.2;
+  color: var(--bone);
+}
+
+.archive-item:hover h3 {
+  color: var(--gold);
+}
+
+.archive-item p {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--smoke);
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+.archive-read {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--gold-deep);
+}
+
+.archive-item:hover .archive-read {
+  color: var(--gold);
+}
+
+.archive-message {
+  color: var(--smoke);
+  font-size: 0.92rem;
+}
+
+.archive-more {
+  margin-top: 1.6rem;
+  padding: 0.7rem 1.6rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--bone);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    border-color 0.15s,
+    color 0.15s;
+}
+
+.archive-more:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}

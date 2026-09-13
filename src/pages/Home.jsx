@@ -6,21 +6,20 @@ import FacebookEmbed from '../components/FacebookEmbed.jsx'
 import PollPanel from '../components/PollPanel.jsx'
 import NextRacePanel from '../components/NextRacePanel.jsx'
 import JoinPanel from '../components/JoinPanel.jsx'
-import {
-  latestVideo,
-  previousVideos,
-  poll,
-  nextRace,
-  joinLinks,
-} from '../data/placeholder.js'
+import { useVideos } from '../hooks/useVideos.js'
+import { poll, nextRace, joinLinks } from '../data/placeholder.js'
 import './Home.css'
 
+const gridSize = 6
+
 export default function Home() {
+  const { latest, grid, loading } = useVideos(gridSize)
+
   return (
     <>
-      <LatestVideo video={latestVideo} />
+      <LatestVideo video={latest} loading={loading} />
       <FeaturedArticle />
-      <VideoGrid videos={previousVideos} />
+      <VideoGrid videos={grid} />
       <ArticleBoard />
 
       <div className="bottom">

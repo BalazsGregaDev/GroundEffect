@@ -4,60 +4,6 @@
   gap: 1.2rem;
 }
 
-.vcard {
-  display: block;
-  text-decoration: none;
-}
-
-.vthumb {
-  position: relative;
-  display: grid;
-  place-items: center;
-  aspect-ratio: 16 / 9;
-  border: 1px solid var(--graphite);
-  background: linear-gradient(158deg, #1a1711, #0c0c0c);
-  transition: border-color 0.15s;
-}
-
-.vcard:hover .vthumb {
-  border-color: var(--gold);
-}
-
-.vthumb svg {
-  width: 38px;
-  height: 38px;
-  color: rgba(242, 242, 240, 0.25);
-}
-
-.vcard:hover .vthumb svg {
-  color: var(--gold);
-}
-
-.vthumb .dur {
-  position: absolute;
-  right: 0.5rem;
-  bottom: 0.5rem;
-  padding: 0.1rem 0.4rem;
-  background: rgba(10, 10, 10, 0.85);
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.76rem;
-}
-
-.vcard h3 {
-  font-size: 1.02rem;
-  margin: 0.85rem 0 0.3rem;
-  line-height: 1.22;
-}
-
-.vcard p {
-  margin: 0;
-  color: var(--smoke);
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.82rem;
-}
-
 @media (max-width: 1200px) {
   .video-grid {
     grid-template-columns: repeat(2, 1fr);

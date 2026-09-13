@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
+import { featuredArticleLimit } from '../data/site.js'
 
 const columns = 'id, slug, title, reading_minutes, published_at, categories (name)'
 
-export function usePublishedArticles(limit) {
+export function useFeaturedArticles() {
   const [articles, setArticles] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => {
     let active = true
@@ -14,24 +13,21 @@ export function usePublishedArticles(limit) {
     supabase
       .from('articles')
       .select(columns)
+      .eq('featured', true)
       .eq('status', 'published')
       .lte('published_at', new Date().toISOString())
       .order('published_at', { ascending: false })
-      .limit(limit)
-      .then((result) => {
-        if (!active) {
-          return
+      .limit(featuredArticleLimit)
+      .then(({ data }) => {
+        if (active) {
+          setArticles(data ?? [])
         }
-
-        setArticles(result.data ?? [])
-        setError(result.error)
-        setLoading(false)
       })
 
     return () => {
       active = false
     }
-  }, [limit])
+  }, [])
 
-  return { articles, loading, error }
+  return articles
 }

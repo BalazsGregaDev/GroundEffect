@@ -6,12 +6,14 @@ import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
 
 const Article = lazy(() => import('./pages/Article.jsx'))
+const ArticleArchive = lazy(() => import('./pages/ArticleArchive.jsx'))
 const AdminRoot = lazy(() => import('./admin/AdminRoot.jsx'))
 const AdminArea = lazy(() => import('./admin/AdminArea.jsx'))
 const Login = lazy(() => import('./admin/Login.jsx'))
 const Dashboard = lazy(() => import('./admin/Dashboard.jsx'))
 const ArticleList = lazy(() => import('./admin/ArticleList.jsx'))
 const ArticleEditor = lazy(() => import('./admin/ArticleEditor.jsx'))
+const VideoList = lazy(() => import('./admin/VideoList.jsx'))
 const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 
@@ -20,6 +22,14 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
+        <Route
+          path="cikkek"
+          element={
+            <Suspense fallback={<p className="admin-boot">Betöltés…</p>}>
+              <ArticleArchive />
+            </Suspense>
+          }
+        />
       </Route>
 
       <Route path="cikkek/:slug" element={<ArticleLayout />}>
@@ -48,6 +58,7 @@ export default function App() {
           <Route path="cikkek" element={<ArticleList />} />
           <Route path="cikkek/uj" element={<ArticleEditor />} />
           <Route path="cikkek/:id" element={<ArticleEditor />} />
+          <Route path="videok" element={<VideoList />} />
           <Route path="felhasznalok" element={<AdminUsers />} />
 
           {adminNav

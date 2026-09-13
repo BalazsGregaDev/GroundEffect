@@ -9,7 +9,7 @@ export default function ArticleBoard() {
 
   return (
     <section className="board" id="cikkek">
-      <SectionTitle linkLabel="Összes cikk" linkHref="#cikkek">
+      <SectionTitle linkLabel="Összes cikk" linkTo="/cikkek">
         Cikkek
       </SectionTitle>
 

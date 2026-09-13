@@ -1,0 +1,70 @@
+.featured-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.2rem;
+  background: rgba(10, 10, 10, 0.85);
+  overflow-y: auto;
+}
+
+.featured-panel {
+  width: min(34rem, 100%);
+  padding: 1.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.featured-panel h2 {
+  font-size: 1.25rem;
+}
+
+.featured-lead {
+  margin: 0.6rem 0 1.2rem;
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+.featured-options {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.featured-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--graphite);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.featured-option:hover {
+  border-color: var(--gold-deep);
+}
+
+.featured-option span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.featured-option strong {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.98rem;
+  color: var(--bone);
+}
+
+.featured-option small {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--smoke);
+}
+
+.featured-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 1.4rem;
+}

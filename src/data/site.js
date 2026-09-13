@@ -1,6 +1,8 @@
 export const youtubeChannel = 'https://www.youtube.com/@GroundEffectHU'
 export const facebookPage = 'https://www.facebook.com/groundeffecthu'
 
+export const featuredArticleLimit = 3
+
 export const socialLinks = [
   { label: 'YouTube', href: youtubeChannel },
   { label: 'Facebook', href: facebookPage },

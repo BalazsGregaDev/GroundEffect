@@ -1,10 +1,16 @@
+import { useState } from 'react'
 import SectionTitle from './SectionTitle.jsx'
-import PlayIcon from './PlayIcon.jsx'
+import VideoCard from './VideoCard.jsx'
 import { youtubeChannel } from '../data/site.js'
-import { formatCount } from '../lib/format.js'
 import './VideoGrid.css'
 
 export default function VideoGrid({ videos }) {
+  const [playing, setPlaying] = useState(null)
+
+  if (videos.length === 0) {
+    return null
+  }
+
   return (
     <section className="video-grid-section">
       <SectionTitle linkLabel="Összes videó" linkHref={youtubeChannel}>
@@ -13,14 +19,12 @@ export default function VideoGrid({ videos }) {
 
       <div className="video-grid">
         {videos.map((video) => (
-          <a className="vcard" href={`#${video.id}`} key={video.id}>
-            <span className="vthumb">
-              <PlayIcon />
-              <span className="dur">{video.duration}</span>
-            </span>
-            <h3>{video.title}</h3>
-            <p>{formatCount(video.views)} megtekintés</p>
-          </a>
+          <VideoCard
+            key={video.id}
+            video={video}
+            playing={playing === video.id}
+            onPlay={() => setPlaying(video.id)}
+          />
         ))}
       </div>
     </section>

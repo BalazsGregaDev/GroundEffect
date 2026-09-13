@@ -127,10 +127,14 @@ create table if not exists videos (
   youtube_id text not null unique,
   title text not null,
   duration text,
+  duration_seconds integer,
+  thumbnail_url text,
   views integer not null default 0,
   published_at timestamptz,
   featured boolean not null default false,
+  hidden boolean not null default false,
   position integer not null default 0,
+  synced_at timestamptz,
   created_at timestamptz not null default now()
 );
 
@@ -179,11 +183,21 @@ where cover_focus in ('auto', 'center', 'north', 'south', 'west', 'east');
 alter table articles add constraint articles_cover_focus_check
   check (cover_focus ~ '^[0-9]{1,3}% [0-9]{1,3}%$');
 
+alter table videos add column if not exists duration_seconds integer;
+alter table videos add column if not exists thumbnail_url text;
+alter table videos add column if not exists hidden boolean not null default false;
+alter table videos add column if not exists synced_at timestamptz;
+
 create index if not exists articles_published_idx
   on articles (published_at desc)
   where status = 'published';
 
 create index if not exists articles_category_idx on articles (category_id);
+
+create index if not exists articles_featured_idx
+  on articles (published_at desc)
+  where featured;
+
 create index if not exists articles_search_idx on articles using gin (search_vector);
 create index if not exists article_tags_tag_idx on article_tags (tag_id);
 create index if not exists videos_published_idx on videos (published_at desc);
@@ -223,6 +237,26 @@ drop trigger if exists articles_enforce_publish_rights on articles;
 create trigger articles_enforce_publish_rights
   before insert or update on articles
   for each row execute function enforce_publish_rights();
+
+create or replace function enforce_featured_limit()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.featured and (tg_op = 'INSERT' or not old.featured) then
+    if (select count(*) from articles where featured) >= 3 then
+      raise exception 'Legfeljebb 3 kiemelt cikk lehet.' using errcode = '23514';
+    end if;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists articles_enforce_featured_limit on articles;
+create trigger articles_enforce_featured_limit
+  before insert or update on articles
+  for each row execute function enforce_featured_limit();
 
 create or replace function search_tags(search text default '', limit_count integer default 15)
 returns table (id uuid, slug text, name text, kind text, uses bigint)

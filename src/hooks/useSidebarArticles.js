@@ -26,6 +26,8 @@ export function useSidebarArticles(slug) {
       const { data } = await supabase
         .from('articles')
         .select(columns)
+        .eq('status', 'published')
+        .lte('published_at', new Date().toISOString())
         .order('published_at', { ascending: false })
         .limit(poolSize)
 
