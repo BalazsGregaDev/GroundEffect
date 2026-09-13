@@ -1,0 +1,141 @@
+.rich-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.rt-label {
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.rt-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  padding: 0.4rem;
+  border: 1px solid var(--graphite);
+  border-bottom: none;
+  background: var(--ink);
+}
+
+.rt-button {
+  min-width: 2rem;
+  padding: 0.35rem 0.55rem;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.85rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background 0.12s,
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.rt-button:hover:not(:disabled) {
+  background: var(--black);
+  border-color: var(--graphite);
+}
+
+.rt-button.is-active {
+  color: var(--gold);
+  border-color: var(--gold-deep);
+}
+
+.rt-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.rt-divider {
+  width: 1px;
+  height: 1.2rem;
+  margin: 0 0.25rem;
+  background: var(--graphite);
+}
+
+.rt-link {
+  display: flex;
+  gap: 0.4rem;
+  padding: 0.5rem;
+  border: 1px solid var(--graphite);
+  border-bottom: none;
+  background: var(--black);
+}
+
+.rt-link input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.9rem;
+}
+
+.rt-link input:focus {
+  border-color: var(--gold);
+}
+
+.rt-content {
+  border: 1px solid var(--graphite);
+  background: var(--black);
+}
+
+.rt-content .tiptap {
+  min-height: 24rem;
+  padding: 1rem 1.2rem;
+  outline: none;
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.rt-content .tiptap > * + * {
+  margin-top: 0.9rem;
+}
+
+.rt-content .tiptap h2 {
+  font-size: 1.5rem;
+}
+
+.rt-content .tiptap h3 {
+  font-size: 1.2rem;
+}
+
+.rt-content .tiptap p {
+  margin: 0;
+}
+
+.rt-content .tiptap ul,
+.rt-content .tiptap ol {
+  padding-left: 1.4rem;
+}
+
+.rt-content .tiptap li + li {
+  margin-top: 0.3rem;
+}
+
+.rt-content .tiptap a {
+  color: var(--gold);
+}
+
+.rt-content .tiptap blockquote {
+  padding-left: 1rem;
+  border-left: 3px solid var(--gold-deep);
+  color: var(--smoke);
+}
+
+.rt-content .tiptap img {
+  max-width: 100%;
+  height: auto;
+  border: 1px solid var(--graphite);
+}
+
+.rt-content .tiptap img.ProseMirror-selectednode {
+  border-color: var(--gold);
+}

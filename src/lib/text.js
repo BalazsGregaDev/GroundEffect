@@ -7,7 +7,12 @@ export function slugify(text) {
     .replace(/^-+|-+$/g, '')
 }
 
-export function readingMinutes(text) {
-  const words = text.trim().split(/\s+/).filter(Boolean).length
+export function readingMinutes(html) {
+  const words = html
+    .replace(/<[^>]+>/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length
+
   return Math.max(1, Math.round(words / 200))
 }

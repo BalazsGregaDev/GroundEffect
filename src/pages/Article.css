@@ -81,6 +81,14 @@
   margin: 0 0 1.2rem;
 }
 
+.article-body li > p {
+  margin: 0;
+}
+
+.article-body li + li {
+  margin-top: 0.3rem;
+}
+
 .article-body a {
   color: var(--gold);
 }

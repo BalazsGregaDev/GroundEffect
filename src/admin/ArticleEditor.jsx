@@ -5,7 +5,8 @@ import { readingMinutes, slugify } from '../lib/text.js'
 import { useAuth } from './useAuth.js'
 import { useLookup } from './useLookup.js'
 import { statuses } from './statuses.js'
-import MarkdownField from './MarkdownField.jsx'
+import RichTextField from './RichTextField.jsx'
+import ImageField from './ImageField.jsx'
 import TagField from './TagField.jsx'
 import './ArticleEditor.css'
 
@@ -312,8 +313,8 @@ export default function ArticleEditor() {
             />
           </label>
 
-          <MarkdownField
-            label="Szöveg (markdown)"
+          <RichTextField
+            label="Szöveg"
             value={form.body}
             onChange={(value) => update('body', value)}
             disabled={readOnly}
@@ -379,20 +380,12 @@ export default function ArticleEditor() {
             disabled={readOnly}
           />
 
-          <label className="admin-field">
-            <span>Borítókép URL</span>
-            <input
-              type="url"
-              value={form.cover_url}
-              onChange={(event) => update('cover_url', event.target.value)}
-              disabled={readOnly}
-              placeholder="https://res.cloudinary.com/..."
-            />
-          </label>
-
-          {form.cover_url && (
-            <img className="editor-cover" src={form.cover_url} alt="Borítókép előnézet" />
-          )}
+          <ImageField
+            label="Borítókép"
+            value={form.cover_url}
+            onChange={(url) => update('cover_url', url)}
+            disabled={readOnly}
+          />
 
           <label className="admin-field">
             <span>Olvasási idő (perc)</span>

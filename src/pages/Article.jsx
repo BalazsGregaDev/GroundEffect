@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { useArticle } from '../hooks/useArticle.js'
-import { renderMarkdown } from '../lib/markdown.js'
+import { sanitizeHtml } from '../lib/richText.js'
+import { cloudinaryUrl } from '../lib/cloudinary.js'
 import { formatCount, relativeTime } from '../lib/format.js'
 import './Article.css'
 
@@ -41,13 +42,19 @@ export default function Article() {
 
       <p className="article-meta">{meta.join(' · ')}</p>
 
-      {article.cover_url && <img className="article-cover" src={article.cover_url} alt="" />}
+      {article.cover_url && (
+        <img
+          className="article-cover"
+          src={cloudinaryUrl(article.cover_url, 'f_auto,q_auto,w_1200')}
+          alt=""
+        />
+      )}
 
       {article.lead && <p className="article-lead">{article.lead}</p>}
 
       <div
         className="article-body"
-        dangerouslySetInnerHTML={{ __html: renderMarkdown(article.body) }}
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.body) }}
       />
 
       {tags.length > 0 && (
