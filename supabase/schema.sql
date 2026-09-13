@@ -41,6 +41,33 @@ as $$
   select current_admin_role() = 'superadmin';
 $$;
 
+create or replace function handle_new_auth_user()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if new.email is null then
+    return new;
+  end if;
+
+  insert into admin_users (email, role)
+  values (
+    new.email,
+    case when exists (select 1 from admin_users) then 'demo' else 'superadmin' end
+  )
+  on conflict (email) do nothing;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created
+  after insert on auth.users
+  for each row execute function handle_new_auth_user();
+
 create or replace function set_updated_at()
 returns trigger
 language plpgsql
@@ -264,6 +291,15 @@ insert into categories (slug, name, position) values
   ('hosszutav', 'Hosszútáv', 5),
   ('esports', 'eSports', 6)
 on conflict (slug) do nothing;
+
+insert into admin_users (email, role)
+select email, 'demo' from auth.users where email is not null
+on conflict (email) do nothing;
+
+update admin_users
+set role = 'superadmin'
+where not exists (select 1 from admin_users where role = 'superadmin')
+  and email = (select email from auth.users where email is not null order by created_at limit 1);
 
 insert into site_settings (id, sections_order) values
   (true, '["latest-video", "video-grid", "articles", "facebook", "poll", "next-race", "join"]'::jsonb)

@@ -10,6 +10,7 @@ const Login = lazy(() => import('./admin/Login.jsx'))
 const Dashboard = lazy(() => import('./admin/Dashboard.jsx'))
 const ArticleList = lazy(() => import('./admin/ArticleList.jsx'))
 const ArticleEditor = lazy(() => import('./admin/ArticleEditor.jsx'))
+const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="cikkek" element={<ArticleList />} />
           <Route path="cikkek/uj" element={<ArticleEditor />} />
           <Route path="cikkek/:id" element={<ArticleEditor />} />
+          <Route path="felhasznalok" element={<AdminUsers />} />
 
           {adminNav
             .filter((item) => item.pending)

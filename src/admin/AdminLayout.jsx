@@ -1,15 +1,10 @@
 import { NavLink, Outlet } from 'react-router-dom'
 import { adminNav } from './adminNav.js'
 import { useAuth } from './useAuth.js'
+import { roleLabel } from './roles.js'
 import logo from '../assets/logo-kor.jpg'
 import './admin.css'
 import './AdminLayout.css'
-
-const roleLabels = {
-  superadmin: 'superadmin',
-  admin: 'szerkesztő',
-  demo: 'demó, csak olvasás',
-}
 
 export default function AdminLayout() {
   const { session, role, signOut } = useAuth()
@@ -34,7 +29,7 @@ export default function AdminLayout() {
 
         <div className="admin-user">
           <p className="admin-user-email">{session.user.email}</p>
-          <p className="admin-user-role">{roleLabels[role]}</p>
+          <p className="admin-user-role">{roleLabel(role)}</p>
           <button type="button" className="admin-button admin-button--ghost" onClick={signOut}>
             Kijelentkezés
           </button>

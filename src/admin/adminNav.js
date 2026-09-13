@@ -6,5 +6,5 @@ export const adminNav = [
   { path: '/admin/szekciok', label: 'Szekciók', pending: true },
   { path: '/admin/szavazas', label: 'Szavazás', pending: true },
   { path: '/admin/popup', label: 'Popup üzenetek', pending: true },
-  { path: '/admin/felhasznalok', label: 'Felhasználók', pending: true, superadminOnly: true },
+  { path: '/admin/felhasznalok', label: 'Felhasználók', superadminOnly: true },
 ]
