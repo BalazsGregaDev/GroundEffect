@@ -1,21 +1,30 @@
-const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME
-const uploadPreset = 'ground_effect'
-const folder = 'GroundEffect'
+import { supabase } from './supabase.js'
+
+async function requestSignature() {
+  const { data, error } = await supabase.functions.invoke('sign-upload')
+
+  if (error) {
+    const detail = await error.context?.json().catch(() => null)
+    throw new Error(detail?.error ?? 'Az aláírás kérése nem sikerült.')
+  }
+
+  return data
+}
 
 export async function uploadImage(file) {
-  if (!cloudName) {
-    throw new Error('Hiányzik a VITE_CLOUDINARY_CLOUD_NAME környezeti változó.')
-  }
+  const signature = await requestSignature()
 
   const body = new FormData()
   body.append('file', file)
-  body.append('upload_preset', uploadPreset)
-  body.append('folder', folder)
+  body.append('api_key', signature.apiKey)
+  body.append('timestamp', signature.timestamp)
+  body.append('folder', signature.folder)
+  body.append('signature', signature.signature)
 
-  const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
-    method: 'POST',
-    body,
-  })
+  const response = await fetch(
+    `https://api.cloudinary.com/v1_1/${signature.cloudName}/image/upload`,
+    { method: 'POST', body },
+  )
 
   const result = await response.json()
 
