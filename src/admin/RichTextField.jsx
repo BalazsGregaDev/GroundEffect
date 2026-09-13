@@ -3,6 +3,7 @@ import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import Image from '@tiptap/extension-image'
 import { uploadImage } from '../lib/cloudinary.js'
+import { uploadLabel } from './uploadStage.js'
 import './RichTextField.css'
 
 const extensions = [
@@ -34,7 +35,7 @@ export default function RichTextField({ label, value, onChange, disabled }) {
   const fileInput = useRef(null)
   const [linkOpen, setLinkOpen] = useState(false)
   const [linkValue, setLinkValue] = useState('')
-  const [uploading, setUploading] = useState(false)
+  const [stage, setStage] = useState(null)
   const [uploadError, setUploadError] = useState(null)
 
   const editor = useEditor({
@@ -87,17 +88,17 @@ export default function RichTextField({ label, value, onChange, disabled }) {
       return
     }
 
-    setUploading(true)
+    setStage('upload')
     setUploadError(null)
 
     try {
-      const url = await uploadImage(file)
+      const url = await uploadImage(file, setStage)
       editor.chain().focus().setImage({ src: url }).run()
     } catch (failure) {
       setUploadError(failure.message)
     }
 
-    setUploading(false)
+    setStage(null)
     event.target.value = ''
   }
 
@@ -183,10 +184,10 @@ export default function RichTextField({ label, value, onChange, disabled }) {
 
           <ToolbarButton
             onClick={() => fileInput.current.click()}
-            disabled={uploading}
+            disabled={Boolean(stage)}
             title="Kép beszúrása"
           >
-            {uploading ? 'Feltöltés…' : 'Kép'}
+            {uploadLabel(stage, 'Kép')}
           </ToolbarButton>
 
           <span className="rt-divider" />

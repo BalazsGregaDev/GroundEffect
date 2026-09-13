@@ -1,4 +1,5 @@
 import { supabase } from './supabase.js'
+import { compressImage, maxUploadBytes } from './compressImage.js'
 
 async function requestSignature() {
   const { data, error } = await supabase.functions.invoke('sign-upload')
@@ -11,11 +12,20 @@ async function requestSignature() {
   return data
 }
 
-export async function uploadImage(file) {
+export async function uploadImage(file, onStage) {
+  let prepared = file
+
+  if (file.size > maxUploadBytes) {
+    onStage?.('compress')
+    prepared = await compressImage(file)
+  }
+
+  onStage?.('upload')
+
   const signature = await requestSignature()
 
   const body = new FormData()
-  body.append('file', file)
+  body.append('file', prepared)
   body.append('api_key', signature.apiKey)
   body.append('timestamp', signature.timestamp)
   body.append('folder', signature.folder)

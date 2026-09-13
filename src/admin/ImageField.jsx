@@ -1,10 +1,11 @@
 import { useRef, useState } from 'react'
 import { cloudinaryUrl, uploadImage } from '../lib/cloudinary.js'
+import { uploadLabel } from './uploadStage.js'
 import './ImageField.css'
 
 export default function ImageField({ label, value, onChange, disabled }) {
   const fileInput = useRef(null)
-  const [uploading, setUploading] = useState(false)
+  const [stage, setStage] = useState(null)
   const [error, setError] = useState(null)
 
   async function handleFile(event) {
@@ -14,16 +15,16 @@ export default function ImageField({ label, value, onChange, disabled }) {
       return
     }
 
-    setUploading(true)
+    setStage('upload')
     setError(null)
 
     try {
-      onChange(await uploadImage(file))
+      onChange(await uploadImage(file, setStage))
     } catch (failure) {
       setError(failure.message)
     }
 
-    setUploading(false)
+    setStage(null)
     event.target.value = ''
   }
 
@@ -46,9 +47,9 @@ export default function ImageField({ label, value, onChange, disabled }) {
             type="button"
             className="admin-button admin-button--ghost"
             onClick={() => fileInput.current.click()}
-            disabled={uploading}
+            disabled={Boolean(stage)}
           >
-            {uploading ? 'Feltöltés…' : 'Kép feltöltése'}
+            {uploadLabel(stage, 'Kép feltöltése')}
           </button>
 
           {value && (
