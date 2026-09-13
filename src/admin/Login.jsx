@@ -6,13 +6,13 @@ import './admin.css'
 import './Login.css'
 
 export default function Login() {
-  const { session, role, loading, signIn } = useAuth()
+  const { session, signIn } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
-  if (!loading && session && role) {
+  if (session) {
     return <Navigate to="/admin" replace />
   }
 
@@ -22,6 +22,7 @@ export default function Login() {
     setError(null)
 
     const result = await signIn(email, password)
+    setBusy(false)
 
     if (result.error) {
       setError(
@@ -29,7 +30,6 @@ export default function Login() {
           ? 'Hibás e-mail vagy jelszó.'
           : result.error.message,
       )
-      setBusy(false)
     }
   }
 

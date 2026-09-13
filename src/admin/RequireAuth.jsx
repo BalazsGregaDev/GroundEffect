@@ -3,15 +3,23 @@ import { useAuth } from './useAuth.js'
 import './admin.css'
 
 function NoAccess() {
-  const { session, signOut } = useAuth()
+  const { session, roleError, signOut } = useAuth()
 
   return (
     <div className="admin-notice">
       <h1>Nincs admin jogosultság</h1>
-      <p>
-        A(z) <strong>{session.user.email}</strong> címhez nem tartozik admin szerepkör.
-        Kérd meg a superadmint, hogy vegyen fel.
-      </p>
+
+      {roleError ? (
+        <p>
+          A szerepkör lekérdezése hibára futott: <strong>{roleError.message}</strong>
+        </p>
+      ) : (
+        <p>
+          A(z) <strong>{session.user.email}</strong> címhez nem tartozik sor az
+          admin_users táblában, ezért a belépés megtörtént, de admin jog nincs hozzá.
+        </p>
+      )}
+
       <button type="button" className="admin-button" onClick={signOut}>
         Kijelentkezés
       </button>

@@ -5,6 +5,7 @@ import { AuthContext } from './authContext.js'
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
   const [role, setRole] = useState(undefined)
+  const [roleError, setRoleError] = useState(null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session))
@@ -23,14 +24,16 @@ export default function AuthProvider({ children }) {
 
     if (session === null) {
       setRole(null)
+      setRoleError(null)
       return
     }
 
     let active = true
 
-    supabase.rpc('current_admin_role').then(({ data }) => {
+    supabase.rpc('current_admin_role').then(({ data, error }) => {
       if (active) {
-        setRole(data)
+        setRole(data ?? null)
+        setRoleError(error)
       }
     })
 
@@ -42,6 +45,7 @@ export default function AuthProvider({ children }) {
   const value = {
     session,
     role,
+    roleError,
     loading: session === undefined || role === undefined,
     canEdit: role === 'superadmin' || role === 'admin',
     isSuperadmin: role === 'superadmin',
