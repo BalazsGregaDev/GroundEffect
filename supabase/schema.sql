@@ -98,6 +98,7 @@ create table if not exists articles (
   lead text,
   body text not null default '',
   cover_url text,
+  cover_focus text not null default 'auto',
   category_id uuid references categories (id) on delete set null,
   author_email citext references admin_users (email) on delete set null,
   status text not null default 'draft' check (status in ('draft', 'review', 'published')),
@@ -148,6 +149,19 @@ create table if not exists site_settings (
   sections_order jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
+
+alter table articles add column if not exists cover_focus text not null default 'auto';
+
+alter table articles add column if not exists search_vector tsvector generated always as (
+  to_tsvector(
+    'hungarian',
+    coalesce(title, '') || ' ' || coalesce(lead, '') || ' ' || coalesce(body, '')
+  )
+) stored;
+
+alter table articles drop constraint if exists articles_cover_focus_check;
+alter table articles add constraint articles_cover_focus_check
+  check (cover_focus in ('auto', 'center', 'north', 'south', 'west', 'east'));
 
 create index if not exists articles_published_idx
   on articles (published_at desc)

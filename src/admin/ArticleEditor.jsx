@@ -6,7 +6,7 @@ import { useAuth } from './useAuth.js'
 import { useLookup } from './useLookup.js'
 import { statuses } from './statuses.js'
 import RichTextField from './RichTextField.jsx'
-import ImageField from './ImageField.jsx'
+import CoverField from './CoverField.jsx'
 import TagField from './TagField.jsx'
 import './ArticleEditor.css'
 
@@ -16,6 +16,7 @@ const emptyForm = {
   lead: '',
   body: '',
   cover_url: '',
+  cover_focus: 'auto',
   category_id: '',
   status: 'draft',
   featured: false,
@@ -54,6 +55,7 @@ async function loadArticle(id) {
       lead: data.lead ?? '',
       body: data.body,
       cover_url: data.cover_url ?? '',
+      cover_focus: data.cover_focus,
       category_id: data.category_id ?? '',
       status: data.status,
       featured: data.featured,
@@ -73,6 +75,7 @@ function toPayload(form) {
     lead: form.lead.trim() || null,
     body: form.body,
     cover_url: form.cover_url.trim() || null,
+    cover_focus: form.cover_focus,
     category_id: form.category_id || null,
     status: form.status,
     featured: form.featured,
@@ -380,10 +383,11 @@ export default function ArticleEditor() {
             disabled={readOnly}
           />
 
-          <ImageField
-            label="Borítókép"
+          <CoverField
             value={form.cover_url}
+            focus={form.cover_focus}
             onChange={(url) => update('cover_url', url)}
+            onFocusChange={(focus) => update('cover_focus', focus)}
             disabled={readOnly}
           />
 

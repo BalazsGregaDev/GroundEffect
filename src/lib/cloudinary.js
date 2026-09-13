@@ -45,6 +45,12 @@ export async function uploadImage(file, onStage) {
   return result.secure_url
 }
 
+export function coverUrl(url, focus) {
+  const gravity = focus === 'auto' ? 'g_auto' : `g_${focus}`
+
+  return cloudinaryUrl(url, `c_fill,ar_16:9,${gravity},f_auto,q_auto,w_1200`)
+}
+
 export function cloudinaryUrl(url, transform) {
   if (!url.includes('/upload/')) {
     return url

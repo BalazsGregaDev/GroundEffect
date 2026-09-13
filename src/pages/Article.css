@@ -51,9 +51,11 @@
 }
 
 .article-cover {
+  display: block;
   width: 100%;
-  height: auto;
-  margin-bottom: 1.8rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin-bottom: 1.6rem;
   border: 1px solid var(--graphite);
 }
 
@@ -65,6 +67,7 @@
 }
 
 .article-body {
+  display: flow-root;
   font-size: 1.02rem;
   line-height: 1.75;
   color: var(--bone);

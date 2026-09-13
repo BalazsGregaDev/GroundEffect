@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
+import { FigureNode } from './FigureNode.js'
+import FigurePanel from './FigurePanel.jsx'
+import { defaultFigure } from './figureOptions.js'
 import { uploadImage } from '../lib/cloudinary.js'
 import { uploadLabel } from './uploadStage.js'
+import '../styles/figure.css'
 import './RichTextField.css'
 
 const extensions = [
@@ -13,7 +16,7 @@ const extensions = [
     horizontalRule: false,
     link: { openOnClick: false },
   }),
-  Image,
+  FigureNode,
 ]
 
 function ToolbarButton({ onClick, active, disabled, title, children }) {
@@ -37,11 +40,13 @@ export default function RichTextField({ label, value, onChange, disabled }) {
   const [linkValue, setLinkValue] = useState('')
   const [stage, setStage] = useState(null)
   const [uploadError, setUploadError] = useState(null)
+  const [figure, setFigure] = useState(null)
 
   const editor = useEditor({
     extensions,
     content: value,
     editable: !disabled,
+    shouldRerenderOnTransaction: true,
     onUpdate: ({ editor }) => {
       const html = editor.getHTML()
       lastEmitted.current = html
@@ -63,6 +68,8 @@ export default function RichTextField({ label, value, onChange, disabled }) {
   if (!editor) {
     return null
   }
+
+  const figureActive = editor.isActive('figure')
 
   function openLink() {
     setLinkValue(editor.getAttributes('link').href ?? '')
@@ -92,14 +99,47 @@ export default function RichTextField({ label, value, onChange, disabled }) {
     setUploadError(null)
 
     try {
-      const url = await uploadImage(file, setStage)
-      editor.chain().focus().setImage({ src: url }).run()
+      const src = await uploadImage(file, setStage)
+      setFigure({ mode: 'insert', src, values: { ...defaultFigure } })
     } catch (failure) {
       setUploadError(failure.message)
     }
 
     setStage(null)
     event.target.value = ''
+  }
+
+  function editFigure() {
+    const attrs = editor.getAttributes('figure')
+
+    setFigure({
+      mode: 'edit',
+      src: attrs.src,
+      values: {
+        ratio: attrs.ratio,
+        orientation: attrs.orientation,
+        size: attrs.size,
+        caption: attrs.caption,
+        wrap: attrs.wrap,
+      },
+    })
+  }
+
+  function applyFigure() {
+    if (figure.mode === 'insert') {
+      editor
+        .chain()
+        .focus()
+        .insertContentAt(editor.state.selection.to, {
+          type: 'figure',
+          attrs: { src: figure.src, ...figure.values },
+        })
+        .run()
+    } else {
+      editor.chain().focus().updateAttributes('figure', figure.values).run()
+    }
+
+    setFigure(null)
   }
 
   return (
@@ -190,6 +230,12 @@ export default function RichTextField({ label, value, onChange, disabled }) {
             {uploadLabel(stage, 'Kép')}
           </ToolbarButton>
 
+          {figureActive && (
+            <ToolbarButton onClick={editFigure} title="A kijelölt kép beállításai">
+              Kép beállításai
+            </ToolbarButton>
+          )}
+
           <span className="rt-divider" />
 
           <ToolbarButton
@@ -208,13 +254,7 @@ export default function RichTextField({ label, value, onChange, disabled }) {
             Újra
           </ToolbarButton>
 
-          <input
-            ref={fileInput}
-            type="file"
-            accept="image/*"
-            onChange={handleFile}
-            hidden
-          />
+          <input ref={fileInput} type="file" accept="image/*" onChange={handleFile} hidden />
         </div>
       )}
 
@@ -238,6 +278,17 @@ export default function RichTextField({ label, value, onChange, disabled }) {
             Mégsem
           </button>
         </div>
+      )}
+
+      {figure && (
+        <FigurePanel
+          src={figure.src}
+          values={figure.values}
+          onChange={(values) => setFigure({ ...figure, values })}
+          onSubmit={applyFigure}
+          onCancel={() => setFigure(null)}
+          submitLabel={figure.mode === 'insert' ? 'Beszúrás' : 'Frissítés'}
+        />
       )}
 
       {uploadError && <p className="admin-error">Képfeltöltés: {uploadError}</p>}

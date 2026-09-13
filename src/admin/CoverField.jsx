@@ -1,9 +1,10 @@
 import { useRef, useState } from 'react'
-import { cloudinaryUrl, uploadImage } from '../lib/cloudinary.js'
+import { coverUrl, uploadImage } from '../lib/cloudinary.js'
+import { focusPoints } from './figureOptions.js'
 import { uploadLabel } from './uploadStage.js'
-import './ImageField.css'
+import './CoverField.css'
 
-export default function ImageField({ label, value, onChange, disabled }) {
+export default function CoverField({ value, focus, onChange, onFocusChange, disabled }) {
   const fileInput = useRef(null)
   const [stage, setStage] = useState(null)
   const [error, setError] = useState(null)
@@ -29,9 +30,9 @@ export default function ImageField({ label, value, onChange, disabled }) {
   }
 
   return (
-    <div className="image-field">
+    <div className="cover-field">
       <label className="admin-field">
-        <span>{label}</span>
+        <span>Borítókép</span>
         <input
           type="url"
           value={value}
@@ -42,7 +43,7 @@ export default function ImageField({ label, value, onChange, disabled }) {
       </label>
 
       {!disabled && (
-        <div className="image-actions">
+        <div className="cover-actions">
           <button
             type="button"
             className="admin-button admin-button--ghost"
@@ -53,7 +54,7 @@ export default function ImageField({ label, value, onChange, disabled }) {
           </button>
 
           {value && (
-            <button type="button" className="image-clear" onClick={() => onChange('')}>
+            <button type="button" className="cover-clear" onClick={() => onChange('')}>
               Eltávolítás
             </button>
           )}
@@ -65,11 +66,28 @@ export default function ImageField({ label, value, onChange, disabled }) {
       {error && <p className="admin-error">Képfeltöltés: {error}</p>}
 
       {value && (
-        <img
-          className="image-preview"
-          src={cloudinaryUrl(value, 'f_auto,q_auto,w_600')}
-          alt="Borítókép előnézet"
-        />
+        <>
+          <img className="cover-preview" src={coverUrl(value, focus)} alt="Borítókép előnézet" />
+
+          <p className="cover-hint">
+            A borítókép mindig 16:9-ben, fektetve jelenik meg a cím fölött. Ha bele kell
+            vágni, itt állítod be, melyik rész maradjon meg.
+          </p>
+
+          <div className="cover-focus">
+            {focusPoints.map((point) => (
+              <button
+                key={point.value}
+                type="button"
+                className={point.value === focus ? 'cover-choice is-active' : 'cover-choice'}
+                onClick={() => onFocusChange(point.value)}
+                disabled={disabled}
+              >
+                {point.label}
+              </button>
+            ))}
+          </div>
+        </>
       )}
     </div>
   )

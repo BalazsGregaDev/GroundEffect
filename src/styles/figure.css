@@ -1,0 +1,66 @@
+.cikk-kep {
+  margin: 1.5rem 0;
+}
+
+.cikk-kep img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid var(--graphite);
+}
+
+.cikk-kep figcaption {
+  margin-top: 0.5rem;
+  color: var(--smoke);
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.cikk-kep[data-arany='16-9'][data-allas='fekvo'] img {
+  aspect-ratio: 16 / 9;
+}
+
+.cikk-kep[data-arany='16-9'][data-allas='allo'] img {
+  aspect-ratio: 9 / 16;
+}
+
+.cikk-kep[data-arany='4-3'][data-allas='fekvo'] img {
+  aspect-ratio: 4 / 3;
+}
+
+.cikk-kep[data-arany='4-3'][data-allas='allo'] img {
+  aspect-ratio: 3 / 4;
+}
+
+.cikk-kep[data-meret='kicsi'] {
+  width: 35%;
+}
+
+.cikk-kep[data-meret='kozepes'] {
+  width: 50%;
+}
+
+.cikk-kep[data-meret='nagy'] {
+  width: 75%;
+}
+
+.cikk-kep[data-meret='teljes'] {
+  width: 100%;
+}
+
+.cikk-kep[data-korbefut='nem'] {
+  margin-inline: auto;
+}
+
+.cikk-kep[data-korbefut='igen']:not([data-meret='teljes']) {
+  float: left;
+  margin: 0.4rem 1.6rem 1rem 0;
+}
+
+@media (max-width: 640px) {
+  .cikk-kep[data-meret][data-korbefut] {
+    float: none;
+    width: 100%;
+    margin: 1.5rem 0;
+  }
+}

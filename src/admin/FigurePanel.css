@@ -1,0 +1,167 @@
+.figure-panel {
+  display: grid;
+  grid-template-columns: 1fr 20rem;
+  gap: 1.5rem;
+  padding: 1.2rem;
+  border: 1px solid var(--graphite);
+  border-bottom: none;
+  background: var(--ink);
+}
+
+.figure-label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--smoke);
+}
+
+.figure-preview {
+  min-width: 0;
+}
+
+.figure-column {
+  display: flow-root;
+  margin-top: 0.5rem;
+  padding: 1rem;
+  border: 1px dashed var(--graphite);
+  background: var(--black);
+}
+
+.figure-mock {
+  margin: 0 auto 1rem;
+}
+
+.figure-mock.is-wrapped {
+  float: left;
+  margin: 0.2rem 1.2rem 0.6rem 0;
+}
+
+.figure-mock img {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+  border: 1px solid var(--graphite);
+}
+
+.figure-mock figcaption {
+  margin-top: 0.4rem;
+  font-size: 0.74rem;
+  color: var(--smoke);
+}
+
+.figure-column p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--smoke);
+}
+
+.figure-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.figure-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.figure-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.figure-choice {
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--smoke);
+  font-family: var(--body);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.figure-choice:hover {
+  color: var(--bone);
+}
+
+.figure-choice.is-active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.figure-row input {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.88rem;
+}
+
+.figure-row input:focus {
+  border-color: var(--gold);
+}
+
+.figure-switch {
+  width: 2.8rem;
+  height: 1.5rem;
+  padding: 0.15rem;
+  border: 1px solid var(--graphite);
+  border-radius: 1rem;
+  background: var(--black);
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.figure-switch span {
+  display: block;
+  width: 1.1rem;
+  height: 1.1rem;
+  border-radius: 50%;
+  background: var(--smoke);
+  transition:
+    transform 0.15s,
+    background 0.15s;
+}
+
+.figure-switch.is-on {
+  border-color: var(--gold);
+  background: var(--gold-deep);
+}
+
+.figure-switch.is-on span {
+  background: var(--bone);
+  transform: translateX(1.3rem);
+}
+
+.figure-switch:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.figure-hint {
+  margin: -0.5rem 0 0;
+  font-size: 0.76rem;
+  color: var(--smoke);
+}
+
+.figure-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.3rem;
+}
+
+@media (max-width: 900px) {
+  .figure-panel {
+    grid-template-columns: 1fr;
+  }
+}

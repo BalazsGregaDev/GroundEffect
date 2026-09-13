@@ -1,8 +1,9 @@
 import { Link, useParams } from 'react-router-dom'
 import { useArticle } from '../hooks/useArticle.js'
 import { sanitizeHtml } from '../lib/richText.js'
-import { cloudinaryUrl } from '../lib/cloudinary.js'
+import { coverUrl } from '../lib/cloudinary.js'
 import { formatCount, relativeTime } from '../lib/format.js'
+import '../styles/figure.css'
 import './Article.css'
 
 export default function Article() {
@@ -36,19 +37,19 @@ export default function Article() {
         Vissza a főoldalra
       </Link>
 
+      {article.cover_url && (
+        <img
+          className="article-cover"
+          src={coverUrl(article.cover_url, article.cover_focus)}
+          alt=""
+        />
+      )}
+
       {article.categories && <p className="article-category">{article.categories.name}</p>}
 
       <h1>{article.title}</h1>
 
       <p className="article-meta">{meta.join(' · ')}</p>
-
-      {article.cover_url && (
-        <img
-          className="article-cover"
-          src={cloudinaryUrl(article.cover_url, 'f_auto,q_auto,w_1200')}
-          alt=""
-        />
-      )}
 
       {article.lead && <p className="article-lead">{article.lead}</p>}
 

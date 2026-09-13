@@ -88,6 +88,7 @@
 }
 
 .rt-content .tiptap {
+  display: flow-root;
   min-height: 24rem;
   padding: 1rem 1.2rem;
   outline: none;
@@ -130,12 +131,6 @@
   color: var(--smoke);
 }
 
-.rt-content .tiptap img {
-  max-width: 100%;
-  height: auto;
-  border: 1px solid var(--graphite);
-}
-
-.rt-content .tiptap img.ProseMirror-selectednode {
+.rt-content .tiptap .cikk-kep.ProseMirror-selectednode img {
   border-color: var(--gold);
 }

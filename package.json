@@ -17,7 +17,6 @@
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/space-grotesk": "^5.3.0",
     "@supabase/supabase-js": "^2.116.0",
-    "@tiptap/extension-image": "^3.31.3",
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
     "dompurify": "^3.4.15",

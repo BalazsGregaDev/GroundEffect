@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 
 const columns =
-  'id, slug, title, lead, body, cover_url, reading_minutes, views, published_at, ' +
+  'id, slug, title, lead, body, cover_url, cover_focus, reading_minutes, views, published_at, ' +
   'categories (name, slug), article_tags (tags (id, slug, name))'
 
 export function useArticle(slug) {
