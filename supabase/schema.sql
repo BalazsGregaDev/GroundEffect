@@ -87,7 +87,7 @@ create table if not exists tags (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
   name text not null,
-  kind text not null default 'other' check (kind in ('driver', 'team', 'circuit', 'other')),
+  kind text not null default 'other',
   created_at timestamptz not null default now()
 );
 
@@ -149,6 +149,10 @@ create table if not exists site_settings (
   sections_order jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
+
+alter table tags drop constraint if exists tags_kind_check;
+alter table tags add constraint tags_kind_check
+  check (kind in ('driver', 'team', 'circuit', 'country', 'principal', 'other'));
 
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';

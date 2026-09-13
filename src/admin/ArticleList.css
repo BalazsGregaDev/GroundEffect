@@ -10,6 +10,13 @@
   text-decoration: none;
 }
 
+.list-head-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
 .list-controls {
   display: flex;
   justify-content: space-between;

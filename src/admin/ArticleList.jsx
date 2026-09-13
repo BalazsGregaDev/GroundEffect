@@ -4,6 +4,7 @@ import { useArticles } from './useArticles.js'
 import { useAuth } from './useAuth.js'
 import { statuses, statusLabel } from './statuses.js'
 import { formatCount, relativeTime } from '../lib/format.js'
+import TagManager from './TagManager.jsx'
 import './ArticleList.css'
 
 const filters = [{ value: 'all', label: 'Mind' }, ...statuses]
@@ -12,6 +13,7 @@ export default function ArticleList() {
   const { canEdit } = useAuth()
   const [params, setParams] = useSearchParams()
   const [searchInput, setSearchInput] = useState('')
+  const [managingTags, setManagingTags] = useState(false)
   const [search, setSearch] = useState('')
 
   const status = params.get('allapot') ?? 'all'
@@ -27,11 +29,23 @@ export default function ArticleList() {
       <div className="list-head">
         <h1>Cikkek</h1>
         {canEdit && (
-          <Link to="/admin/cikkek/uj" className="admin-button">
-            Új cikk
-          </Link>
+          <div className="list-head-actions">
+            <button
+              type="button"
+              className="admin-button admin-button--ghost"
+              onClick={() => setManagingTags(true)}
+            >
+              Tagek kezelése
+            </button>
+
+            <Link to="/admin/cikkek/uj" className="admin-button">
+              Új cikk
+            </Link>
+          </div>
         )}
       </div>
+
+      {managingTags && <TagManager onClose={() => setManagingTags(false)} />}
 
       <div className="list-controls">
         <div className="list-filters">

@@ -1,0 +1,189 @@
+.tagman-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: start center;
+  padding: 2rem 1.2rem;
+  background: rgba(10, 10, 10, 0.85);
+  overflow-y: auto;
+}
+
+.tagman-panel {
+  width: min(52rem, 100%);
+  padding: 1.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.tagman-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.tagman-head h2 {
+  font-size: 1.3rem;
+}
+
+.tagman-close {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--smoke);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tagman-close:hover {
+  color: var(--gold);
+}
+
+.tagman-add {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+}
+
+.tagman-add input {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.tagman-add input,
+.tagman-add select,
+.tagman-row input,
+.tagman-row select,
+.tagman-search {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.88rem;
+}
+
+.tagman-add input:focus,
+.tagman-add select:focus,
+.tagman-row input:focus,
+.tagman-search:focus {
+  border-color: var(--gold);
+}
+
+.tagman-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  align-items: center;
+  padding-bottom: 0.8rem;
+  border-bottom: 1px solid var(--graphite);
+}
+
+.tagman-filter {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--smoke);
+  font-family: var(--body);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.tagman-filter:hover {
+  color: var(--bone);
+}
+
+.tagman-filter.is-active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.tagman-search {
+  margin-left: auto;
+  min-width: 9rem;
+}
+
+.tagman-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+
+.tagman-list li {
+  border-bottom: 1px solid var(--graphite);
+}
+
+.tagman-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+  padding: 0.55rem 0;
+  font-size: 0.88rem;
+}
+
+.tagman-row--editing input {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.tagman-name {
+  flex: 1;
+  min-width: 10rem;
+}
+
+.tagman-kind,
+.tagman-count {
+  font-size: 0.78rem;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+.tagman-count {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.tagman-link,
+.tagman-danger {
+  padding: 0;
+  border: none;
+  background: none;
+  font-family: var(--body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tagman-link {
+  color: var(--smoke);
+}
+
+.tagman-link:hover {
+  color: var(--gold);
+  text-decoration: underline;
+}
+
+.tagman-danger {
+  color: var(--gold);
+}
+
+.tagman-danger:hover {
+  text-decoration: underline;
+}
+
+.tagman-empty {
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+.tagman-hint {
+  margin: 1rem 0 0;
+  font-size: 0.78rem;
+  color: var(--smoke);
+}
