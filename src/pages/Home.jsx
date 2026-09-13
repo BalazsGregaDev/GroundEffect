@@ -1,4 +1,5 @@
 import LatestVideo from '../components/LatestVideo.jsx'
+import FeaturedArticle from '../components/FeaturedArticle.jsx'
 import VideoGrid from '../components/VideoGrid.jsx'
 import ArticleBoard from '../components/ArticleBoard.jsx'
 import FacebookEmbed from '../components/FacebookEmbed.jsx'
@@ -18,6 +19,7 @@ export default function Home() {
   return (
     <>
       <LatestVideo video={latestVideo} />
+      <FeaturedArticle />
       <VideoGrid videos={previousVideos} />
       <ArticleBoard />
 

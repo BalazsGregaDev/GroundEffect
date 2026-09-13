@@ -13,6 +13,10 @@
   margin-top: 3rem;
 }
 
+.feed > .featured-row {
+  margin-top: 1.2rem;
+}
+
 @media (max-width: 1024px) {
   .shell {
     grid-template-columns: 1fr;

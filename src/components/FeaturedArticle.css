@@ -1,0 +1,59 @@
+.featured-row {
+  display: flex;
+  align-items: baseline;
+  gap: 1.2rem;
+  flex-wrap: wrap;
+  padding: 0.9rem 1.2rem;
+  border: 1px solid var(--graphite);
+  border-left: 3px solid var(--gold);
+  background: var(--ink);
+  text-decoration: none;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.featured-row:hover {
+  background: var(--black);
+  border-color: var(--gold-deep);
+  border-left-color: var(--gold-hi);
+}
+
+.featured-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--gold);
+  white-space: nowrap;
+}
+
+.featured-title {
+  flex: 1;
+  min-width: 14rem;
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1.6rem;
+  line-height: 1.15;
+  color: var(--bone);
+}
+
+.featured-row:hover .featured-title {
+  color: var(--gold);
+}
+
+.featured-meta {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+@media (max-width: 700px) {
+  .featured-title {
+    font-size: 1.3rem;
+  }
+}
