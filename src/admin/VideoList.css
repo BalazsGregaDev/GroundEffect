@@ -4,8 +4,22 @@
   font-size: 0.88rem;
 }
 
+.video-filters {
+  margin-bottom: 1.2rem;
+}
+
 .video-table td {
   vertical-align: middle;
+}
+
+.video-short {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--graphite);
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  color: var(--smoke);
 }
 
 .video-table tr.is-hidden td {

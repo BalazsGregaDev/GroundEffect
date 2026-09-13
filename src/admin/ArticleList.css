@@ -7,34 +7,6 @@
   margin: 1.5rem 0 1.2rem;
 }
 
-.list-filters {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-}
-
-.list-filter {
-  padding: 0.4rem 0.8rem;
-  border: 1px solid var(--graphite);
-  background: none;
-  color: var(--smoke);
-  font-family: var(--body);
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.list-filter:hover {
-  color: var(--bone);
-}
-
-.list-filter.is-active {
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
 .list-search {
   min-width: 14rem;
 }

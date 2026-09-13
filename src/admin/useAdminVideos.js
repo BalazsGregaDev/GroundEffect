@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 
 const columns =
-  'id, youtube_id, title, duration, thumbnail_url, views, published_at, featured, hidden, synced_at'
+  'id, youtube_id, title, duration, thumbnail_url, views, published_at, featured, hidden, is_short, synced_at'
 
 export function useAdminVideos() {
   const [videos, setVideos] = useState([])

@@ -7,6 +7,24 @@ import { functionErrorMessage } from '../lib/functionError.js'
 import { formatCount, relativeTime } from '../lib/format.js'
 import './VideoList.css'
 
+const filters = [
+  { value: 'all', label: 'Mind' },
+  { value: 'episodes', label: 'Adások' },
+  { value: 'shorts', label: 'Shortok' },
+]
+
+function matchesFilter(video, filter) {
+  if (filter === 'episodes') {
+    return !video.is_short
+  }
+
+  if (filter === 'shorts') {
+    return video.is_short
+  }
+
+  return true
+}
+
 function lastSync(videos) {
   const stamps = videos.map((video) => video.synced_at).filter(Boolean)
 
@@ -23,6 +41,7 @@ export default function VideoList() {
   const [syncing, setSyncing] = useState(false)
   const [notice, setNotice] = useState(null)
   const [failure, setFailure] = useState(null)
+  const [filter, setFilter] = useState('all')
 
   async function runSync() {
     setSyncing(true)
@@ -91,6 +110,8 @@ export default function VideoList() {
   }
 
   const synced = lastSync(videos)
+  const shown = videos.filter((video) => matchesFilter(video, filter))
+  const shortCount = videos.filter((video) => video.is_short).length
 
   return (
     <div>
@@ -105,9 +126,24 @@ export default function VideoList() {
 
       <p className="video-hint">
         {synced
-          ? `A csatorna legutóbbi 50 feltöltése. Utolsó szinkron: ${relativeTime(synced)}.`
+          ? `A csatorna legutóbbi 50 feltöltése. Utolsó szinkron: ${relativeTime(synced)}. A 3 percnél rövidebb és a #shorts című videók automatikusan rejtettek, ebből ${shortCount} van.`
           : 'A csatorna feltöltései még nincsenek behúzva. Indítsd el a szinkronizálást.'}
       </p>
+
+      {videos.length > 0 && (
+        <div className="list-filters video-filters">
+          {filters.map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              className={option.value === filter ? 'list-filter is-active' : 'list-filter'}
+              onClick={() => setFilter(option.value)}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {notice && <p className="admin-readonly">{notice}</p>}
 
@@ -119,7 +155,11 @@ export default function VideoList() {
 
       {!loading && videos.length === 0 && <p className="list-empty">Még nincs behúzott videó.</p>}
 
-      {videos.length > 0 && (
+      {!loading && videos.length > 0 && shown.length === 0 && (
+        <p className="list-empty">Nincs a szűrőnek megfelelő videó.</p>
+      )}
+
+      {shown.length > 0 && (
         <table className="list-table video-table">
           <thead>
             <tr>
@@ -132,7 +172,7 @@ export default function VideoList() {
             </tr>
           </thead>
           <tbody>
-            {videos.map((video) => (
+            {shown.map((video) => (
               <tr key={video.id} className={video.hidden ? 'is-hidden' : undefined}>
                 <td>
                   <img className="video-thumb" src={thumbnailUrl(video)} alt="" loading="lazy" />
@@ -145,6 +185,7 @@ export default function VideoList() {
                   >
                     {video.title}
                   </a>
+                  {video.is_short && <span className="video-short">short</span>}
                 </td>
                 <td className="list-number">{video.duration ?? '–'}</td>
                 <td className="list-number">{formatCount(video.views)}</td>

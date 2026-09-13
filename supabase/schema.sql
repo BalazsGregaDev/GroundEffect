@@ -188,6 +188,47 @@ alter table videos add column if not exists thumbnail_url text;
 alter table videos add column if not exists hidden boolean not null default false;
 alter table videos add column if not exists synced_at timestamptz;
 
+create or replace function video_is_short(title text, seconds integer)
+returns boolean
+language sql
+immutable
+as $$
+  select coalesce(seconds, 86400) < 180 or strpos(lower(title), '#shorts') > 0;
+$$;
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'videos' and column_name = 'is_short'
+  ) then
+    alter table videos add column is_short boolean not null default false;
+    update videos set is_short = video_is_short(title, duration_seconds);
+    update videos set hidden = true where is_short;
+  end if;
+end;
+$$;
+
+create or replace function classify_video()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.is_short := video_is_short(new.title, new.duration_seconds);
+
+  if tg_op = 'INSERT' and new.is_short then
+    new.hidden := true;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists videos_classify on videos;
+create trigger videos_classify
+  before insert or update on videos
+  for each row execute function classify_video();
+
 create index if not exists articles_published_idx
   on articles (published_at desc)
   where status = 'published';
