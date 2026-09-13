@@ -1,0 +1,24 @@
+.shell--with-aside {
+  grid-template-columns: 380px minmax(0, 1fr) 380px;
+}
+
+@media (max-width: 1400px) {
+  .shell--with-aside {
+    grid-template-columns: 380px minmax(0, 1fr);
+  }
+
+  .shell--with-aside .article-aside {
+    grid-column: 1 / -1;
+    position: static;
+    height: auto;
+    overflow: visible;
+    border-left: none;
+    border-top: 1px solid var(--graphite);
+  }
+}
+
+@media (max-width: 1024px) {
+  .shell--with-aside {
+    grid-template-columns: 1fr;
+  }
+}

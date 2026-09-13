@@ -39,31 +39,3 @@
   font-size: 0.76rem;
   color: var(--smoke);
 }
-
-.cover-focus {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.cover-choice {
-  padding: 0.3rem 0.55rem;
-  border: 1px solid var(--graphite);
-  background: none;
-  color: var(--smoke);
-  font-family: var(--body);
-  font-size: 0.8rem;
-  cursor: pointer;
-  transition:
-    color 0.12s,
-    border-color 0.12s;
-}
-
-.cover-choice:hover:not(:disabled) {
-  color: var(--bone);
-}
-
-.cover-choice.is-active {
-  border-color: var(--gold);
-  color: var(--gold);
-}

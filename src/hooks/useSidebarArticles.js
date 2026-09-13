@@ -16,35 +16,46 @@ function rank(pool, currentTagIds) {
     .map((entry) => entry.article)
 }
 
-export function useSidebarArticles(current) {
+export function useSidebarArticles(slug) {
   const [groups, setGroups] = useState({ latest: [], related: [] })
 
   useEffect(() => {
     let active = true
 
-    supabase
-      .from('articles')
-      .select(columns)
-      .order('published_at', { ascending: false })
-      .limit(poolSize)
-      .then(({ data }) => {
-        if (!active) {
-          return
-        }
+    async function load() {
+      const { data } = await supabase
+        .from('articles')
+        .select(columns)
+        .order('published_at', { ascending: false })
+        .limit(poolSize)
 
-        const pool = (data ?? []).filter((article) => article.id !== current.id)
-        const currentTagIds = new Set(current.article_tags.map((row) => row.tags.id))
+      const rows = data ?? []
+      let current = rows.find((article) => article.slug === slug)
 
-        setGroups({
-          latest: pool.slice(0, latestCount),
-          related: rank(pool.slice(latestCount), currentTagIds).slice(0, relatedCount),
-        })
+      if (!current) {
+        const extra = await supabase.from('articles').select(columns).eq('slug', slug).maybeSingle()
+        current = extra.data
+      }
+
+      if (!active || !current) {
+        return
+      }
+
+      const currentTagIds = new Set(current.article_tags.map((row) => row.tag_id))
+      const others = rows.filter((article) => article.id !== current.id)
+
+      setGroups({
+        latest: others.slice(0, latestCount),
+        related: rank(others.slice(latestCount), currentTagIds).slice(0, relatedCount),
       })
+    }
+
+    load()
 
     return () => {
       active = false
     }
-  }, [current])
+  }, [slug])
 
   return groups
 }

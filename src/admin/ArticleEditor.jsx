@@ -16,7 +16,7 @@ const emptyForm = {
   lead: '',
   body: '',
   cover_url: '',
-  cover_focus: 'auto',
+  cover_focus: '50% 50%',
   category_id: '',
   status: 'draft',
   featured: false,
@@ -187,39 +187,44 @@ export default function ArticleEditor() {
 
     const payload = toPayload(form)
     let articleId = id
-    let failure = null
 
-    if (id) {
-      const { error } = await supabase.from('articles').update(payload).eq('id', id)
-      failure = error
-    } else {
-      const { data, error } = await supabase
-        .from('articles')
-        .insert({ ...payload, author_email: session.user.email })
-        .select('id')
-        .single()
+    try {
+      let failure = null
 
-      failure = error
-      articleId = data?.id
-    }
+      if (id) {
+        const { error } = await supabase.from('articles').update(payload).eq('id', id)
+        failure = error
+      } else {
+        const { data, error } = await supabase
+          .from('articles')
+          .insert({ ...payload, author_email: session.user.email })
+          .select('id')
+          .single()
 
-    if (!failure) {
-      failure = await saveTags(articleId, tags)
-    }
+        failure = error
+        articleId = data?.id
+      }
 
-    setSaving(false)
+      if (!failure) {
+        failure = await saveTags(articleId, tags)
+      }
 
-    if (failure) {
+      if (failure) {
+        setError(`Mentés sikertelen: ${failure.message}`)
+        return
+      }
+
+      setPrevious(saved)
+      setSaved({ form, tags })
+      reloadTags()
+
+      if (!id) {
+        navigate(`/admin/cikkek/${articleId}`, { replace: true })
+      }
+    } catch (failure) {
       setError(`Mentés sikertelen: ${failure.message}`)
-      return
-    }
-
-    setPrevious(saved)
-    setSaved({ form, tags })
-    reloadTags()
-
-    if (!id) {
-      navigate(`/admin/cikkek/${articleId}`, { replace: true })
+    } finally {
+      setSaving(false)
     }
   }
 

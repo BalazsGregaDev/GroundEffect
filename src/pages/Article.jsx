@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
 import { useArticle } from '../hooks/useArticle.js'
-import ArticleSidebar from '../components/ArticleSidebar.jsx'
 import { sanitizeHtml } from '../lib/richText.js'
 import { coverUrl } from '../lib/cloudinary.js'
 import { formatCount, relativeTime } from '../lib/format.js'
@@ -33,43 +32,40 @@ export default function Article() {
   ].filter(Boolean)
 
   return (
-    <div className="article-layout">
-      <article className="article">
-        <Link to="/" className="article-back">
-          Vissza a főoldalra
-        </Link>
+    <article className="article">
+      <Link to="/" className="article-back">
+        Vissza a főoldalra
+      </Link>
 
-        {article.cover_url && (
-          <img
-            className="article-cover"
-            src={coverUrl(article.cover_url, article.cover_focus)}
-            alt=""
-          />
-        )}
-
-        {article.categories && <p className="article-category">{article.categories.name}</p>}
-
-        <h1>{article.title}</h1>
-
-        <p className="article-meta">{meta.join(' · ')}</p>
-
-        {article.lead && <p className="article-lead">{article.lead}</p>}
-
-        <div
-          className="article-body"
-          dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.body) }}
+      {article.cover_url && (
+        <img
+          className="article-cover"
+          src={coverUrl(article.cover_url)}
+          style={{ objectPosition: article.cover_focus }}
+          alt=""
         />
+      )}
 
-        {tags.length > 0 && (
-          <div className="article-tags">
-            {tags.map((tag) => (
-              <span key={tag.id}>{tag.name}</span>
-            ))}
-          </div>
-        )}
-      </article>
+      {article.categories && <p className="article-category">{article.categories.name}</p>}
 
-      <ArticleSidebar current={article} />
-    </div>
+      <h1>{article.title}</h1>
+
+      <p className="article-meta">{meta.join(' · ')}</p>
+
+      {article.lead && <p className="article-lead">{article.lead}</p>}
+
+      <div
+        className="article-body"
+        dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.body) }}
+      />
+
+      {tags.length > 0 && (
+        <div className="article-tags">
+          {tags.map((tag) => (
+            <span key={tag.id}>{tag.name}</span>
+          ))}
+        </div>
+      )}
+    </article>
   )
 }

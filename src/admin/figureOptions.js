@@ -15,15 +15,6 @@ export const sizes = [
   { value: 'teljes', label: 'Teljes szélesség', width: 100 },
 ]
 
-export const focusPoints = [
-  { value: 'auto', label: 'Automatikus' },
-  { value: 'center', label: 'Középre' },
-  { value: 'north', label: 'Felső rész' },
-  { value: 'south', label: 'Alsó rész' },
-  { value: 'west', label: 'Bal oldal' },
-  { value: 'east', label: 'Jobb oldal' },
-]
-
 export const defaultFigure = {
   ratio: '16-9',
   orientation: 'fekvo',

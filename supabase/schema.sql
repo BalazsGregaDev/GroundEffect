@@ -98,7 +98,7 @@ create table if not exists articles (
   lead text,
   body text not null default '',
   cover_url text,
-  cover_focus text not null default 'auto',
+  cover_focus text not null default '50% 50%',
   category_id uuid references categories (id) on delete set null,
   author_email citext references admin_users (email) on delete set null,
   status text not null default 'draft' check (status in ('draft', 'review', 'published')),
@@ -150,7 +150,8 @@ create table if not exists site_settings (
   updated_at timestamptz not null default now()
 );
 
-alter table articles add column if not exists cover_focus text not null default 'auto';
+alter table articles add column if not exists cover_focus text not null default '50% 50%';
+alter table articles alter column cover_focus set default '50% 50%';
 
 alter table articles add column if not exists search_vector tsvector generated always as (
   to_tsvector(
@@ -160,8 +161,19 @@ alter table articles add column if not exists search_vector tsvector generated a
 ) stored;
 
 alter table articles drop constraint if exists articles_cover_focus_check;
+
+update articles set cover_focus = case cover_focus
+  when 'auto' then '50% 50%'
+  when 'center' then '50% 50%'
+  when 'north' then '50% 0%'
+  when 'south' then '50% 100%'
+  when 'west' then '0% 50%'
+  when 'east' then '100% 50%'
+end
+where cover_focus in ('auto', 'center', 'north', 'south', 'west', 'east');
+
 alter table articles add constraint articles_cover_focus_check
-  check (cover_focus in ('auto', 'center', 'north', 'south', 'west', 'east'));
+  check (cover_focus ~ '^[0-9]{1,3}% [0-9]{1,3}%$');
 
 create index if not exists articles_published_idx
   on articles (published_at desc)

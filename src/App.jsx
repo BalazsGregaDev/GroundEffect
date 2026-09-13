@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout.jsx'
 import Home from './pages/Home.jsx'
+import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
 
 const Article = lazy(() => import('./pages/Article.jsx'))
@@ -19,8 +20,11 @@ export default function App() {
     <Routes>
       <Route element={<PublicLayout />}>
         <Route index element={<Home />} />
+      </Route>
+
+      <Route path="cikkek/:slug" element={<ArticleLayout />}>
         <Route
-          path="cikkek/:slug"
+          index
           element={
             <Suspense fallback={<p className="admin-boot">Betöltés…</p>}>
               <Article />

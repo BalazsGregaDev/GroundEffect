@@ -1,0 +1,79 @@
+.crop-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.2rem;
+  background: rgba(10, 10, 10, 0.85);
+  overflow-y: auto;
+}
+
+.crop-panel {
+  width: min(46rem, 100%);
+  padding: 1.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.crop-panel h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.4rem;
+}
+
+.crop-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.crop-stage {
+  position: relative;
+  margin: 1rem 0;
+  overflow: hidden;
+  line-height: 0;
+  background: var(--black);
+}
+
+.crop-stage img {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 55vh;
+  object-fit: contain;
+  user-select: none;
+}
+
+.crop-window {
+  position: absolute;
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 0 9999px rgba(10, 10, 10, 0.7);
+  cursor: grab;
+  touch-action: none;
+}
+
+.crop-window:active {
+  cursor: grabbing;
+}
+
+.crop-result {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+
+.crop-result img {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border: 1px solid var(--graphite);
+}
+
+.crop-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

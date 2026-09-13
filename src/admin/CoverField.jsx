@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react'
 import { coverUrl, uploadImage } from '../lib/cloudinary.js'
-import { focusPoints } from './figureOptions.js'
 import { uploadLabel } from './uploadStage.js'
+import CoverCropDialog from './CoverCropDialog.jsx'
 import './CoverField.css'
 
 export default function CoverField({ value, focus, onChange, onFocusChange, disabled }) {
   const fileInput = useRef(null)
   const [stage, setStage] = useState(null)
   const [error, setError] = useState(null)
+  const [cropping, setCropping] = useState(false)
 
   async function handleFile(event) {
     const file = event.target.files[0]
@@ -54,9 +55,19 @@ export default function CoverField({ value, focus, onChange, onFocusChange, disa
           </button>
 
           {value && (
-            <button type="button" className="cover-clear" onClick={() => onChange('')}>
-              Eltávolítás
-            </button>
+            <>
+              <button
+                type="button"
+                className="admin-button admin-button--ghost"
+                onClick={() => setCropping(true)}
+              >
+                Kivágás beállítása
+              </button>
+
+              <button type="button" className="cover-clear" onClick={() => onChange('')}>
+                Eltávolítás
+              </button>
+            </>
           )}
 
           <input ref={fileInput} type="file" accept="image/*" onChange={handleFile} hidden />
@@ -67,27 +78,29 @@ export default function CoverField({ value, focus, onChange, onFocusChange, disa
 
       {value && (
         <>
-          <img className="cover-preview" src={coverUrl(value, focus)} alt="Borítókép előnézet" />
+          <img
+            className="cover-preview"
+            src={coverUrl(value)}
+            style={{ objectPosition: focus }}
+            alt="Borítókép előnézet"
+          />
 
           <p className="cover-hint">
-            A borítókép mindig 16:9-ben, fektetve jelenik meg a cím fölött. Ha bele kell
-            vágni, itt állítod be, melyik rész maradjon meg.
+            A borítókép mindig 16:9-ben, fektetve jelenik meg a cím fölött.
           </p>
-
-          <div className="cover-focus">
-            {focusPoints.map((point) => (
-              <button
-                key={point.value}
-                type="button"
-                className={point.value === focus ? 'cover-choice is-active' : 'cover-choice'}
-                onClick={() => onFocusChange(point.value)}
-                disabled={disabled}
-              >
-                {point.label}
-              </button>
-            ))}
-          </div>
         </>
+      )}
+
+      {cropping && (
+        <CoverCropDialog
+          src={coverUrl(value)}
+          value={focus}
+          onSave={(position) => {
+            onFocusChange(position)
+            setCropping(false)
+          }}
+          onClose={() => setCropping(false)}
+        />
       )}
     </div>
   )

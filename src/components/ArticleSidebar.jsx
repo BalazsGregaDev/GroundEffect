@@ -28,8 +28,8 @@ function ArticleLinks({ title, articles }) {
   )
 }
 
-export default function ArticleSidebar({ current }) {
-  const { latest, related } = useSidebarArticles(current)
+export default function ArticleSidebar({ slug }) {
+  const { latest, related } = useSidebarArticles(slug)
 
   return (
     <aside className="article-aside">
