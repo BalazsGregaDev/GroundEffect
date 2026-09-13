@@ -9,6 +9,8 @@ export default function AdminUsers() {
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [newEmail, setNewEmail] = useState('')
+  const [newRole, setNewRole] = useState('admin')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -34,6 +36,29 @@ export default function AdminUsers() {
         <p className="admin-readonly">Ezt az oldalt csak superadmin nézheti.</p>
       </div>
     )
+  }
+
+  async function addUser(event) {
+    event.preventDefault()
+
+    const email = newEmail.trim()
+
+    if (!email) {
+      return
+    }
+
+    const { error } = await supabase
+      .from('admin_users')
+      .upsert({ email, role: newRole }, { onConflict: 'email' })
+
+    if (error) {
+      setError(error)
+      return
+    }
+
+    setNewEmail('')
+    setError(null)
+    load()
   }
 
   async function changeRole(email, role) {
@@ -63,10 +88,39 @@ export default function AdminUsers() {
       <h1>Felhasználók</h1>
 
       <p className="admin-readonly">
-        Aki bekerül a Supabase Authba, automatikusan megjelenik itt demó szerepkörrel.
-        A tényleges jogot te adod meg alább. A hozzáférés visszavonása csak az admin jogot
-        veszi el, a Supabase-fiók megmarad.
+        Itt a szerepkört osztod ki, nem a belépést. A Supabase-fiókot továbbra is a
+        Supabase Auth felületén kell létrehozni. Ha előre felveszed valakit e-mail cím
+        alapján, a fiók elkészültekor rögtön a megadott szerepkörrel lép be; ha előbb
+        készül el a fiók, demó szerepkörrel jelenik meg itt, és utána állíthatod át.
       </p>
+
+      <form className="users-add" onSubmit={addUser}>
+        <label className="admin-field">
+          <span>Új admin e-mail címe</span>
+          <input
+            type="email"
+            value={newEmail}
+            onChange={(event) => setNewEmail(event.target.value)}
+            placeholder="szerkeszto@groundeffect.hu"
+            required
+          />
+        </label>
+
+        <label className="admin-field">
+          <span>Szerepkör</span>
+          <select value={newRole} onChange={(event) => setNewRole(event.target.value)}>
+            {adminRoles.map((role) => (
+              <option key={role.value} value={role.value}>
+                {role.label}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <button type="submit" className="admin-button">
+          Felvétel
+        </button>
+      </form>
 
       {error && <p className="admin-error">Hiba: {error.message}</p>}
 

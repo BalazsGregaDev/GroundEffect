@@ -53,10 +53,7 @@ begin
   end if;
 
   insert into admin_users (email, role)
-  values (
-    new.email,
-    case when exists (select 1 from admin_users) then 'demo' else 'superadmin' end
-  )
+  values (new.email, 'demo')
   on conflict (email) do nothing;
 
   return new;
@@ -296,10 +293,9 @@ insert into admin_users (email, role)
 select email, 'demo' from auth.users where email is not null
 on conflict (email) do nothing;
 
-update admin_users
-set role = 'superadmin'
-where not exists (select 1 from admin_users where role = 'superadmin')
-  and email = (select email from auth.users where email is not null order by created_at limit 1);
+insert into admin_users (email, role)
+values ('superadmin@ge.com', 'superadmin')
+on conflict (email) do update set role = 'superadmin';
 
 insert into site_settings (id, sections_order) values
   (true, '["latest-video", "video-grid", "articles", "facebook", "poll", "next-race", "join"]'::jsonb)

@@ -1,3 +1,18 @@
+.users-add {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+  padding: 1.2rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.users-add .admin-field input {
+  min-width: 18rem;
+}
+
 .users-table {
   width: 100%;
   border-collapse: collapse;
