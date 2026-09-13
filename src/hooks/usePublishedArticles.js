@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 
-const columns = 'id, slug, title, reading_minutes, views, published_at, categories (name)'
+const columns = 'id, slug, title, reading_minutes, published_at, categories (name)'
 
 export function usePublishedArticles(limit) {
   const [articles, setArticles] = useState([])

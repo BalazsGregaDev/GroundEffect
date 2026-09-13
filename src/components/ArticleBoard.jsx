@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import SectionTitle from './SectionTitle.jsx'
 import { usePublishedArticles } from '../hooks/usePublishedArticles.js'
-import { formatCount, relativeTime } from '../lib/format.js'
+import { relativeTime } from '../lib/format.js'
 import './ArticleBoard.css'
 
 export default function ArticleBoard() {
@@ -27,7 +27,6 @@ export default function ArticleBoard() {
             <span>#</span>
             <span>Cikk</span>
             <span>Olvasási idő</span>
-            <span>Megtekintés</span>
           </div>
 
           {articles.map((article, index) => (
@@ -46,7 +45,6 @@ export default function ArticleBoard() {
               <span className="read">
                 {article.reading_minutes ?? '–'} perc<small>olvasási idő</small>
               </span>
-              <span className="views">{formatCount(article.views)}</span>
             </Link>
           ))}
         </>

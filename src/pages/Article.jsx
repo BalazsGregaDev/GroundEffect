@@ -2,7 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { useArticle } from '../hooks/useArticle.js'
 import { sanitizeHtml } from '../lib/richText.js'
 import { coverUrl } from '../lib/cloudinary.js'
-import { formatCount, relativeTime } from '../lib/format.js'
+import { relativeTime } from '../lib/format.js'
 import '../styles/figure.css'
 import './Article.css'
 
@@ -28,7 +28,6 @@ export default function Article() {
   const meta = [
     relativeTime(article.published_at),
     article.reading_minutes && `${article.reading_minutes} perc olvasás`,
-    `${formatCount(article.views)} megtekintés`,
   ].filter(Boolean)
 
   return (

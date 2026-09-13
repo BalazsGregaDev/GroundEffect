@@ -6,7 +6,7 @@
 
 .board-head {
   display: grid;
-  grid-template-columns: 54px 1fr 150px 120px;
+  grid-template-columns: 54px 1fr 150px;
   gap: 1rem;
   padding: 0 1rem 0.6rem;
   border-bottom: 1px solid var(--graphite);
@@ -19,7 +19,7 @@
 
 .row {
   display: grid;
-  grid-template-columns: 54px 1fr 150px 120px;
+  grid-template-columns: 54px 1fr 150px;
   gap: 1rem;
   align-items: center;
   padding: 0.95rem 1rem;
@@ -65,19 +65,11 @@
   color: var(--smoke);
 }
 
-.row .read,
-.row .views {
+.row .read {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.9rem;
-}
-
-.row .read {
   color: var(--bone);
-}
-
-.row .views {
-  color: var(--smoke);
 }
 
 .row .read small {
@@ -96,8 +88,7 @@
     grid-template-columns: 40px 1fr;
   }
 
-  .row .read,
-  .row .views {
+  .row .read {
     grid-column: 2;
     font-size: 0.84rem;
   }
