@@ -8,7 +8,6 @@ import JoinPanel from '../components/JoinPanel.jsx'
 import {
   latestVideo,
   previousVideos,
-  articles,
   poll,
   nextRace,
   joinLinks,
@@ -20,7 +19,7 @@ export default function Home() {
     <>
       <LatestVideo video={latestVideo} />
       <VideoGrid videos={previousVideos} />
-      <ArticleBoard articles={articles} />
+      <ArticleBoard />
 
       <div className="bottom">
         <FacebookEmbed />

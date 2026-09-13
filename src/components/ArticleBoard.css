@@ -1,3 +1,9 @@
+.board-message {
+  margin: 0;
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
 .board-head {
   display: grid;
   grid-template-columns: 54px 1fr 150px 120px;

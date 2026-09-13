@@ -53,40 +53,6 @@ export const previousVideos = [
   },
 ]
 
-export const articles = [
-  {
-    id: 'olasz-nagydij',
-    title: 'Eldőlt a világbajnoki cím sorsa — Olasz Nagydíj',
-    category: 'Forma-1',
-    readingMinutes: 7,
-    views: 22000,
-    publishedAt: '2026-09-07',
-  },
-  {
-    id: 'nurburgring-24',
-    title: '24 óra a Zöld Pokolban — Nürburgring 24 órás előzetes',
-    category: 'Hosszútáv',
-    readingMinutes: 4,
-    views: 8700,
-    publishedAt: '2026-06-15',
-  },
-  {
-    id: 'marc-ducati',
-    title: 'Marc felült a Ducatira, a többiek pedig feleslegesen jöttek el',
-    category: 'MotoGP',
-    readingMinutes: 5,
-    views: 4600,
-    publishedAt: '2025-08-01',
-  },
-  {
-    id: 'alex-dunne',
-    title: 'Alex Dunne kigolyózása — F2 szeptember',
-    category: 'Forma-2',
-    readingMinutes: 3,
-    views: 2100,
-    publishedAt: '2025-10-18',
-  },
-]
 
 export const poll = {
   question: 'Hétvége pilótája',
