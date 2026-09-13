@@ -1,12 +1,46 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { supabase } from '../lib/supabase.js'
 import { tagKinds } from './tagKinds.js'
 import './TagField.css'
 
-export default function TagField({ tags, onChange, available, disabled }) {
-  const [newName, setNewName] = useState('')
+const optionLimit = 15
+
+export default function TagField({ tags, onChange, disabled }) {
+  const [query, setQuery] = useState('')
+  const [options, setOptions] = useState([])
+  const [searching, setSearching] = useState(false)
   const [newKind, setNewKind] = useState('driver')
 
+  useEffect(() => {
+    if (disabled) {
+      return
+    }
+
+    let active = true
+    setSearching(true)
+
+    const timer = setTimeout(() => {
+      supabase
+        .rpc('search_tags', { search: query.trim(), limit_count: optionLimit })
+        .then(({ data }) => {
+          if (active) {
+            setOptions(data ?? [])
+            setSearching(false)
+          }
+        })
+    }, 250)
+
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
+  }, [query, disabled])
+
   const selected = new Set(tags.map((tag) => tag.name.toLowerCase()))
+  const trimmed = query.trim()
+  const exactMatch =
+    selected.has(trimmed.toLowerCase()) ||
+    options.some((tag) => tag.name.toLowerCase() === trimmed.toLowerCase())
 
   function toggle(tag) {
     if (selected.has(tag.name.toLowerCase())) {
@@ -17,17 +51,12 @@ export default function TagField({ tags, onChange, available, disabled }) {
   }
 
   function addNew() {
-    const name = newName.trim()
-
-    if (!name || selected.has(name.toLowerCase())) {
-      setNewName('')
+    if (!trimmed || exactMatch) {
       return
     }
 
-    const known = available.find((tag) => tag.name.toLowerCase() === name.toLowerCase())
-
-    onChange([...tags, known ?? { name, kind: newKind }])
-    setNewName('')
+    onChange([...tags, { name: trimmed, kind: newKind }])
+    setQuery('')
   }
 
   function handleKeyDown(event) {
@@ -61,50 +90,42 @@ export default function TagField({ tags, onChange, available, disabled }) {
 
       {!disabled && (
         <>
-          <div className="tag-groups">
-            {tagKinds.map((kind) => {
-              const group = available.filter((tag) => tag.kind === kind.value)
+          <input
+            type="text"
+            className="tag-search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="Keresés vagy új tag neve"
+          />
 
-              if (group.length === 0) {
-                return null
-              }
+          <div className="tag-options">
+            {options.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                className={
+                  selected.has(tag.name.toLowerCase()) ? 'tag-option is-active' : 'tag-option'
+                }
+                onClick={() => toggle(tag)}
+              >
+                {tag.name}
+                <span className="tag-option-kind">
+                  {tagKinds.find((kind) => kind.value === tag.kind).label}
+                </span>
+              </button>
+            ))}
 
-              return (
-                <div className="tag-group" key={kind.value}>
-                  <span className="tag-group-label">{kind.label}</span>
-
-                  <div className="tag-options">
-                    {group.map((tag) => (
-                      <button
-                        key={tag.id}
-                        type="button"
-                        className={
-                          selected.has(tag.name.toLowerCase())
-                            ? 'tag-option is-active'
-                            : 'tag-option'
-                        }
-                        onClick={() => toggle(tag)}
-                      >
-                        {tag.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
+            {!searching && options.length === 0 && (
+              <span className="tag-empty">Nincs találat.</span>
+            )}
           </div>
 
-          <details className="tag-new">
-            <summary>Új tag felvétele</summary>
-
+          {trimmed && !exactMatch && (
             <div className="tag-new-row">
-              <input
-                type="text"
-                value={newName}
-                onChange={(event) => setNewName(event.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Név"
-              />
+              <span className="tag-new-label">
+                „{trimmed}" még nincs a rendszerben.
+              </span>
 
               <select value={newKind} onChange={(event) => setNewKind(event.target.value)}>
                 {tagKinds.map((kind) => (
@@ -114,15 +135,11 @@ export default function TagField({ tags, onChange, available, disabled }) {
                 ))}
               </select>
 
-              <button
-                type="button"
-                className="admin-button admin-button--ghost"
-                onClick={addNew}
-              >
+              <button type="button" className="admin-button admin-button--ghost" onClick={addNew}>
                 Hozzáadás
               </button>
             </div>
-          </details>
+          )}
         </>
       )}
     </div>

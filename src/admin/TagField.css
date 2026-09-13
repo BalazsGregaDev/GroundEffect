@@ -45,30 +45,31 @@
   color: var(--graphite);
 }
 
-.tag-groups {
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid var(--graphite);
+.tag-search {
+  padding: 0.45rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.88rem;
 }
 
-.tag-group-label {
-  display: block;
-  margin-bottom: 0.3rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--smoke);
+.tag-search:focus {
+  border-color: var(--gold);
 }
 
 .tag-options {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--graphite);
 }
 
 .tag-option {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--graphite);
   background: none;
@@ -90,20 +91,32 @@
   color: var(--gold);
 }
 
-.tag-new summary {
-  font-size: 0.8rem;
-  color: var(--gold);
-  cursor: pointer;
+.tag-option-kind {
+  font-size: 0.68rem;
+  color: var(--graphite);
+}
+
+.tag-option:hover .tag-option-kind,
+.tag-option.is-active .tag-option-kind {
+  color: var(--smoke);
 }
 
 .tag-new-row {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.4rem;
-  margin-top: 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--graphite);
 }
 
-.tag-new-row input,
+.tag-new-label {
+  flex: 1;
+  min-width: 8rem;
+  font-size: 0.78rem;
+  color: var(--smoke);
+}
+
 .tag-new-row select {
   padding: 0.4rem 0.6rem;
   border: 1px solid var(--graphite);
@@ -113,12 +126,6 @@
   font-size: 0.85rem;
 }
 
-.tag-new-row input {
-  flex: 1;
-  min-width: 7rem;
-}
-
-.tag-new-row input:focus,
 .tag-new-row select:focus {
   border-color: var(--gold);
 }

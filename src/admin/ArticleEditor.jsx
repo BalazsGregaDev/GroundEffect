@@ -125,7 +125,6 @@ export default function ArticleEditor() {
   const navigate = useNavigate()
   const { session, canEdit, isSuperadmin } = useAuth()
   const { rows: categories } = useLookup('categories')
-  const { rows: allTags, reload: reloadTags } = useLookup('tags', 'id, slug, name, kind')
 
   const [form, setForm] = useState(emptyForm)
   const [tags, setTags] = useState([])
@@ -216,7 +215,6 @@ export default function ArticleEditor() {
 
       setPrevious(saved)
       setSaved({ form, tags })
-      reloadTags()
 
       if (!id) {
         navigate(`/admin/cikkek/${articleId}`, { replace: true })
@@ -381,12 +379,7 @@ export default function ArticleEditor() {
             </select>
           </label>
 
-          <TagField
-            tags={tags}
-            onChange={setTags}
-            available={allTags}
-            disabled={readOnly}
-          />
+          <TagField tags={tags} onChange={setTags} disabled={readOnly} />
 
           <CoverField
             value={form.cover_url}

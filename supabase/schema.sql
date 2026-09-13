@@ -224,6 +224,20 @@ create trigger articles_enforce_publish_rights
   before insert or update on articles
   for each row execute function enforce_publish_rights();
 
+create or replace function search_tags(search text default '', limit_count integer default 15)
+returns table (id uuid, slug text, name text, kind text, uses bigint)
+language sql
+stable
+as $$
+  select t.id, t.slug, t.name, t.kind, count(link.article_id) as uses
+  from tags t
+  left join article_tags link on link.tag_id = t.id
+  where search = '' or t.name ilike '%' || search || '%'
+  group by t.id, t.slug, t.name, t.kind
+  order by count(link.article_id) desc, t.name
+  limit limit_count;
+$$;
+
 create or replace function increment_article_views(article_slug text)
 returns void
 language sql
