@@ -1,5 +1,23 @@
+.article-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 46rem) 17rem;
+  gap: 3.5rem;
+  align-items: start;
+}
+
 .article {
-  max-width: 46rem;
+  min-width: 0;
+}
+
+@media (max-width: 1200px) {
+  .article-layout {
+    grid-template-columns: minmax(0, 46rem);
+  }
+
+  .article-aside {
+    position: static;
+    max-width: 46rem;
+  }
 }
 
 .article-message {

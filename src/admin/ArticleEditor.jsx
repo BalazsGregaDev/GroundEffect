@@ -40,7 +40,7 @@ function fromLocalInput(value) {
 async function loadArticle(id) {
   const { data, error } = await supabase
     .from('articles')
-    .select('*, article_tags (tags (id, slug, name))')
+    .select('*, article_tags (tags (id, slug, name, kind))')
     .eq('id', id)
     .single()
 
@@ -96,7 +96,7 @@ async function saveTags(articleId, tags) {
 
     const { data, error } = await supabase
       .from('tags')
-      .upsert({ slug: slugify(tag.name), name: tag.name }, { onConflict: 'slug' })
+      .upsert({ slug: slugify(tag.name), name: tag.name, kind: tag.kind }, { onConflict: 'slug' })
       .select('id')
       .single()
 
@@ -125,7 +125,7 @@ export default function ArticleEditor() {
   const navigate = useNavigate()
   const { session, canEdit, isSuperadmin } = useAuth()
   const { rows: categories } = useLookup('categories')
-  const { rows: allTags, reload: reloadTags } = useLookup('tags')
+  const { rows: allTags, reload: reloadTags } = useLookup('tags', 'id, slug, name, kind')
 
   const [form, setForm] = useState(emptyForm)
   const [tags, setTags] = useState([])
@@ -379,7 +379,7 @@ export default function ArticleEditor() {
           <TagField
             tags={tags}
             onChange={setTags}
-            suggestions={allTags}
+            available={allTags}
             disabled={readOnly}
           />
 

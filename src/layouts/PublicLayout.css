@@ -6,7 +6,7 @@
 
 .feed {
   min-width: 0;
-  padding: 2.4rem 3rem 4rem;
+  padding: 2.4rem 3rem 4rem 6rem;
 }
 
 .feed > * + * {

@@ -1,7 +1,7 @@
 .tag-field {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.6rem;
 }
 
 .tag-label {
@@ -20,8 +20,9 @@
   align-items: center;
   gap: 0.35rem;
   padding: 0.2rem 0.5rem;
-  border: 1px solid var(--graphite);
+  border: 1px solid var(--gold-deep);
   background: var(--black);
+  color: var(--gold);
   font-size: 0.82rem;
 }
 
@@ -36,7 +37,7 @@
 }
 
 .tag-chip button:hover {
-  color: var(--gold);
+  color: var(--gold-hi);
 }
 
 .tag-empty {
@@ -44,22 +45,80 @@
   color: var(--graphite);
 }
 
-.tag-input {
+.tag-groups {
   display: flex;
-  gap: 0.4rem;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--graphite);
 }
 
-.tag-input input {
-  flex: 1;
-  min-width: 0;
-  padding: 0.5rem 0.7rem;
+.tag-group-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+.tag-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.tag-option {
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--smoke);
+  font-family: var(--body);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition:
+    color 0.12s,
+    border-color 0.12s;
+}
+
+.tag-option:hover {
+  color: var(--bone);
+}
+
+.tag-option.is-active {
+  border-color: var(--gold-deep);
+  color: var(--gold);
+}
+
+.tag-new summary {
+  font-size: 0.8rem;
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.tag-new-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.tag-new-row input,
+.tag-new-row select {
+  padding: 0.4rem 0.6rem;
   border: 1px solid var(--graphite);
   background: var(--black);
   color: var(--bone);
   font-family: var(--body);
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
-.tag-input input:focus {
+.tag-new-row input {
+  flex: 1;
+  min-width: 7rem;
+}
+
+.tag-new-row input:focus,
+.tag-new-row select:focus {
   border-color: var(--gold);
 }

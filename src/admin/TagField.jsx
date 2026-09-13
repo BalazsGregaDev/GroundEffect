@@ -1,27 +1,39 @@
 import { useState } from 'react'
+import { tagKinds } from './tagKinds.js'
 import './TagField.css'
 
-export default function TagField({ tags, onChange, suggestions, disabled }) {
-  const [input, setInput] = useState('')
+export default function TagField({ tags, onChange, available, disabled }) {
+  const [newName, setNewName] = useState('')
+  const [newKind, setNewKind] = useState('driver')
 
-  function addTag() {
-    const name = input.trim()
+  const selected = new Set(tags.map((tag) => tag.name.toLowerCase()))
 
-    if (!name || tags.some((tag) => tag.name.toLowerCase() === name.toLowerCase())) {
-      setInput('')
+  function toggle(tag) {
+    if (selected.has(tag.name.toLowerCase())) {
+      onChange(tags.filter((other) => other.name.toLowerCase() !== tag.name.toLowerCase()))
+    } else {
+      onChange([...tags, tag])
+    }
+  }
+
+  function addNew() {
+    const name = newName.trim()
+
+    if (!name || selected.has(name.toLowerCase())) {
+      setNewName('')
       return
     }
 
-    const known = suggestions.find((tag) => tag.name.toLowerCase() === name.toLowerCase())
+    const known = available.find((tag) => tag.name.toLowerCase() === name.toLowerCase())
 
-    onChange([...tags, known ?? { name }])
-    setInput('')
+    onChange([...tags, known ?? { name, kind: newKind }])
+    setNewName('')
   }
 
   function handleKeyDown(event) {
     if (event.key === 'Enter') {
       event.preventDefault()
-      addTag()
+      addNew()
     }
   }
 
@@ -36,7 +48,7 @@ export default function TagField({ tags, onChange, suggestions, disabled }) {
             {!disabled && (
               <button
                 type="button"
-                onClick={() => onChange(tags.filter((other) => other !== tag))}
+                onClick={() => toggle(tag)}
                 aria-label={`${tag.name} eltávolítása`}
               >
                 ×
@@ -48,24 +60,70 @@ export default function TagField({ tags, onChange, suggestions, disabled }) {
       </div>
 
       {!disabled && (
-        <div className="tag-input">
-          <input
-            type="text"
-            value={input}
-            onChange={(event) => setInput(event.target.value)}
-            onKeyDown={handleKeyDown}
-            list="tag-suggestions"
-            placeholder="Pilóta, csapat vagy pálya"
-          />
-          <datalist id="tag-suggestions">
-            {suggestions.map((tag) => (
-              <option key={tag.id} value={tag.name} />
-            ))}
-          </datalist>
-          <button type="button" className="admin-button admin-button--ghost" onClick={addTag}>
-            Hozzáadás
-          </button>
-        </div>
+        <>
+          <div className="tag-groups">
+            {tagKinds.map((kind) => {
+              const group = available.filter((tag) => tag.kind === kind.value)
+
+              if (group.length === 0) {
+                return null
+              }
+
+              return (
+                <div className="tag-group" key={kind.value}>
+                  <span className="tag-group-label">{kind.label}</span>
+
+                  <div className="tag-options">
+                    {group.map((tag) => (
+                      <button
+                        key={tag.id}
+                        type="button"
+                        className={
+                          selected.has(tag.name.toLowerCase())
+                            ? 'tag-option is-active'
+                            : 'tag-option'
+                        }
+                        onClick={() => toggle(tag)}
+                      >
+                        {tag.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <details className="tag-new">
+            <summary>Új tag felvétele</summary>
+
+            <div className="tag-new-row">
+              <input
+                type="text"
+                value={newName}
+                onChange={(event) => setNewName(event.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Név"
+              />
+
+              <select value={newKind} onChange={(event) => setNewKind(event.target.value)}>
+                {tagKinds.map((kind) => (
+                  <option key={kind.value} value={kind.value}>
+                    {kind.label}
+                  </option>
+                ))}
+              </select>
+
+              <button
+                type="button"
+                className="admin-button admin-button--ghost"
+                onClick={addNew}
+              >
+                Hozzáadás
+              </button>
+            </div>
+          </details>
+        </>
       )}
     </div>
   )
