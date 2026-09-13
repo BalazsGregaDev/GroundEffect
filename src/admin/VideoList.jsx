@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import { useAdminVideos } from './useAdminVideos.js'
 import { thumbnailUrl } from '../lib/youtube.js'
+import { functionErrorMessage } from '../lib/functionError.js'
 import { formatCount, relativeTime } from '../lib/format.js'
 import './VideoList.css'
 
@@ -32,8 +33,7 @@ export default function VideoList() {
       const { data, error: syncError } = await supabase.functions.invoke('sync-videos')
 
       if (syncError) {
-        const detail = await syncError.context?.json().catch(() => null)
-        setFailure(detail?.error ?? 'A szinkronizálás nem sikerült.')
+        setFailure(await functionErrorMessage(syncError, 'A szinkronizálás nem sikerült.'))
         return
       }
 

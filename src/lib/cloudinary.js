@@ -1,12 +1,12 @@
 import { supabase } from './supabase.js'
 import { compressImage, maxUploadBytes } from './compressImage.js'
+import { functionErrorMessage } from './functionError.js'
 
 async function requestSignature() {
   const { data, error } = await supabase.functions.invoke('sign-upload')
 
   if (error) {
-    const detail = await error.context?.json().catch(() => null)
-    throw new Error(detail?.error ?? 'Az aláírás kérése nem sikerült.')
+    throw new Error(await functionErrorMessage(error, 'Az aláírás kérése nem sikerült.'))
   }
 
   return data
