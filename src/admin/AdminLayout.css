@@ -1,0 +1,130 @@
+.admin {
+  display: grid;
+  grid-template-columns: 272px 1fr;
+  min-height: 100vh;
+}
+
+.admin-rail {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 1.8rem 1.4rem;
+  border-right: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.admin-brand img {
+  border-radius: 50%;
+}
+
+.admin-brand span {
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-size: 1rem;
+}
+
+.admin-nav {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.admin-nav a {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  font-family: var(--display);
+  font-size: 0.95rem;
+  color: var(--smoke);
+  transition:
+    color 0.15s,
+    background 0.15s,
+    border-left-color 0.15s;
+}
+
+.admin-nav a:hover {
+  color: var(--bone);
+  background: var(--black);
+}
+
+.admin-nav a.active {
+  color: var(--bone);
+  background: var(--black);
+  border-left-color: var(--gold);
+}
+
+.admin-nav-pending {
+  flex-shrink: 0;
+  font-family: var(--body);
+  font-size: 0.7rem;
+  color: var(--smoke);
+}
+
+.admin-user {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.admin-user p {
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.admin-user-email {
+  word-break: break-all;
+}
+
+.admin-user-role {
+  font-family: var(--mono);
+  color: var(--gold);
+  font-size: 0.76rem;
+}
+
+.admin-user a {
+  font-size: 0.8rem;
+  color: var(--smoke);
+}
+
+.admin-user a:hover {
+  color: var(--gold);
+}
+
+.admin-main {
+  min-width: 0;
+  padding: 2rem 2.4rem 4rem;
+}
+
+@media (max-width: 900px) {
+  .admin {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-rail {
+    position: static;
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid var(--graphite);
+  }
+
+  .admin-main {
+    padding: 1.5rem 1.2rem 3rem;
+  }
+}

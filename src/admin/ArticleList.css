@@ -1,0 +1,126 @@
+.list-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.list-head .admin-button {
+  text-decoration: none;
+}
+
+.list-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin: 1.5rem 0 1.2rem;
+}
+
+.list-filters {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.list-filter {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--smoke);
+  font-family: var(--body);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition:
+    color 0.15s,
+    border-color 0.15s;
+}
+
+.list-filter:hover {
+  color: var(--bone);
+}
+
+.list-filter.is-active {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.list-search {
+  min-width: 14rem;
+}
+
+.list-empty {
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+.list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.list-table th {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--graphite);
+  text-align: left;
+  font-family: var(--display);
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--smoke);
+  font-weight: 700;
+}
+
+.list-table td {
+  padding: 0.75rem 0.7rem;
+  border-bottom: 1px solid var(--graphite);
+  vertical-align: top;
+}
+
+.list-table tr:hover td {
+  background: var(--ink);
+}
+
+.list-table a {
+  color: var(--bone);
+  text-decoration: none;
+}
+
+.list-table a:hover {
+  color: var(--gold);
+}
+
+.list-featured {
+  display: inline-block;
+  margin-left: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--gold);
+}
+
+.list-number {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+@media (max-width: 800px) {
+  .list-table thead {
+    display: none;
+  }
+
+  .list-table tr {
+    display: grid;
+    gap: 0.2rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid var(--graphite);
+  }
+
+  .list-table td {
+    padding: 0;
+    border: none;
+  }
+}

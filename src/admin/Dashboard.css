@@ -1,0 +1,39 @@
+.dashboard-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 1rem;
+  margin: 1.6rem 0 2rem;
+}
+
+.dashboard-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 1.4rem 1.2rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  text-decoration: none;
+  transition: border-color 0.15s;
+}
+
+.dashboard-card:hover {
+  border-color: var(--gold);
+}
+
+.dashboard-count {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 2rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.dashboard-label {
+  font-size: 0.85rem;
+  color: var(--smoke);
+}
+
+.dashboard-new {
+  display: inline-block;
+  text-decoration: none;
+}

@@ -1,0 +1,127 @@
+.admin-notice {
+  max-width: 40rem;
+  margin: 4rem auto;
+  padding: 2rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.admin-notice h1 {
+  font-size: 1.6rem;
+  margin-bottom: 0.8rem;
+}
+
+.admin-notice p {
+  color: var(--smoke);
+  margin: 0 0 1.2rem;
+}
+
+.admin-button {
+  padding: 0.55rem 1.1rem;
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  color: var(--black);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.admin-button:hover:not(:disabled) {
+  background: var(--gold-hi);
+  border-color: var(--gold-hi);
+}
+
+.admin-button--ghost {
+  background: none;
+  color: var(--bone);
+  border-color: var(--graphite);
+}
+
+.admin-button--ghost:hover:not(:disabled) {
+  background: var(--ink);
+  border-color: var(--gold);
+}
+
+.admin-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.admin-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.admin-field > span {
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.admin-field input,
+.admin-field select,
+.admin-field textarea {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.95rem;
+}
+
+.admin-field textarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.admin-field input:focus,
+.admin-field select:focus,
+.admin-field textarea:focus {
+  border-color: var(--gold);
+}
+
+.admin-field input:disabled,
+.admin-field select:disabled,
+.admin-field textarea:disabled {
+  color: var(--smoke);
+}
+
+.admin-error {
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid #d64545;
+  background: var(--ink);
+  color: var(--bone);
+  font-size: 0.9rem;
+}
+
+.admin-readonly {
+  padding: 0.7rem 0.9rem;
+  border-left: 3px solid var(--gold);
+  background: var(--ink);
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+.admin-status {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border: 1px solid var(--graphite);
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+.admin-status--published {
+  border-color: var(--gold-deep);
+  color: var(--gold);
+}
+
+.admin-status--review {
+  border-color: var(--smoke);
+  color: var(--bone);
+}

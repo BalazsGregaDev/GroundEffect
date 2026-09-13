@@ -1,0 +1,103 @@
+.board-head {
+  display: grid;
+  grid-template-columns: 54px 1fr 150px 120px;
+  gap: 1rem;
+  padding: 0 1rem 0.6rem;
+  border-bottom: 1px solid var(--graphite);
+  font-family: var(--display);
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 54px 1fr 150px 120px;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.95rem 1rem;
+  border-bottom: 1px solid var(--graphite);
+  border-left: 3px solid transparent;
+  text-decoration: none;
+  transition:
+    background 0.12s,
+    border-left-color 0.12s;
+}
+
+.row:hover {
+  background: var(--ink);
+  border-left-color: var(--gold);
+}
+
+.row--top {
+  background: var(--ink);
+  border-left-color: var(--gold);
+}
+
+.row .pos {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1.55rem;
+  line-height: 1;
+  color: var(--graphite);
+}
+
+.row--top .pos {
+  color: var(--gold);
+}
+
+.row h3 {
+  font-size: 1.28rem;
+  line-height: 1.14;
+}
+
+.row .cat {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--smoke);
+}
+
+.row .read,
+.row .views {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.9rem;
+}
+
+.row .read {
+  color: var(--bone);
+}
+
+.row .views {
+  color: var(--smoke);
+}
+
+.row .read small {
+  display: block;
+  font-family: var(--body);
+  font-size: 0.72rem;
+  color: var(--smoke);
+}
+
+@media (max-width: 720px) {
+  .board-head {
+    display: none;
+  }
+
+  .row {
+    grid-template-columns: 40px 1fr;
+  }
+
+  .row .read,
+  .row .views {
+    grid-column: 2;
+    font-size: 0.84rem;
+  }
+
+  .row .read small {
+    display: inline;
+    margin-left: 0.3rem;
+  }
+}

@@ -1,0 +1,24 @@
+.shell {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  min-height: 100vh;
+}
+
+.feed {
+  min-width: 0;
+  padding: 2.4rem 3rem 4rem;
+}
+
+.feed > * + * {
+  margin-top: 3rem;
+}
+
+@media (max-width: 1024px) {
+  .shell {
+    grid-template-columns: 1fr;
+  }
+
+  .feed {
+    padding: 2rem 1.5rem 3rem;
+  }
+}

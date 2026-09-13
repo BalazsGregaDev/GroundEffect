@@ -1,0 +1,53 @@
+.fb-frame {
+  min-height: 480px;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  overflow: hidden;
+}
+
+.fb-frame iframe {
+  display: block;
+  width: 100%;
+  height: 500px;
+  border: 0;
+}
+
+.fb-consent {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 2rem 1.5rem;
+}
+
+.fb-consent p {
+  margin: 0;
+  max-width: 46ch;
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+.fb-consent button {
+  padding: 0.6rem 1.2rem;
+  border: none;
+  background: var(--gold);
+  color: var(--black);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.fb-consent button:hover {
+  background: var(--gold-hi);
+}
+
+.fb-consent a {
+  font-size: 0.85rem;
+  color: var(--smoke);
+}
+
+.fb-consent a:hover {
+  color: var(--gold);
+}

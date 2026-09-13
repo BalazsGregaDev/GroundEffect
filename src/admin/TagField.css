@@ -1,0 +1,65 @@
+.tag-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.tag-label {
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.tag-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  font-size: 0.82rem;
+}
+
+.tag-chip button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--smoke);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.tag-chip button:hover {
+  color: var(--gold);
+}
+
+.tag-empty {
+  font-size: 0.82rem;
+  color: var(--graphite);
+}
+
+.tag-input {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tag-input input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.9rem;
+}
+
+.tag-input input:focus {
+  border-color: var(--gold);
+}
