@@ -9,6 +9,7 @@ import RichTextField from './RichTextField.jsx'
 import CoverField from './CoverField.jsx'
 import TagField from './TagField.jsx'
 import FeaturedDialog from './FeaturedDialog.jsx'
+import FacebookDialog from './FacebookDialog.jsx'
 import { featuredArticleLimit } from '../data/site.js'
 import './ArticleEditor.css'
 
@@ -65,6 +66,7 @@ async function loadArticle(id) {
       published_at: toLocalInput(data.published_at),
     },
     tags: data.article_tags.map((row) => row.tags),
+    facebookPostId: data.facebook_post_id,
   }
 }
 
@@ -136,6 +138,8 @@ export default function ArticleEditor() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [crowded, setCrowded] = useState(null)
+  const [facebookPostId, setFacebookPostId] = useState(null)
+  const [sharing, setSharing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
   useEffect(() => {
@@ -144,6 +148,7 @@ export default function ArticleEditor() {
       setTags([])
       setSaved(null)
       setPrevious(null)
+      setFacebookPostId(null)
       setLoading(false)
       return
     }
@@ -162,6 +167,7 @@ export default function ArticleEditor() {
         setForm(result.form)
         setTags(result.tags)
         setSaved({ form: result.form, tags: result.tags })
+        setFacebookPostId(result.facebookPostId)
       }
 
       setLoading(false)
@@ -301,6 +307,9 @@ export default function ArticleEditor() {
 
   const readOnly = !canEdit
   const canPublish = isSuperadmin || saved?.form.status === 'published'
+  const isLive =
+    saved?.form.status === 'published' &&
+    (!saved.form.published_at || new Date(saved.form.published_at) <= new Date())
 
   return (
     <form className="editor" onSubmit={handleSubmit}>
@@ -309,6 +318,18 @@ export default function ArticleEditor() {
           articles={crowded}
           onPick={replaceFeatured}
           onCancel={() => setCrowded(null)}
+        />
+      )}
+
+      {sharing && (
+        <FacebookDialog
+          articleId={id}
+          form={saved.form}
+          onClose={() => setSharing(false)}
+          onShared={(postId) => {
+            setFacebookPostId(postId)
+            setSharing(false)
+          }}
         />
       )}
 
@@ -489,6 +510,47 @@ export default function ArticleEditor() {
           <p className="editor-hint">
             Egyszerre legfeljebb {featuredArticleLimit} cikk lehet kiemelt.
           </p>
+
+          {id && canEdit && (
+            <div className="editor-share">
+              {facebookPostId ? (
+                <>
+                  <p className="editor-hint">Ez a cikk már kikerült a Facebook oldalra.</p>
+                  <a
+                    className="editor-link"
+                    href={`https://www.facebook.com/${facebookPostId}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Poszt megnyitása
+                  </a>
+                  <button
+                    type="button"
+                    className="editor-link"
+                    onClick={() => setSharing(true)}
+                    disabled={!isLive}
+                  >
+                    Megosztás újra
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  className="admin-button admin-button--ghost"
+                  onClick={() => setSharing(true)}
+                  disabled={!isLive}
+                >
+                  Megosztás Facebookra
+                </button>
+              )}
+
+              {!isLive && (
+                <p className="editor-hint">
+                  Megosztani csak már publikált, nem időzített cikket lehet.
+                </p>
+              )}
+            </div>
+          )}
 
           {id && canEdit && (
             <div className="editor-delete">

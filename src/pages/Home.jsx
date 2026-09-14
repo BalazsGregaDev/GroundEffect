@@ -2,7 +2,7 @@ import LatestVideo from '../components/LatestVideo.jsx'
 import FeaturedArticle from '../components/FeaturedArticle.jsx'
 import VideoGrid from '../components/VideoGrid.jsx'
 import ArticleBoard from '../components/ArticleBoard.jsx'
-import FacebookEmbed from '../components/FacebookEmbed.jsx'
+import FacebookPosts from '../components/FacebookPosts.jsx'
 import PollPanel from '../components/PollPanel.jsx'
 import NextRacePanel from '../components/NextRacePanel.jsx'
 import JoinPanel from '../components/JoinPanel.jsx'
@@ -23,7 +23,7 @@ export default function Home() {
       <ArticleBoard />
 
       <div className="bottom">
-        <FacebookEmbed />
+        <FacebookPosts />
         <div className="panels">
           <PollPanel poll={poll} />
           <NextRacePanel race={nextRace} />

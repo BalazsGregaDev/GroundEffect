@@ -1,3 +1,6 @@
 {
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    { "source": "/cikkek/:slug", "destination": "/api/og?slug=:slug" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }

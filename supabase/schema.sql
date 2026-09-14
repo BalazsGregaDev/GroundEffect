@@ -105,6 +105,7 @@ create table if not exists articles (
   featured boolean not null default false,
   reading_minutes integer,
   views integer not null default 0,
+  facebook_post_id text,
   published_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -138,6 +139,18 @@ create table if not exists videos (
   created_at timestamptz not null default now()
 );
 
+create table if not exists facebook_posts (
+  id uuid primary key default gen_random_uuid(),
+  facebook_id text not null unique,
+  message text,
+  permalink_url text,
+  image_url text,
+  created_time timestamptz,
+  visible boolean not null default false,
+  synced_at timestamptz,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists races (
   id uuid primary key default gen_random_uuid(),
   series text not null default 'f1',
@@ -160,6 +173,7 @@ alter table tags add constraint tags_kind_check
 
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
+alter table articles add column if not exists facebook_post_id text;
 
 alter table articles add column if not exists search_vector tsvector generated always as (
   to_tsvector(
@@ -242,6 +256,11 @@ create index if not exists articles_featured_idx
 create index if not exists articles_search_idx on articles using gin (search_vector);
 create index if not exists article_tags_tag_idx on article_tags (tag_id);
 create index if not exists videos_published_idx on videos (published_at desc);
+
+create index if not exists facebook_posts_visible_idx
+  on facebook_posts (created_time desc)
+  where visible;
+
 create index if not exists races_starts_idx on races (starts_at);
 
 drop trigger if exists articles_set_updated_at on articles;
@@ -330,6 +349,7 @@ alter table tags enable row level security;
 alter table articles enable row level security;
 alter table article_tags enable row level security;
 alter table videos enable row level security;
+alter table facebook_posts enable row level security;
 alter table races enable row level security;
 alter table site_settings enable row level security;
 
@@ -381,6 +401,14 @@ create policy videos_read on videos
 
 drop policy if exists videos_write on videos;
 create policy videos_write on videos
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists facebook_posts_read on facebook_posts;
+create policy facebook_posts_read on facebook_posts
+  for select using (visible or is_staff());
+
+drop policy if exists facebook_posts_write on facebook_posts;
+create policy facebook_posts_write on facebook_posts
   for all using (can_edit()) with check (can_edit());
 
 drop policy if exists races_read on races;

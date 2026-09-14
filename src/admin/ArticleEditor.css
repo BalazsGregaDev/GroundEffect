@@ -82,6 +82,30 @@
   border: 1px solid var(--graphite);
 }
 
+.editor-share {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.editor-share .editor-hint,
+.editor-share .editor-link {
+  margin-top: 0;
+}
+
+.editor-share a.editor-link {
+  text-decoration: none;
+}
+
+.editor-link:disabled {
+  color: var(--graphite);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+
 .editor-delete {
   display: flex;
   gap: 0.5rem;

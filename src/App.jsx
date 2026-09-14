@@ -14,6 +14,7 @@ const Dashboard = lazy(() => import('./admin/Dashboard.jsx'))
 const ArticleList = lazy(() => import('./admin/ArticleList.jsx'))
 const ArticleEditor = lazy(() => import('./admin/ArticleEditor.jsx'))
 const VideoList = lazy(() => import('./admin/VideoList.jsx'))
+const FacebookPostList = lazy(() => import('./admin/FacebookPostList.jsx'))
 const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 
@@ -59,6 +60,7 @@ export default function App() {
           <Route path="cikkek/uj" element={<ArticleEditor />} />
           <Route path="cikkek/:id" element={<ArticleEditor />} />
           <Route path="videok" element={<VideoList />} />
+          <Route path="facebook" element={<FacebookPostList />} />
           <Route path="felhasznalok" element={<AdminUsers />} />
 
           {adminNav

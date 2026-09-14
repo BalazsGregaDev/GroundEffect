@@ -1,0 +1,63 @@
+.fbwall {
+  display: grid;
+  gap: 1rem;
+}
+
+.fbpost {
+  display: grid;
+  gap: 0.8rem;
+  border: 1px solid var(--graphite);
+  border-left: 3px solid var(--gold-deep);
+  background: var(--ink);
+  text-decoration: none;
+  overflow: hidden;
+  transition:
+    background 0.15s,
+    border-color 0.15s;
+}
+
+.fbpost:hover {
+  background: var(--black);
+  border-left-color: var(--gold);
+}
+
+.fbpost img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+.fbpost-body {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0 1.1rem 1.1rem;
+}
+
+.fbpost:not(:has(img)) .fbpost-body {
+  padding-top: 1.1rem;
+}
+
+.fbpost-date {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  color: var(--smoke);
+}
+
+.fbpost p {
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: var(--bone);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  white-space: pre-line;
+}
+
+.fbpost:hover p {
+  color: var(--gold);
+}
