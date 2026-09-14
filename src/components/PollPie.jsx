@@ -38,7 +38,8 @@ export default function PollPie({ slices, view, size = 300 }) {
   }
 
   const radius = size / 2
-  const pad = 52
+  const labelSize = Math.round(size / 15)
+  const pad = labelSize * 5 + 10
   let angle = -Math.PI / 2
 
   const arcs = data.map((slice) => {
@@ -48,7 +49,7 @@ export default function PollPie({ slices, view, size = 300 }) {
     angle = to
 
     const mid = (from + to) / 2
-    const labelRadius = radius + 16
+    const labelRadius = radius + labelSize * 0.9
 
     return {
       key: slice.key,
@@ -67,8 +68,8 @@ export default function PollPie({ slices, view, size = 300 }) {
     <svg
       className="poll-pie"
       viewBox={`${-pad} ${-pad} ${size + pad * 2} ${size + pad * 2}`}
-      width={size + pad}
-      height={size + pad}
+      width={size + pad * 2}
+      height={size + pad * 2}
       role="img"
       aria-label="A szavazatok megoszlása"
     >
@@ -82,6 +83,7 @@ export default function PollPie({ slices, view, size = 300 }) {
         <text
           key={`label-${arc.key}`}
           className="poll-pie-label"
+          fontSize={labelSize}
           x={arc.x.toFixed(1)}
           y={arc.y.toFixed(1)}
           textAnchor={arc.anchor}

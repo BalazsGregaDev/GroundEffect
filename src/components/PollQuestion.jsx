@@ -127,6 +127,12 @@ export default function PollQuestion({ question, closed, view, mode, myVotes, on
                   {question.has_votes && (
                     <td className="poll-result-col">
                       <div className="poll-result">
+                        <span className="poll-bar">
+                          <span
+                            className="poll-bar-fill"
+                            style={{ width: `${sharePercent(question, options, option)}%` }}
+                          />
+                        </span>
                         <span className="poll-score">{score(question, option, options, view)}</span>
                         {!closed && (
                           <VoteButtons
@@ -137,14 +143,6 @@ export default function PollQuestion({ question, closed, view, mode, myVotes, on
                           />
                         )}
                       </div>
-                      {question.has_votes && view === 'percent' && (
-                        <span className="poll-bar">
-                          <span
-                            className="poll-bar-fill"
-                            style={{ width: `${sharePercent(question, options, option)}%` }}
-                          />
-                        </span>
-                      )}
                     </td>
                   )}
                 </tr>

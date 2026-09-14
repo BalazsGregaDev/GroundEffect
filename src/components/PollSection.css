@@ -83,9 +83,9 @@
 }
 
 .poll-bar {
-  display: block;
-  height: 3px;
-  margin-top: 0.45rem;
+  flex: none;
+  width: 150px;
+  height: 5px;
   background: var(--graphite);
 }
 
@@ -192,12 +192,13 @@
 
 .poll-pie {
   flex: none;
+  max-width: 100%;
+  height: auto;
   color: var(--smoke);
 }
 
 .poll-pie-label {
   font-family: var(--mono);
-  font-size: 11px;
   fill: var(--smoke);
 }
 
@@ -318,5 +319,10 @@
   .poll-score {
     min-width: 0;
     text-align: left;
+  }
+
+  .poll-bar {
+    width: 100%;
+    order: 3;
   }
 }
