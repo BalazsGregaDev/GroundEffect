@@ -10,6 +10,7 @@ import CoverField from './CoverField.jsx'
 import TagField from './TagField.jsx'
 import FeaturedDialog from './FeaturedDialog.jsx'
 import FacebookDialog from './FacebookDialog.jsx'
+import { dateTimeBounds } from './dateInput.js'
 import { featuredArticleLimit } from '../data/site.js'
 import './ArticleEditor.css'
 
@@ -442,6 +443,7 @@ export default function ArticleEditor() {
             <span>Publikálás ideje</span>
             <input
               type="datetime-local"
+              {...dateTimeBounds}
               value={form.published_at}
               onChange={(event) => update('published_at', event.target.value)}
               disabled={readOnly}

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import ToggleSwitch from './ToggleSwitch.jsx'
+import { dateTimeBounds } from './dateInput.js'
 import { emptyPoll, emptyQuestion, fromRow, pollColumns, toExport } from './pollShape.js'
 import { exporters } from '../lib/pollExport.js'
 import './PollEditor.css'
@@ -384,6 +385,7 @@ export default function PollEditor() {
             <span>Kezdés</span>
             <input
               type="datetime-local"
+              {...dateTimeBounds}
               value={poll.starts_at}
               onChange={(event) => update('starts_at', event.target.value)}
               disabled={readOnly}
@@ -394,6 +396,7 @@ export default function PollEditor() {
             <span>Lezárás</span>
             <input
               type="datetime-local"
+              {...dateTimeBounds}
               value={poll.closes_at}
               onChange={(event) => update('closes_at', event.target.value)}
               disabled={readOnly}
