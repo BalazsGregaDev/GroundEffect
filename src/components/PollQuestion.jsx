@@ -1,33 +1,46 @@
 import { useState } from 'react'
 import PollPie from './PollPie.jsx'
+import VoteArrow from './VoteArrow.jsx'
 import { columnNames, optionLabel, pieSlices, rankedOptions, sharePercent } from '../lib/poll.js'
 
 function VoteButtons({ question, option, mine, onVote }) {
-  const simple = question.vote_style === 'simple'
+  if (question.vote_style === 'simple') {
+    return (
+      <button
+        type="button"
+        className={mine === 'up' ? 'poll-simple-vote is-mine' : 'poll-simple-vote'}
+        onClick={() => onVote(option, 'up')}
+        aria-label={`Szavazat erre: ${optionLabel(option)}`}
+        aria-pressed={mine === 'up'}
+      >
+        Szavazok
+      </button>
+    )
+  }
 
   return (
     <span className="poll-vote">
       <button
         type="button"
-        className={mine === 'up' ? 'poll-vbtn is-up' : 'poll-vbtn'}
+        className={mine === 'up' ? 'poll-vbtn poll-vbtn--up is-mine' : 'poll-vbtn poll-vbtn--up'}
         onClick={() => onVote(option, 'up')}
-        aria-label={`${optionLabel(option)} ${simple ? 'szavazat' : 'fel'}`}
+        aria-label={`${optionLabel(option)} felfelé`}
         aria-pressed={mine === 'up'}
       >
-        ▲
+        <VoteArrow direction="up" />
       </button>
 
-      {!simple && (
-        <button
-          type="button"
-          className={mine === 'down' ? 'poll-vbtn is-down' : 'poll-vbtn'}
-          onClick={() => onVote(option, 'down')}
-          aria-label={`${optionLabel(option)} le`}
-          aria-pressed={mine === 'down'}
-        >
-          ▼
-        </button>
-      )}
+      <button
+        type="button"
+        className={
+          mine === 'down' ? 'poll-vbtn poll-vbtn--down is-mine' : 'poll-vbtn poll-vbtn--down'
+        }
+        onClick={() => onVote(option, 'down')}
+        aria-label={`${optionLabel(option)} lefelé`}
+        aria-pressed={mine === 'down'}
+      >
+        <VoteArrow direction="down" />
+      </button>
     </span>
   )
 }

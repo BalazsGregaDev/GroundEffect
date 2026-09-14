@@ -1,3 +1,9 @@
+.poll-live {
+  margin-left: 0.6rem;
+  vertical-align: middle;
+  font-size: 0.68rem;
+}
+
 .pollmod {
   display: grid;
   gap: 0.8rem;

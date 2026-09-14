@@ -4,7 +4,14 @@ import PollQuestion from './PollQuestion.jsx'
 import ChoiceSwitch from './ChoiceSwitch.jsx'
 import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
-import { countdown, hasStarted, isClosed, isExpired } from '../lib/poll.js'
+import {
+  countdown,
+  hasStarted,
+  humanDuration,
+  isClosed,
+  isExpired,
+  remainingVisible,
+} from '../lib/poll.js'
 import { readPreference, readVotes, voterId, writePreference, writeVote } from '../lib/pollVoter.js'
 import './PollSection.css'
 
@@ -39,6 +46,7 @@ export default function PollSection() {
   }
 
   const closed = isClosed(poll, now)
+  const remaining = remainingVisible(poll, now)
   const withVotes = poll.poll_questions.some((question) => question.has_votes)
 
   function chooseView(next) {
@@ -128,7 +136,12 @@ export default function PollSection() {
         />
       ))}
 
-      {closed && <p className="poll-closed">A szavazás lezárult.</p>}
+      {closed && (
+        <p className="poll-closed">
+          A szavazás lezárult.
+          {remaining !== null && ` Az eredmény még ${humanDuration(remaining)} látható itt.`}
+        </p>
+      )}
     </section>
   )
 }

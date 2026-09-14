@@ -111,7 +111,9 @@ export default function PollList() {
               <tr key={poll.id}>
                 <td>
                   <Link to={`/admin/szavazas/${poll.id}`}>{poll.title || '(cím nélkül)'}</Link>
-                  {poll.active && <span className="list-featured">főoldalon</span>}
+                  {poll.active && (
+                    <span className="admin-status admin-status--published poll-live">főoldalon</span>
+                  )}
                 </td>
                 <td className="list-number">{poll.poll_questions.length}</td>
                 <td>
