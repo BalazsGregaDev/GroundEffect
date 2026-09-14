@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import PollStats from './PollStats.jsx'
 import { relativeTime } from '../lib/format.js'
+import { isClosed } from '../lib/poll.js'
 import './PollList.css'
 
 function normalizeCells(cells, columns) {
@@ -116,12 +117,12 @@ export default function PollList() {
                 <td>
                   <span
                     className={
-                      poll.status === 'closed'
+                      isClosed(poll, Date.now())
                         ? 'admin-status'
                         : 'admin-status admin-status--published'
                     }
                   >
-                    {poll.status === 'closed' ? 'Lezárva' : 'Nyitott'}
+                    {isClosed(poll, Date.now()) ? 'Lezárult' : 'Nyitott'}
                   </span>
                 </td>
                 <td className="list-number">

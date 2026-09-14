@@ -17,36 +17,6 @@
   margin-bottom: 1.6rem;
 }
 
-.poll-switch {
-  display: flex;
-}
-
-.poll-switch button {
-  padding: 0.35rem 0.85rem;
-  border: 1px solid var(--graphite);
-  background: none;
-  color: var(--smoke);
-  font-family: var(--body);
-  font-size: 0.82rem;
-  cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
-}
-
-.poll-switch button + button {
-  margin-left: -1px;
-}
-
-.poll-switch button:hover {
-  color: var(--bone);
-}
-
-.poll-switch button.is-active {
-  border-color: var(--gold);
-  color: var(--gold);
-}
-
 .poll-question + .poll-question {
   margin-top: 2.4rem;
   padding-top: 2.4rem;

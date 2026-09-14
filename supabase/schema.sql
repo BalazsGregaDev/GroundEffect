@@ -419,7 +419,7 @@ language plpgsql
 as $$
 begin
   if new.status = 'closed' and (tg_op = 'INSERT' or old.status is distinct from 'closed') then
-    new.closed_at := now();
+    new.closed_at := least(coalesce(new.closes_at, now()), now());
   elsif new.status = 'open' then
     new.closed_at := null;
   end if;

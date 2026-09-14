@@ -25,9 +25,20 @@ function save(name, content, type) {
   setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
+function slug(title) {
+  return title
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .slice(0, 40)
+    .replace(/[^a-zA-Z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .toLowerCase()
+}
+
 function fileName(polls, extension) {
-  const base = polls.length === 1 ? polls[0].title || 'szavazas' : 'szavazasok'
-  return `${base.slice(0, 40).replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}.${extension}`
+  const base = polls.length === 1 ? slug(polls[0].title) : 'szavazasok'
+
+  return `${base || 'szavazas'}.${extension}`
 }
 
 export function exportCsv(polls) {

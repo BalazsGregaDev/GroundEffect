@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import PollPie from '../components/PollPie.jsx'
+import ChoiceSwitch from '../components/ChoiceSwitch.jsx'
 import { fromRow, pollColumns, toExport } from './pollShape.js'
 import { exporters } from '../lib/pollExport.js'
 import { pieSlices, rankedOptions, sharePercent } from '../lib/poll.js'
@@ -73,39 +74,21 @@ export default function PollStats() {
 
         {chosen.length > 0 && (
           <>
-            <div className="poll-switch">
-              <button
-                type="button"
-                className={view === 'count' ? 'is-active' : ''}
-                onClick={() => setView('count')}
-              >
-                Darab
-              </button>
-              <button
-                type="button"
-                className={view === 'percent' ? 'is-active' : ''}
-                onClick={() => setView('percent')}
-              >
-                Százalék
-              </button>
-            </div>
+            <ChoiceSwitch
+              value={view}
+              left={{ value: 'count', label: 'Darabszám' }}
+              right={{ value: 'percent', label: 'Százalék' }}
+              onChange={setView}
+              label="Százalékos megjelenítés"
+            />
 
-            <div className="poll-switch">
-              <button
-                type="button"
-                className={mode === 'list' ? 'is-active' : ''}
-                onClick={() => setMode('list')}
-              >
-                Lista
-              </button>
-              <button
-                type="button"
-                className={mode === 'pie' ? 'is-active' : ''}
-                onClick={() => setMode('pie')}
-              >
-                Diagram
-              </button>
-            </div>
+            <ChoiceSwitch
+              value={mode}
+              left={{ value: 'list', label: 'Lista' }}
+              right={{ value: 'pie', label: 'Kördiagram' }}
+              onChange={setMode}
+              label="Kördiagram nézet"
+            />
 
             {exporters.map((item) => (
               <button

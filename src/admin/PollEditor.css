@@ -99,6 +99,69 @@
   color: var(--smoke);
 }
 
+.polled-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 0.5rem 1.4rem;
+  margin: 0;
+}
+
+.polled-facts div {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.polled-facts dt {
+  min-width: 9rem;
+  color: var(--smoke);
+}
+
+.polled-facts dd {
+  margin: 0;
+  color: var(--bone);
+}
+
+.polled-viewswitch {
+  display: flex;
+  gap: 1.6rem;
+  flex-wrap: wrap;
+  margin: 1.4rem 0 0.4rem;
+}
+
+.polled-result {
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.polled-result > summary {
+  display: flex;
+  align-items: baseline;
+  gap: 0.7rem;
+  cursor: pointer;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bone);
+}
+
+.polled-result > summary::marker {
+  color: var(--gold);
+}
+
+.polled-result > summary small {
+  font-family: var(--mono);
+  font-weight: 400;
+  font-size: 0.76rem;
+  color: var(--smoke);
+}
+
+.polled-result[open] > summary {
+  margin-bottom: 0.9rem;
+}
+
 .polled-sub {
   display: grid;
   gap: 0.6rem;

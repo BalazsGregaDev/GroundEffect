@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import ToggleSwitch from '../components/ToggleSwitch.jsx'
+import PollResults from './PollResults.jsx'
 import { dateTimeBounds } from './dateInput.js'
 import {
   emptyPoll,
@@ -75,6 +76,8 @@ export default function PollEditor() {
     return <p className="admin-error">{error}</p>
   }
 
+  const expired = poll.closes_at && new Date(poll.closes_at).getTime() <= Date.now()
+  const closed = poll.status === 'closed' || expired
   const readOnly = !canEdit
 
   function update(field, value) {
@@ -288,21 +291,39 @@ export default function PollEditor() {
     setConfirmClose(false)
     setError(null)
 
-    const { error: statusError } = await supabase
-      .from('polls')
-      .update({ status: next })
-      .eq('id', poll.id)
+    const changes = next === 'open' && expired ? { status: next, closes_at: null } : { status: next }
+
+    const { error: statusError } = await supabase.from('polls').update(changes).eq('id', poll.id)
 
     if (statusError) {
       setError(`Az állapot módosítása nem sikerült: ${statusError.message}`)
     } else {
-      update('status', next)
+      setPoll((current) => ({
+        ...current,
+        status: next,
+        closes_at: changes.closes_at === null ? '' : current.closes_at,
+        closed_at: next === 'open' ? null : current.closed_at,
+      }))
     }
 
     setClosing(false)
   }
 
-  const expired = poll.closes_at && new Date(poll.closes_at).getTime() < Date.now()
+  if (closed) {
+    return (
+      <>
+        {error && <p className="admin-error">{error}</p>}
+        <PollResults
+          poll={poll}
+          expired={expired}
+          canEdit={canEdit}
+          busy={closing}
+          onReopen={() => setStatus('open')}
+          onDelete={remove}
+        />
+      </>
+    )
+  }
 
   return (
     <div className="polled">
@@ -495,28 +516,9 @@ export default function PollEditor() {
           </p>
         )}
 
-        {poll.id && liveActive && expired && (
-          <p className="editor-hint">
-            A lezárási időpont elmúlt, a szavazás magától lezárult. Újranyitáshoz töröld vagy told
-            ki a lezárás időpontját.
-          </p>
-        )}
-
-        {poll.id && liveActive && !expired && canEdit && (
+        {poll.id && liveActive && canEdit && (
           <div className="polled-close">
-            {poll.status === 'closed' ? (
-              <>
-                <span>A szavazás lezárult, a főoldalon az eredménye látszik.</span>
-                <button
-                  type="button"
-                  className="admin-button admin-button--ghost"
-                  onClick={() => setStatus('open')}
-                  disabled={closing}
-                >
-                  Újranyitás
-                </button>
-              </>
-            ) : confirmClose ? (
+            {confirmClose ? (
               <>
                 <span>Biztosan lezárod? A látogatók ettől kezdve csak az eredményt látják.</span>
                 <button
