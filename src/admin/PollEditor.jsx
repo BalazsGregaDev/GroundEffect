@@ -53,7 +53,7 @@ export default function PollEditor() {
         }
 
         if (loadError) {
-          setError('Ez a szavazás nem érhető el.')
+          setError(`Ez a szavazás nem érhető el: ${loadError.message}`)
         } else {
           setPoll(fromRow(data))
           setLiveActive(data.active)

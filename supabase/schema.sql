@@ -314,6 +314,10 @@ create index if not exists facebook_posts_visible_idx
 alter table polls add column if not exists closed_at timestamptz;
 alter table polls add column if not exists hide_after_hours integer not null default 72;
 
+update polls
+set closed_at = coalesce(closes_at, updated_at)
+where status = 'closed' and closed_at is null;
+
 create index if not exists poll_questions_poll_idx on poll_questions (poll_id, sort_order);
 create index if not exists poll_options_question_idx on poll_options (question_id, sort_order);
 create index if not exists polls_active_idx on polls (active) where active;
