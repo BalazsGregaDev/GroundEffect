@@ -8,6 +8,15 @@
   margin-bottom: 1.2rem;
 }
 
+.video-rule {
+  margin: 0 0 1.2rem;
+  padding: 0.6rem 0.8rem;
+  border-left: 3px solid var(--graphite);
+  background: var(--ink);
+  color: var(--smoke);
+  font-size: 0.85rem;
+}
+
 .video-table td {
   vertical-align: middle;
 }

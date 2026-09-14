@@ -112,7 +112,6 @@ export default function VideoList() {
 
   const synced = lastSync(videos)
   const shown = videos.filter((video) => matchesFilter(video, filter))
-  const shortCount = videos.filter((video) => video.is_short).length
 
   return (
     <div>
@@ -126,9 +125,7 @@ export default function VideoList() {
       </div>
 
       <p className="video-hint">
-        {synced
-          ? `A csatorna legutóbbi 50 feltöltése. Utolsó szinkron: ${relativeTime(synced)}. A 3 percnél rövidebb és a #shorts című videók automatikusan rejtettek, ebből ${shortCount} van.`
-          : 'A csatorna feltöltései még nincsenek behúzva. Indítsd el a szinkronizálást.'}
+        {synced ? `Utolsó szinkron: ${relativeTime(synced)}` : 'Még nem futott szinkronizálás.'}
       </p>
 
       {videos.length > 0 && (
@@ -144,6 +141,13 @@ export default function VideoList() {
             </button>
           ))}
         </div>
+      )}
+
+      {filter === 'shorts' && (
+        <p className="video-rule">
+          Ide a 3 percnél rövidebb és/vagy #shorts címet tartalmazó videók kerülnek, ezek behúzáskor
+          automatikusan rejtettek.
+        </p>
       )}
 
       {notice && <p className="admin-readonly">{notice}</p>}

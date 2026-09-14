@@ -10,7 +10,7 @@ import { useVideos } from '../hooks/useVideos.js'
 import { nextRace, joinLinks } from '../data/placeholder.js'
 import './Home.css'
 
-const gridSize = 6
+const gridSize = 8
 
 export default function Home() {
   const { latest, grid, loading } = useVideos(gridSize)
