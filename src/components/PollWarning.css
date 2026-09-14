@@ -1,0 +1,120 @@
+.pollwarn-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.2rem;
+  background: rgba(10, 10, 10, 0.88);
+  overflow-y: auto;
+}
+
+.pollwarn-panel {
+  position: relative;
+  width: min(30rem, 100%);
+  padding: 2rem 1.8rem 1.6rem;
+  border: 1px solid var(--graphite);
+  border-top: 3px solid var(--gold);
+  background: var(--ink);
+  text-align: center;
+}
+
+.pollwarn-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  padding: 0.2rem 0.4rem;
+  border: none;
+  background: none;
+  color: var(--smoke);
+  font-size: 1.6rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pollwarn-close:hover {
+  color: var(--gold);
+}
+
+.pollwarn-eyebrow {
+  display: block;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.pollwarn-panel h2 {
+  margin: 0.5rem 0 0;
+  font-size: 1.5rem;
+  color: var(--bone);
+}
+
+.pollwarn-question {
+  margin: 0.4rem 0 0;
+  color: var(--smoke);
+  font-size: 0.92rem;
+}
+
+.pollwarn-list {
+  list-style: none;
+  padding: 0;
+  margin: 1.2rem 0 0;
+  text-align: left;
+}
+
+.pollwarn-list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid var(--graphite);
+  font-size: 0.92rem;
+  color: var(--bone);
+}
+
+.pollwarn-list strong {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--gold);
+}
+
+.pollwarn-actions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+}
+
+.pollwarn-primary,
+.pollwarn-ghost {
+  padding: 0.6rem 1.4rem;
+  border: 1px solid var(--gold);
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.pollwarn-primary {
+  background: var(--gold);
+  color: var(--black);
+}
+
+.pollwarn-primary:hover {
+  background: var(--gold-hi);
+}
+
+.pollwarn-ghost {
+  background: none;
+  border-color: var(--graphite);
+  color: var(--bone);
+}
+
+.pollwarn-ghost:hover {
+  border-color: var(--gold);
+}

@@ -2,12 +2,12 @@ import LatestVideo from '../components/LatestVideo.jsx'
 import FeaturedArticle from '../components/FeaturedArticle.jsx'
 import VideoGrid from '../components/VideoGrid.jsx'
 import ArticleBoard from '../components/ArticleBoard.jsx'
+import PollSection from '../components/PollSection.jsx'
 import FacebookPosts from '../components/FacebookPosts.jsx'
-import PollPanel from '../components/PollPanel.jsx'
 import NextRacePanel from '../components/NextRacePanel.jsx'
 import JoinPanel from '../components/JoinPanel.jsx'
 import { useVideos } from '../hooks/useVideos.js'
-import { poll, nextRace, joinLinks } from '../data/placeholder.js'
+import { nextRace, joinLinks } from '../data/placeholder.js'
 import './Home.css'
 
 const gridSize = 6
@@ -21,11 +21,11 @@ export default function Home() {
       <FeaturedArticle />
       <VideoGrid videos={grid} />
       <ArticleBoard />
+      <PollSection />
 
       <div className="bottom">
         <FacebookPosts />
         <div className="panels">
-          <PollPanel poll={poll} />
           <NextRacePanel race={nextRace} />
           <JoinPanel links={joinLinks} />
         </div>

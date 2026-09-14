@@ -35,36 +35,23 @@
 }
 
 .video-actions {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.video-switch {
   display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
 }
 
-.video-toggle {
-  padding: 0.25rem 0.6rem;
-  border: 1px solid var(--graphite);
-  background: none;
+.video-switch-label {
+  font-size: 0.8rem;
   color: var(--smoke);
-  font-family: var(--body);
-  font-size: 0.78rem;
-  cursor: pointer;
-  transition:
-    color 0.15s,
-    border-color 0.15s;
 }
 
-.video-toggle:hover {
-  color: var(--bone);
-}
-
-.video-toggle.is-on {
-  border-color: var(--gold-deep);
+.video-switch.is-on .video-switch-label {
   color: var(--gold);
-}
-
-.video-state {
-  color: var(--smoke);
-  font-size: 0.82rem;
 }
 
 @media (max-width: 800px) {

@@ -6,16 +6,6 @@ export const railNav = [
   { label: 'Közösség', meta: 'Discord', href: '#kozosseg' },
 ]
 
-export const poll = {
-  question: 'Hétvége pilótája',
-  note: 'Vasárnap éjfélig szavazhatsz, regisztráció nélkül.',
-  options: [
-    { id: 'verstappen', label: 'Max Verstappen', share: 42 },
-    { id: 'norris', label: 'Lando Norris', share: 31 },
-    { id: 'leclerc', label: 'Charles Leclerc', share: 27 },
-  ],
-}
-
 export const nextRace = {
   name: 'Szingapúr',
   startsAt: '2026-10-11T14:00:00+02:00',

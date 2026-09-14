@@ -5,7 +5,7 @@ export const adminNav = [
   { path: '/admin/facebook', label: 'Facebook poszt' },
   { path: '/admin/naptar', label: 'Versenynaptár', pending: true },
   { path: '/admin/szekciok', label: 'Szekciók', pending: true },
-  { path: '/admin/szavazas', label: 'Szavazás', pending: true },
+  { path: '/admin/szavazas', label: 'Szavazás' },
   { path: '/admin/popup', label: 'Popup üzenetek', pending: true },
   { path: '/admin/felhasznalok', label: 'Felhasználók', superadminOnly: true },
 ]

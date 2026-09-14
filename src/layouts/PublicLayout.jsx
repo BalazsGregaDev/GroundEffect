@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom'
 import Rail from '../components/Rail.jsx'
 import SiteFooter from '../components/SiteFooter.jsx'
+import PollWarning from '../components/PollWarning.jsx'
 import './PublicLayout.css'
 
 export default function PublicLayout() {
@@ -13,6 +14,7 @@ export default function PublicLayout() {
         </main>
       </div>
       <SiteFooter />
+      <PollWarning />
     </>
   )
 }

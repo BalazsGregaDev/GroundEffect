@@ -121,10 +121,10 @@ export default function FacebookPostList() {
               <ToggleSwitch
                 checked={post.visible}
                 onChange={(next) => setVisible(post, next)}
-                label={`${post.visible ? 'Levétel' : 'Kitétel'} a főoldalról`}
+                label="Megjelenítés a főoldalon"
                 disabled={!canEdit}
               />
-              <span className="fbadmin-state">{post.visible ? 'Kint van' : 'Rejtve'}</span>
+              <span className="fbadmin-state">Főoldalon</span>
             </div>
           </article>
         ))}

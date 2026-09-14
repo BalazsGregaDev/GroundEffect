@@ -5,6 +5,7 @@ import { useAdminVideos } from './useAdminVideos.js'
 import { thumbnailUrl } from '../lib/youtube.js'
 import { functionErrorMessage } from '../lib/functionError.js'
 import { formatCount, relativeTime } from '../lib/format.js'
+import ToggleSwitch from './ToggleSwitch.jsx'
 import './VideoList.css'
 
 const filters = [
@@ -191,30 +192,27 @@ export default function VideoList() {
                 <td className="list-number">{formatCount(video.views)}</td>
                 <td className="list-number">{relativeTime(video.published_at)}</td>
                 <td>
-                  {canEdit ? (
-                    <div className="video-actions">
-                      <button
-                        type="button"
-                        className={video.featured ? 'video-toggle is-on' : 'video-toggle'}
-                        onClick={() => toggleFeatured(video)}
-                      >
-                        Kiemelt
-                      </button>
-                      <button
-                        type="button"
-                        className={video.hidden ? 'video-toggle is-on' : 'video-toggle'}
-                        onClick={() => toggleHidden(video)}
-                      >
-                        Rejtett
-                      </button>
+                  <div className="video-actions">
+                    <div className={video.featured ? 'video-switch is-on' : 'video-switch'}>
+                      <ToggleSwitch
+                        checked={video.featured}
+                        onChange={() => toggleFeatured(video)}
+                        label={`${video.title} kiemelése`}
+                        disabled={!canEdit}
+                      />
+                      <span className="video-switch-label">Kiemelt</span>
                     </div>
-                  ) : (
-                    <span className="video-state">
-                      {[video.featured && 'kiemelt', video.hidden && 'rejtett']
-                        .filter(Boolean)
-                        .join(', ') || '–'}
-                    </span>
-                  )}
+
+                    <div className={video.hidden ? 'video-switch is-on' : 'video-switch'}>
+                      <ToggleSwitch
+                        checked={video.hidden}
+                        onChange={() => toggleHidden(video)}
+                        label={`${video.title} elrejtése`}
+                        disabled={!canEdit}
+                      />
+                      <span className="video-switch-label">Rejtett</span>
+                    </div>
+                  </div>
                 </td>
               </tr>
             ))}

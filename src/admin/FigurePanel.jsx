@@ -1,4 +1,5 @@
 import { aspectRatio, orientations, ratios, sizes, sizeWidth } from './figureOptions.js'
+import ToggleSwitch from './ToggleSwitch.jsx'
 import './FigurePanel.css'
 
 const sample =
@@ -90,16 +91,12 @@ export default function FigurePanel({ src, values, onChange, onSubmit, onCancel,
 
         <div className="figure-row">
           <span className="figure-label">Szöveg körbefuttatása</span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={wrapping}
-            className={wrapping ? 'figure-switch is-on' : 'figure-switch'}
-            onClick={() => set('wrap', !values.wrap)}
+          <ToggleSwitch
+            checked={wrapping}
+            onChange={(next) => set('wrap', next)}
+            label="Szöveg körbefuttatása"
             disabled={fullWidth}
-          >
-            <span />
-          </button>
+          />
         </div>
 
         {fullWidth && (

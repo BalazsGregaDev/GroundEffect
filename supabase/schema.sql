@@ -151,6 +151,54 @@ create table if not exists facebook_posts (
   created_at timestamptz not null default now()
 );
 
+create table if not exists polls (
+  id uuid primary key default gen_random_uuid(),
+  title text not null default '',
+  status text not null default 'open' check (status in ('open', 'closed')),
+  active boolean not null default false,
+  starts_at timestamptz,
+  closes_at timestamptz,
+  warn_before_min integer not null default 0,
+  test_mode boolean not null default false,
+  default_view text not null default 'percent' check (default_view in ('percent', 'count')),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists poll_questions (
+  id uuid primary key default gen_random_uuid(),
+  poll_id uuid not null references polls (id) on delete cascade,
+  title text not null default '',
+  columns jsonb not null default '[]'::jsonb,
+  has_votes boolean not null default true,
+  vote_style text not null default 'updown' check (vote_style in ('updown', 'simple')),
+  allow_suggestions boolean not null default false,
+  live_sort boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists poll_options (
+  id uuid primary key default gen_random_uuid(),
+  question_id uuid not null references poll_questions (id) on delete cascade,
+  cells jsonb not null default '[]'::jsonb,
+  up_votes integer not null default 0,
+  down_votes integer not null default 0,
+  approved boolean not null default true,
+  suggested boolean not null default false,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists poll_votes (
+  id uuid primary key default gen_random_uuid(),
+  option_id uuid not null references poll_options (id) on delete cascade,
+  voter_id text not null,
+  direction text not null check (direction in ('up', 'down')),
+  created_at timestamptz not null default now(),
+  unique (option_id, voter_id)
+);
+
 create table if not exists races (
   id uuid primary key default gen_random_uuid(),
   series text not null default 'f1',
@@ -261,6 +309,10 @@ create index if not exists facebook_posts_visible_idx
   on facebook_posts (created_time desc)
   where visible;
 
+create index if not exists poll_questions_poll_idx on poll_questions (poll_id, sort_order);
+create index if not exists poll_options_question_idx on poll_options (question_id, sort_order);
+create index if not exists polls_active_idx on polls (active) where active;
+
 create index if not exists races_starts_idx on races (starts_at);
 
 drop trigger if exists articles_set_updated_at on articles;
@@ -332,6 +384,165 @@ as $$
   limit limit_count;
 $$;
 
+drop trigger if exists polls_set_updated_at on polls;
+create trigger polls_set_updated_at
+  before update on polls
+  for each row execute function set_updated_at();
+
+create or replace function enforce_single_active_poll()
+returns trigger
+language plpgsql
+as $$
+begin
+  update polls set active = false where id <> new.id and active;
+  return null;
+end;
+$$;
+
+drop trigger if exists polls_single_active on polls;
+create trigger polls_single_active
+  after insert or update of active on polls
+  for each row when (new.active) execute function enforce_single_active_poll();
+
+create or replace function poll_is_open(target polls)
+returns boolean
+language sql
+stable
+as $$
+  select target.status = 'open'
+    and (target.starts_at is null or target.starts_at <= now())
+    and (target.closes_at is null or target.closes_at > now());
+$$;
+
+create or replace function cast_vote(p_option uuid, p_voter text, p_dir text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_poll polls;
+  v_question poll_questions;
+  v_option poll_options;
+  v_vote poll_votes;
+begin
+  if p_dir not in ('up', 'down') or p_voter is null or length(p_voter) < 8 then
+    return jsonb_build_object('status', 'error');
+  end if;
+
+  select o.* into v_option from poll_options o where o.id = p_option and o.approved;
+
+  if not found then
+    return jsonb_build_object('status', 'error');
+  end if;
+
+  select q.* into v_question from poll_questions q where q.id = v_option.question_id;
+  select p.* into v_poll from polls p where p.id = v_question.poll_id;
+
+  if not v_question.has_votes or (p_dir = 'down' and v_question.vote_style = 'simple') then
+    return jsonb_build_object('status', 'error');
+  end if;
+
+  if not poll_is_open(v_poll) then
+    return jsonb_build_object('status', 'closed');
+  end if;
+
+  if v_poll.test_mode then
+    if p_dir = 'up' then
+      update poll_options set up_votes = up_votes + 1 where id = p_option;
+    else
+      update poll_options set down_votes = down_votes + 1 where id = p_option;
+    end if;
+
+    select o.* into v_option from poll_options o where o.id = p_option;
+    return jsonb_build_object('status', 'ok', 'up', v_option.up_votes, 'down', v_option.down_votes);
+  end if;
+
+  select v.* into v_vote from poll_votes v where v.option_id = p_option and v.voter_id = p_voter;
+
+  if not found then
+    insert into poll_votes (option_id, voter_id, direction) values (p_option, p_voter, p_dir);
+
+    if p_dir = 'up' then
+      update poll_options set up_votes = up_votes + 1 where id = p_option;
+    else
+      update poll_options set down_votes = down_votes + 1 where id = p_option;
+    end if;
+  elsif v_vote.direction = p_dir then
+    delete from poll_votes where id = v_vote.id;
+
+    if p_dir = 'up' then
+      update poll_options set up_votes = greatest(0, up_votes - 1) where id = p_option;
+    else
+      update poll_options set down_votes = greatest(0, down_votes - 1) where id = p_option;
+    end if;
+  else
+    update poll_votes set direction = p_dir where id = v_vote.id;
+
+    if p_dir = 'up' then
+      update poll_options
+        set up_votes = up_votes + 1, down_votes = greatest(0, down_votes - 1)
+        where id = p_option;
+    else
+      update poll_options
+        set down_votes = down_votes + 1, up_votes = greatest(0, up_votes - 1)
+        where id = p_option;
+    end if;
+  end if;
+
+  select o.* into v_option from poll_options o where o.id = p_option;
+  return jsonb_build_object('status', 'ok', 'up', v_option.up_votes, 'down', v_option.down_votes);
+end;
+$$;
+
+grant execute on function cast_vote(uuid, text, text) to anon, authenticated;
+
+create or replace function suggest_option(p_question uuid, p_cells jsonb)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_poll polls;
+  v_question poll_questions;
+  v_pending integer;
+begin
+  select q.* into v_question from poll_questions q where q.id = p_question;
+
+  if not found or not v_question.allow_suggestions then
+    return jsonb_build_object('status', 'error');
+  end if;
+
+  if p_cells is null
+    or jsonb_typeof(p_cells) <> 'array'
+    or jsonb_array_length(p_cells) <> jsonb_array_length(v_question.columns)
+  then
+    return jsonb_build_object('status', 'error');
+  end if;
+
+  select p.* into v_poll from polls p where p.id = v_question.poll_id;
+
+  if not poll_is_open(v_poll) then
+    return jsonb_build_object('status', 'closed');
+  end if;
+
+  select count(*) into v_pending
+    from poll_options where question_id = p_question and not approved;
+
+  if v_pending >= 100 then
+    return jsonb_build_object('status', 'full');
+  end if;
+
+  insert into poll_options (question_id, cells, approved, suggested, sort_order)
+    values (p_question, p_cells, false, true, 9999);
+
+  return jsonb_build_object('status', 'ok');
+end;
+$$;
+
+grant execute on function suggest_option(uuid, jsonb) to anon, authenticated;
+
 create or replace function increment_article_views(article_slug text)
 returns void
 language sql
@@ -350,6 +561,10 @@ alter table articles enable row level security;
 alter table article_tags enable row level security;
 alter table videos enable row level security;
 alter table facebook_posts enable row level security;
+alter table polls enable row level security;
+alter table poll_questions enable row level security;
+alter table poll_options enable row level security;
+alter table poll_votes enable row level security;
 alter table races enable row level security;
 alter table site_settings enable row level security;
 
@@ -411,6 +626,34 @@ drop policy if exists facebook_posts_write on facebook_posts;
 create policy facebook_posts_write on facebook_posts
   for all using (can_edit()) with check (can_edit());
 
+drop policy if exists polls_read on polls;
+create policy polls_read on polls
+  for select using (true);
+
+drop policy if exists polls_write on polls;
+create policy polls_write on polls
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists poll_questions_read on poll_questions;
+create policy poll_questions_read on poll_questions
+  for select using (true);
+
+drop policy if exists poll_questions_write on poll_questions;
+create policy poll_questions_write on poll_questions
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists poll_options_read on poll_options;
+create policy poll_options_read on poll_options
+  for select using (approved or is_staff());
+
+drop policy if exists poll_options_write on poll_options;
+create policy poll_options_write on poll_options
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists poll_votes_read on poll_votes;
+create policy poll_votes_read on poll_votes
+  for select using (is_staff());
+
 drop policy if exists races_read on races;
 create policy races_read on races
   for select using (true);
@@ -443,6 +686,25 @@ on conflict (email) do nothing;
 insert into admin_users (email, role)
 values ('superadmin@ge.com', 'superadmin')
 on conflict (email) do update set role = 'superadmin';
+
+do $$
+declare
+  target text;
+begin
+  if not exists (select 1 from pg_publication where pubname = 'supabase_realtime') then
+    return;
+  end if;
+
+  foreach target in array array['polls', 'poll_questions', 'poll_options'] loop
+    if not exists (
+      select 1 from pg_publication_tables
+      where pubname = 'supabase_realtime' and schemaname = 'public' and tablename = target
+    ) then
+      execute format('alter publication supabase_realtime add table public.%I', target);
+    end if;
+  end loop;
+end;
+$$;
 
 insert into site_settings (id, sections_order) values
   (true, '["latest-video", "video-grid", "articles", "facebook", "poll", "next-race", "join"]'::jsonb)

@@ -1,0 +1,53 @@
+.pollmod {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 2rem;
+  padding: 1.2rem;
+  border: 1px solid var(--gold-deep);
+  background: var(--ink);
+}
+
+.pollmod h2 {
+  font-size: 1rem;
+  color: var(--gold);
+}
+
+.pollmod-row {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.8rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+}
+
+.pollmod-source {
+  font-size: 0.78rem;
+  color: var(--smoke);
+}
+
+.pollmod-fields {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.pollmod-fields input {
+  flex: 1;
+  min-width: 9rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.9rem;
+}
+
+.pollmod-fields input:focus {
+  border-color: var(--gold);
+}
+
+.pollmod-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

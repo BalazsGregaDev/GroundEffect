@@ -1,0 +1,77 @@
+.pollstats {
+  margin-top: 2.5rem;
+  padding-top: 1.6rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.pollstats h2 {
+  font-size: 1.05rem;
+  color: var(--bone);
+}
+
+.pollstats-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0 1.4rem;
+}
+
+.pollstats-controls select {
+  min-width: 16rem;
+  padding: 0.5rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.9rem;
+}
+
+.pollstats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(24rem, 1fr));
+  gap: 1rem;
+}
+
+.pollstats-card {
+  padding: 1rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.pollstats-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.8rem;
+  margin-bottom: 0.8rem;
+  font-family: var(--display);
+  font-weight: 700;
+  color: var(--bone);
+}
+
+.pollstats-head button {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--smoke);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pollstats-head button:hover {
+  color: var(--gold);
+}
+
+.pollstats-question + .pollstats-question {
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.pollstats-question h4 {
+  margin-bottom: 0.6rem;
+  font-size: 0.9rem;
+  color: var(--smoke);
+}
