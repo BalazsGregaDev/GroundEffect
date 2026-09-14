@@ -1,7 +1,6 @@
 import { useState } from 'react'
-import PollPie from './PollPie.jsx'
 import VoteArrow from './VoteArrow.jsx'
-import { columnNames, optionLabel, pieSlices, rankedOptions, sharePercent } from '../lib/poll.js'
+import { columnNames, optionLabel, rankedOptions, sharePercent } from '../lib/poll.js'
 
 function VoteButtons({ question, option, mine, onVote }) {
   if (question.vote_style === 'simple') {
@@ -55,14 +54,12 @@ function score(question, option, options, view) {
     : `▲${option.up_votes} ▼${option.down_votes}`
 }
 
-export default function PollQuestion({ question, closed, view, mode, myVotes, onVote, onSuggest }) {
+export default function PollQuestion({ question, closed, view, myVotes, onVote, onSuggest }) {
   const [draft, setDraft] = useState([])
   const [state, setState] = useState('idle')
 
   const options = rankedOptions(question, question.poll_options, closed)
   const names = columnNames(question)
-  const showPie = mode === 'pie' && question.has_votes
-  const slices = showPie ? pieSlices(question, closed) : []
 
   async function submit() {
     setState('sending')
@@ -81,30 +78,6 @@ export default function PollQuestion({ question, closed, view, mode, myVotes, on
 
       {options.length === 0 ? (
         <p className="poll-empty">Ehhez a kérdéshez még nincs opció.</p>
-      ) : showPie ? (
-        <div className="poll-pie-wrap">
-          <PollPie slices={slices} view={view} />
-
-          <ul className="poll-legend">
-            {slices.map((slice) => (
-              <li key={slice.key}>
-                <span className="poll-swatch" style={{ background: slice.color }} />
-                <span className="poll-legend-name">{slice.label}</span>
-                <span className="poll-legend-value">
-                  {slice.option ? score(question, slice.option, options, view) : slice.value}
-                </span>
-                {!closed && slice.option && (
-                  <VoteButtons
-                    question={question}
-                    option={slice.option}
-                    mine={myVotes[slice.option.id]}
-                    onVote={onVote}
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
       ) : (
         <div className="poll-table-wrap">
           <table className="poll-table">

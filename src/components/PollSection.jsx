@@ -17,13 +17,11 @@ import { readPreference, readVotes, voterId, writePreference, writeVote } from '
 import './PollSection.css'
 
 const viewKey = 'ge_poll_view'
-const modeKey = 'ge_poll_mode'
 
 export default function PollSection() {
   const { poll, loading, reload } = useActivePoll()
   const isAdmin = useIsAdmin()
   const [view, setView] = useState(null)
-  const [mode, setMode] = useState(() => readPreference(modeKey, 'list'))
   const [myVotes, setMyVotes] = useState(readVotes)
   const [now, setNow] = useState(() => Date.now())
   const [voter] = useState(voterId)
@@ -54,11 +52,6 @@ export default function PollSection() {
   function chooseView(next) {
     setView(next)
     writePreference(viewKey, next)
-  }
-
-  function chooseMode(next) {
-    setMode(next)
-    writePreference(modeKey, next)
   }
 
   async function vote(option, direction) {
@@ -114,14 +107,6 @@ export default function PollSection() {
             onChange={chooseView}
             label="Százalékos megjelenítés"
           />
-
-          <ChoiceSwitch
-            value={mode}
-            left={{ value: 'list', label: 'Lista' }}
-            right={{ value: 'pie', label: 'Kördiagram' }}
-            onChange={chooseMode}
-            label="Kördiagram nézet"
-          />
         </div>
       )}
 
@@ -131,7 +116,6 @@ export default function PollSection() {
           question={question}
           closed={closed}
           view={view ?? poll.default_view}
-          mode={mode}
           myVotes={myVotes}
           onVote={vote}
           onSuggest={suggest}
