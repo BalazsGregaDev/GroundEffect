@@ -310,6 +310,13 @@
   font-size: 0.9rem;
 }
 
+.poll-admin-note {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--gold);
+}
+
 @media (max-width: 700px) {
   .poll-result {
     flex-wrap: wrap;

@@ -4,6 +4,7 @@ import PollQuestion from './PollQuestion.jsx'
 import ChoiceSwitch from './ChoiceSwitch.jsx'
 import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
+import { useIsAdmin } from '../hooks/useIsAdmin.js'
 import {
   countdown,
   hasStarted,
@@ -20,6 +21,7 @@ const modeKey = 'ge_poll_mode'
 
 export default function PollSection() {
   const { poll, loading, reload } = useActivePoll()
+  const isAdmin = useIsAdmin()
   const [view, setView] = useState(null)
   const [mode, setMode] = useState(() => readPreference(modeKey, 'list'))
   const [myVotes, setMyVotes] = useState(readVotes)
@@ -139,7 +141,11 @@ export default function PollSection() {
       {closed && (
         <p className="poll-closed">
           A szavazás lezárult.
-          {remaining !== null && ` Az eredmény még ${humanDuration(remaining)} látható itt.`}
+          {isAdmin && remaining !== null && (
+            <span className="poll-admin-note">
+              Csak adminként látod: az eredmény még {humanDuration(remaining)} marad a főoldalon.
+            </span>
+          )}
         </p>
       )}
     </section>
