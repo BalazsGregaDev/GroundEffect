@@ -1,5 +1,6 @@
 export const pollColumns = `
-  id, title, status, active, starts_at, closes_at, warn_before_min, test_mode, default_view,
+  id, title, status, active, starts_at, closes_at, closed_at, hide_after_hours,
+  warn_before_min, test_mode, default_view,
   poll_questions (
     id, title, columns, has_votes, vote_style, allow_suggestions, live_sort, sort_order,
     poll_options (id, cells, up_votes, down_votes, approved, suggested, sort_order)
@@ -27,11 +28,17 @@ export function emptyPoll() {
     active: false,
     starts_at: '',
     closes_at: '',
+    hide_after_days: 3,
+    hide_after_extra_hours: 0,
     warn_before_min: 0,
     test_mode: false,
     default_view: 'percent',
     questions: [emptyQuestion()],
   }
+}
+
+export function hideAfterHours(poll) {
+  return (Number(poll.hide_after_days) || 0) * 24 + (Number(poll.hide_after_extra_hours) || 0)
 }
 
 export function toLocalInput(iso) {
@@ -55,6 +62,9 @@ export function fromRow(row) {
     active: row.active,
     starts_at: toLocalInput(row.starts_at),
     closes_at: toLocalInput(row.closes_at),
+    closed_at: row.closed_at,
+    hide_after_days: Math.floor(row.hide_after_hours / 24),
+    hide_after_extra_hours: row.hide_after_hours % 24,
     warn_before_min: row.warn_before_min,
     test_mode: row.test_mode,
     default_view: row.default_view,

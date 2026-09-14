@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js'
 import PollPie from '../components/PollPie.jsx'
 import { fromRow, pollColumns, toExport } from './pollShape.js'
 import { exporters } from '../lib/pollExport.js'
-import { pieSlices, scoreOf, sharePercent } from '../lib/poll.js'
+import { pieSlices, rankedOptions, sharePercent } from '../lib/poll.js'
 import '../components/PollSection.css'
 import './PollStats.css'
 
@@ -14,6 +14,7 @@ function asQuestion(question) {
     vote_style: question.vote_style,
     has_votes: question.has_votes,
     live_sort: true,
+    poll_options: question.options,
   }
 }
 
@@ -135,9 +136,8 @@ export default function PollStats() {
 
               {poll.questions.map((question) => {
                 const shaped = asQuestion(question)
-                const rows = [...question.options].sort(
-                  (left, right) => scoreOf(shaped, right) - scoreOf(shaped, left),
-                )
+                const rows = rankedOptions(shaped, question.options, true)
+                const slices = pieSlices(shaped, true)
 
                 return (
                   <div className="pollstats-question" key={question.id}>
@@ -145,9 +145,9 @@ export default function PollStats() {
 
                     {mode === 'pie' && question.has_votes ? (
                       <div className="poll-pie-wrap">
-                        <PollPie slices={pieSlices(shaped, rows)} view={view} size={180} />
+                        <PollPie slices={slices} view={view} size={180} />
                         <ul className="poll-legend">
-                          {pieSlices(shaped, rows).map((slice) => (
+                          {slices.map((slice) => (
                             <li key={slice.key}>
                               <span className="poll-swatch" style={{ background: slice.color }} />
                               <span className="poll-legend-name">{slice.label}</span>

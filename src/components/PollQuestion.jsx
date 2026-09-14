@@ -49,7 +49,7 @@ export default function PollQuestion({ question, closed, view, mode, myVotes, on
   const options = rankedOptions(question, question.poll_options, closed)
   const names = columnNames(question)
   const showPie = mode === 'pie' && question.has_votes
-  const slices = showPie ? pieSlices(question, options) : []
+  const slices = showPie ? pieSlices(question, closed) : []
 
   async function submit() {
     setState('sending')

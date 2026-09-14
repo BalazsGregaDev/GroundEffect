@@ -3,7 +3,8 @@ import { supabase } from '../lib/supabase.js'
 import { ActivePollContext } from '../hooks/activePollContext.js'
 
 const columns = `
-  id, title, status, active, starts_at, closes_at, warn_before_min, test_mode, default_view,
+  id, title, status, active, starts_at, closes_at, closed_at, hide_after_hours,
+  warn_before_min, test_mode, default_view,
   poll_questions (
     id, title, columns, has_votes, vote_style, allow_suggestions, live_sort, sort_order,
     poll_options (id, cells, up_votes, down_votes, approved, sort_order)

@@ -85,6 +85,20 @@
   color: var(--smoke);
 }
 
+.polled-close {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding-top: 0.9rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.polled-close > span {
+  font-size: 0.86rem;
+  color: var(--smoke);
+}
+
 .polled-sub {
   display: grid;
   gap: 0.6rem;

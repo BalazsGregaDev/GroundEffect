@@ -2,9 +2,16 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
-import ToggleSwitch from './ToggleSwitch.jsx'
+import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import { dateTimeBounds } from './dateInput.js'
-import { emptyPoll, emptyQuestion, fromRow, pollColumns, toExport } from './pollShape.js'
+import {
+  emptyPoll,
+  emptyQuestion,
+  fromRow,
+  hideAfterHours,
+  pollColumns,
+  toExport,
+} from './pollShape.js'
 import { exporters } from '../lib/pollExport.js'
 import './PollEditor.css'
 
@@ -18,6 +25,9 @@ export default function PollEditor() {
   const { canEdit } = useAuth()
 
   const [poll, setPoll] = useState(id ? null : emptyPoll)
+  const [liveActive, setLiveActive] = useState(false)
+  const [closing, setClosing] = useState(false)
+  const [confirmClose, setConfirmClose] = useState(false)
   const [removedQuestions, setRemovedQuestions] = useState([])
   const [removedOptions, setRemovedOptions] = useState([])
   const [loading, setLoading] = useState(Boolean(id))
@@ -46,6 +56,7 @@ export default function PollEditor() {
           setError('Ez a szavazás nem érhető el.')
         } else {
           setPoll(fromRow(data))
+          setLiveActive(data.active)
         }
 
         setLoading(false)
@@ -181,6 +192,7 @@ export default function PollEditor() {
         active: poll.active,
         starts_at: fromLocalInput(poll.starts_at),
         closes_at: fromLocalInput(poll.closes_at),
+        hide_after_hours: hideAfterHours(poll),
         warn_before_min: Number(poll.warn_before_min) || 0,
         test_mode: poll.test_mode,
         default_view: poll.default_view,
@@ -269,6 +281,25 @@ export default function PollEditor() {
   async function remove() {
     await supabase.from('polls').delete().eq('id', poll.id)
     navigate('/admin/szavazas')
+  }
+
+  async function setStatus(next) {
+    setClosing(true)
+    setConfirmClose(false)
+    setError(null)
+
+    const { error: statusError } = await supabase
+      .from('polls')
+      .update({ status: next })
+      .eq('id', poll.id)
+
+    if (statusError) {
+      setError(`Az állapot módosítása nem sikerült: ${statusError.message}`)
+    } else {
+      update('status', next)
+    }
+
+    setClosing(false)
   }
 
   const expired = poll.closes_at && new Date(poll.closes_at).getTime() < Date.now()
@@ -427,20 +458,93 @@ export default function PollEditor() {
           </label>
         </div>
 
-        {expired ? (
-          <p className="editor-hint">
-            A lezárási időpont elmúlt, a szavazás lezárult. Újranyitáshoz töröld vagy told ki a
-            lezárás időpontját.
-          </p>
-        ) : (
-          <div className="polled-switch">
-            <ToggleSwitch
-              checked={poll.status === 'open'}
-              onChange={(next) => update('status', next ? 'open' : 'closed')}
-              label="A szavazás nyitva van"
+        <div className="polled-fields">
+          <label className="admin-field">
+            <span>Eredmény a főoldalon lezárás után (nap)</span>
+            <input
+              type="number"
+              min="0"
+              value={poll.hide_after_days}
+              onChange={(event) => update('hide_after_days', event.target.value)}
               disabled={readOnly}
             />
-            <span>{poll.status === 'open' ? 'Nyitott' : 'Lezárva'}</span>
+          </label>
+
+          <label className="admin-field">
+            <span>…és még ennyi óra</span>
+            <input
+              type="number"
+              min="0"
+              max="23"
+              value={poll.hide_after_extra_hours}
+              onChange={(event) => update('hide_after_extra_hours', event.target.value)}
+              disabled={readOnly}
+            />
+          </label>
+        </div>
+
+        <p className="editor-hint">
+          {hideAfterHours(poll) === 0
+            ? 'Nulla esetén az eredmény addig marad kint, amíg le nem veszed a főoldalról.'
+            : `Lezárás után az eredmény még ${hideAfterHours(poll)} óráig látszik a főoldalon, utána magától eltűnik.`}
+        </p>
+
+        {poll.id && !liveActive && (
+          <p className="editor-hint">
+            A lezárás akkor lesz elérhető, ha a szavazás kikerült a főoldalra.
+          </p>
+        )}
+
+        {poll.id && liveActive && expired && (
+          <p className="editor-hint">
+            A lezárási időpont elmúlt, a szavazás magától lezárult. Újranyitáshoz töröld vagy told
+            ki a lezárás időpontját.
+          </p>
+        )}
+
+        {poll.id && liveActive && !expired && canEdit && (
+          <div className="polled-close">
+            {poll.status === 'closed' ? (
+              <>
+                <span>A szavazás lezárult, a főoldalon az eredménye látszik.</span>
+                <button
+                  type="button"
+                  className="admin-button admin-button--ghost"
+                  onClick={() => setStatus('open')}
+                  disabled={closing}
+                >
+                  Újranyitás
+                </button>
+              </>
+            ) : confirmClose ? (
+              <>
+                <span>Biztosan lezárod? A látogatók ettől kezdve csak az eredményt látják.</span>
+                <button
+                  type="button"
+                  className="polled-danger"
+                  onClick={() => setStatus('closed')}
+                  disabled={closing}
+                >
+                  Igen, lezárom
+                </button>
+                <button
+                  type="button"
+                  className="admin-button admin-button--ghost"
+                  onClick={() => setConfirmClose(false)}
+                >
+                  Mégsem
+                </button>
+              </>
+            ) : (
+              <button
+                type="button"
+                className="admin-button"
+                onClick={() => setConfirmClose(true)}
+                disabled={closing}
+              >
+                Szavazás lezárása
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -500,12 +604,7 @@ export default function PollEditor() {
                 <span>Szavazás módja</span>
                 <select
                   value={question.vote_style}
-                  onChange={(event) =>
-                    updateQuestion(index, {
-                      vote_style: event.target.value,
-                      live_sort: event.target.value === 'updown' ? question.live_sort : true,
-                    })
-                  }
+                  onChange={(event) => updateQuestion(index, { vote_style: event.target.value })}
                   disabled={readOnly}
                 >
                   <option value="updown">Fel és le (▲ / ▼)</option>
@@ -513,15 +612,21 @@ export default function PollEditor() {
                 </select>
               </label>
 
-              <div className="polled-switch">
-                <ToggleSwitch
-                  checked={question.live_sort}
-                  onChange={(next) => updateQuestion(index, { live_sort: next })}
-                  label="Élő rangsor"
-                  disabled={readOnly}
-                />
-                <span>Élő rangsor</span>
-              </div>
+              {question.vote_style === 'updown' ? (
+                <div className="polled-switch">
+                  <ToggleSwitch
+                    checked={question.live_sort}
+                    onChange={(next) => updateQuestion(index, { live_sort: next })}
+                    label="Élő rangsor"
+                    disabled={readOnly}
+                  />
+                  <span>Élő rangsor</span>
+                </div>
+              ) : (
+                <p className="editor-hint">
+                  Egyszerű szavazásnál a sorrend az itt megadott marad, a szavazatok nem rendezik át.
+                </p>
+              )}
             </>
           )}
 

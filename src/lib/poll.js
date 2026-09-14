@@ -29,42 +29,46 @@ export function sharePercent(question, options, option) {
   return total === 0 ? 0 : Math.round((Math.max(0, scoreOf(question, option)) / total) * 100)
 }
 
+export function canReorder(question) {
+  return question.has_votes && question.vote_style === 'updown'
+}
+
 export function rankedOptions(question, options, closed) {
-  if (!question.has_votes || !(question.live_sort || closed)) {
+  if (!canReorder(question) || !(question.live_sort || closed)) {
     return options
   }
 
   return [...options].sort((left, right) => scoreOf(question, right) - scoreOf(question, left))
 }
 
-function toSlice(question, option, index) {
-  return {
+export const restColor = '#8a8a8a'
+
+export function pieSlices(question, closed) {
+  const source = question.poll_options
+  const colors = new Map(source.map((option, index) => [option.id, sliceColor(index)]))
+  const ordered = rankedOptions(question, source, closed)
+
+  const toSlice = (option) => ({
     key: option.id,
     label: optionLabel(option),
     value: Math.max(0, scoreOf(question, option)),
-    color: sliceColor(index),
+    color: colors.get(option.id),
     option,
-  }
-}
+  })
 
-export function pieSlices(question, options) {
-  const ranked = [...options].sort(
-    (left, right) => scoreOf(question, right) - scoreOf(question, left),
-  )
-
-  if (ranked.length <= maxSlices) {
-    return ranked.map((option, index) => toSlice(question, option, index))
+  if (ordered.length <= maxSlices) {
+    return ordered.map(toSlice)
   }
 
-  const rest = ranked.slice(maxSlices - 1)
+  const rest = ordered.slice(maxSlices - 1)
 
   return [
-    ...ranked.slice(0, maxSlices - 1).map((option, index) => toSlice(question, option, index)),
+    ...ordered.slice(0, maxSlices - 1).map(toSlice),
     {
       key: 'rest',
       label: `Egyéb (${rest.length})`,
       value: rest.reduce((sum, option) => sum + Math.max(0, scoreOf(question, option)), 0),
-      color: sliceColor(maxSlices - 1),
+      color: restColor,
       option: null,
     },
   ]
@@ -76,6 +80,22 @@ export function isClosed(poll, now) {
 
 export function hasStarted(poll, now) {
   return !poll.starts_at || new Date(poll.starts_at).getTime() <= now
+}
+
+export function closedMoment(poll) {
+  const stamp = poll.closed_at ?? poll.closes_at
+
+  return stamp ? new Date(stamp).getTime() : null
+}
+
+export function isExpired(poll, now) {
+  if (!isClosed(poll, now) || poll.hide_after_hours === 0) {
+    return false
+  }
+
+  const moment = closedMoment(poll)
+
+  return moment !== null && now >= moment + poll.hide_after_hours * 3600000
 }
 
 export function countdown(ms) {

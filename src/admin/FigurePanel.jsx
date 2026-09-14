@@ -1,5 +1,5 @@
 import { aspectRatio, orientations, ratios, sizes, sizeWidth } from './figureOptions.js'
-import ToggleSwitch from './ToggleSwitch.jsx'
+import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import './FigurePanel.css'
 
 const sample =

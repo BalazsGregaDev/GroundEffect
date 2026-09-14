@@ -1,0 +1,15 @@
+.choice {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.choice-word {
+  font-size: 0.84rem;
+  color: var(--graphite);
+  transition: color 0.15s;
+}
+
+.choice-word.is-active {
+  color: var(--gold);
+}

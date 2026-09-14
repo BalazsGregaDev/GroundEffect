@@ -4,7 +4,7 @@ import { useAuth } from './useAuth.js'
 import { useFacebookPosts } from './useFacebookPosts.js'
 import { functionErrorMessage } from '../lib/functionError.js'
 import { relativeTime } from '../lib/format.js'
-import ToggleSwitch from './ToggleSwitch.jsx'
+import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import './FacebookPostList.css'
 
 const excerptLength = 180

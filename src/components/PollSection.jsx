@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import SectionTitle from './SectionTitle.jsx'
 import PollQuestion from './PollQuestion.jsx'
+import ChoiceSwitch from './ChoiceSwitch.jsx'
 import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
-import { countdown, hasStarted, isClosed } from '../lib/poll.js'
+import { countdown, hasStarted, isClosed, isExpired } from '../lib/poll.js'
 import { readPreference, readVotes, voterId, writePreference, writeVote } from '../lib/pollVoter.js'
 import './PollSection.css'
 
@@ -33,7 +34,7 @@ export default function PollSection() {
     return () => clearInterval(timer)
   }, [poll?.closes_at, poll?.starts_at])
 
-  if (loading || !poll || !hasStarted(poll, now)) {
+  if (loading || !poll || !hasStarted(poll, now) || isExpired(poll, now)) {
     return null
   }
 
@@ -96,39 +97,21 @@ export default function PollSection() {
 
       {withVotes && (
         <div className="poll-toggles">
-          <div className="poll-switch" role="group" aria-label="Megjelenítés">
-            <button
-              type="button"
-              className={view === 'count' ? 'is-active' : ''}
-              onClick={() => chooseView('count')}
-            >
-              Darabszám
-            </button>
-            <button
-              type="button"
-              className={view === 'percent' ? 'is-active' : ''}
-              onClick={() => chooseView('percent')}
-            >
-              Százalék
-            </button>
-          </div>
+          <ChoiceSwitch
+            value={view ?? poll.default_view}
+            left={{ value: 'count', label: 'Darabszám' }}
+            right={{ value: 'percent', label: 'Százalék' }}
+            onChange={chooseView}
+            label="Százalékos megjelenítés"
+          />
 
-          <div className="poll-switch" role="group" aria-label="Nézet">
-            <button
-              type="button"
-              className={mode === 'list' ? 'is-active' : ''}
-              onClick={() => chooseMode('list')}
-            >
-              Lista
-            </button>
-            <button
-              type="button"
-              className={mode === 'pie' ? 'is-active' : ''}
-              onClick={() => chooseMode('pie')}
-            >
-              Kördiagram
-            </button>
-          </div>
+          <ChoiceSwitch
+            value={mode}
+            left={{ value: 'list', label: 'Lista' }}
+            right={{ value: 'pie', label: 'Kördiagram' }}
+            onChange={chooseMode}
+            label="Kördiagram nézet"
+          />
         </div>
       )}
 

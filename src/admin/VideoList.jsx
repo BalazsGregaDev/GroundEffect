@@ -5,7 +5,7 @@ import { useAdminVideos } from './useAdminVideos.js'
 import { thumbnailUrl } from '../lib/youtube.js'
 import { functionErrorMessage } from '../lib/functionError.js'
 import { formatCount, relativeTime } from '../lib/format.js'
-import ToggleSwitch from './ToggleSwitch.jsx'
+import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import './VideoList.css'
 
 const filters = [

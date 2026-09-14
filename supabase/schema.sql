@@ -158,6 +158,8 @@ create table if not exists polls (
   active boolean not null default false,
   starts_at timestamptz,
   closes_at timestamptz,
+  closed_at timestamptz,
+  hide_after_hours integer not null default 72,
   warn_before_min integer not null default 0,
   test_mode boolean not null default false,
   default_view text not null default 'percent' check (default_view in ('percent', 'count')),
@@ -309,6 +311,9 @@ create index if not exists facebook_posts_visible_idx
   on facebook_posts (created_time desc)
   where visible;
 
+alter table polls add column if not exists closed_at timestamptz;
+alter table polls add column if not exists hide_after_hours integer not null default 72;
+
 create index if not exists poll_questions_poll_idx on poll_questions (poll_id, sort_order);
 create index if not exists poll_options_question_idx on poll_options (question_id, sort_order);
 create index if not exists polls_active_idx on polls (active) where active;
@@ -403,6 +408,26 @@ drop trigger if exists polls_single_active on polls;
 create trigger polls_single_active
   after insert or update of active on polls
   for each row when (new.active) execute function enforce_single_active_poll();
+
+create or replace function stamp_poll_closed_at()
+returns trigger
+language plpgsql
+as $$
+begin
+  if new.status = 'closed' and (tg_op = 'INSERT' or old.status is distinct from 'closed') then
+    new.closed_at := now();
+  elsif new.status = 'open' then
+    new.closed_at := null;
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists polls_stamp_closed_at on polls;
+create trigger polls_stamp_closed_at
+  before insert or update on polls
+  for each row execute function stamp_poll_closed_at();
 
 create or replace function poll_is_open(target polls)
 returns boolean
