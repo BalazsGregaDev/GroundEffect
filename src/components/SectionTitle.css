@@ -22,3 +22,24 @@
 .section-title a:hover {
   text-decoration: underline;
 }
+
+@media (max-width: 700px) {
+  .section-title {
+    flex-wrap: wrap;
+    gap: 0.3rem 1rem;
+    font-size: 1.25rem;
+    margin-bottom: 1.2rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .section-title a {
+    position: relative;
+  }
+
+  .section-title a::after {
+    content: '';
+    position: absolute;
+    inset: -14px -10px;
+  }
+}

@@ -1,12 +1,12 @@
 .shell {
   display: grid;
-  grid-template-columns: 380px 1fr;
+  grid-template-columns: clamp(260px, 24vw, 380px) minmax(0, 1fr);
   min-height: 100vh;
 }
 
 .feed {
   min-width: 0;
-  padding: 2.4rem 6rem 4rem;
+  padding: 2.4rem clamp(1.25rem, 5.5vw, 6rem) 4rem;
 }
 
 .feed > * + * {
@@ -23,6 +23,20 @@
   }
 
   .feed {
-    padding: 2rem 1.5rem 3rem;
+    padding-bottom: 3rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .feed {
+    padding-top: 1.8rem;
+  }
+
+  .feed > * + * {
+    margin-top: 2.2rem;
+  }
+
+  .feed > .featured-stack {
+    margin-top: 1.8rem;
   }
 }

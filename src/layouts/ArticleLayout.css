@@ -1,10 +1,13 @@
 .shell--with-aside {
-  grid-template-columns: 380px minmax(0, 1fr) 380px;
+  grid-template-columns:
+    clamp(260px, 24vw, 380px)
+    minmax(0, 1fr)
+    clamp(300px, 23vw, 380px);
 }
 
-@media (max-width: 1400px) {
+@media (max-width: 1600px) {
   .shell--with-aside {
-    grid-template-columns: 380px minmax(0, 1fr);
+    grid-template-columns: clamp(260px, 24vw, 380px) minmax(0, 1fr);
   }
 
   .shell--with-aside .article-aside {

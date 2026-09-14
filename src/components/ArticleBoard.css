@@ -79,13 +79,26 @@
   color: var(--smoke);
 }
 
-@media (max-width: 720px) {
+@media (max-width: 900px) {
+  .board-head,
+  .row {
+    grid-template-columns: 54px 1fr 110px;
+    gap: 0.8rem;
+  }
+
+  .row h3 {
+    font-size: 1.14rem;
+  }
+}
+
+@media (max-width: 700px) {
   .board-head {
     display: none;
   }
 
   .row {
     grid-template-columns: 40px 1fr;
+    padding: 0.9rem 0.7rem;
   }
 
   .row .read {

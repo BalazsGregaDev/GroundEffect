@@ -59,6 +59,22 @@
   white-space: nowrap;
 }
 
+@media (max-width: 900px) {
+  .featured-row {
+    gap: 0.4rem 1rem;
+  }
+
+  .featured-title {
+    flex-basis: 100%;
+    min-width: 0;
+    order: 2;
+  }
+
+  .featured-meta {
+    order: 3;
+  }
+}
+
 @media (max-width: 700px) {
   .featured-row {
     padding: 1.3rem 1.1rem;
@@ -66,5 +82,9 @@
 
   .featured-title {
     font-size: 1.2rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    white-space: normal;
   }
 }

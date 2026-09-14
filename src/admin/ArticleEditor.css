@@ -114,7 +114,7 @@
   border-top: 1px solid var(--graphite);
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1024px) {
   .editor-grid {
     grid-template-columns: 1fr;
   }

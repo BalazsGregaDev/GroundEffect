@@ -110,8 +110,29 @@ button.player:hover img {
   font-size: 0.9rem;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 900px) {
   .latest-inner {
     width: 100%;
+  }
+
+  .latest-meta {
+    gap: 0.5rem 1.5rem;
+    margin-top: 1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .play-btn {
+    width: 58px;
+    height: 58px;
+  }
+
+  .play-btn svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .latest-meta h3 {
+    max-width: none;
   }
 }

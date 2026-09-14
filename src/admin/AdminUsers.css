@@ -76,3 +76,48 @@
   color: var(--smoke);
   font-size: 0.9rem;
 }
+
+@media (max-width: 700px) {
+  .users-add {
+    padding: 1rem;
+  }
+
+  .users-add .admin-field {
+    flex: 1 1 100%;
+  }
+
+  .users-add .admin-field input {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .users-table,
+  .users-table tbody,
+  .users-table tr,
+  .users-table td {
+    display: block;
+  }
+
+  .users-table thead {
+    display: none;
+  }
+
+  .users-table tr {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--graphite);
+  }
+
+  .users-table td {
+    padding: 0;
+    border: none;
+    overflow-wrap: anywhere;
+  }
+
+  .users-table td + td {
+    margin-top: 0.6rem;
+  }
+
+  .users-table select {
+    width: 100%;
+  }
+}

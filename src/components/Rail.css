@@ -6,7 +6,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 2rem;
-  padding: 2.4rem 2.6rem;
+  padding: 2.4rem clamp(1.4rem, 2vw, 2.6rem);
   border-right: 1px solid var(--graphite);
   background:
     radial-gradient(circle at 15% 85%, rgba(240, 179, 35, 0.13), transparent 55%),
@@ -36,7 +36,7 @@
 }
 
 .rail-statement {
-  font-size: clamp(2.2rem, 3.2vw, 3.1rem);
+  font-size: clamp(2rem, 3.2vw, 3.1rem);
   line-height: 1;
   margin-bottom: 1.1rem;
 }
@@ -116,8 +116,35 @@
   .rail {
     position: static;
     height: auto;
-    padding: 2rem 1.5rem;
+    gap: 1.6rem;
+    padding: 2rem clamp(1.25rem, 5.5vw, 6rem);
     border-right: none;
     border-bottom: 1px solid var(--graphite);
+  }
+
+  .rail-sub {
+    max-width: 46ch;
+  }
+}
+
+@media (max-width: 700px) {
+  .rail {
+    gap: 1.3rem;
+    padding-top: 1.5rem;
+  }
+
+  .brand-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .rail nav ul {
+    margin-bottom: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .rail-foot a {
+    padding: 0.5rem 0;
   }
 }

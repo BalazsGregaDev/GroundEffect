@@ -5,6 +5,16 @@
   align-items: start;
 }
 
+@media (max-width: 700px) {
+  .bottom {
+    gap: 2rem;
+  }
+
+  .panels {
+    gap: 1.5rem;
+  }
+}
+
 .panels {
   display: flex;
   flex-direction: column;

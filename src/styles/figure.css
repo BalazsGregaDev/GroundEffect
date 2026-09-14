@@ -57,7 +57,18 @@
   margin: 0.4rem 1.6rem 1rem 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 900px) {
+  .cikk-kep[data-korbefut='igen'][data-meret='kicsi'],
+  .cikk-kep[data-korbefut='igen'][data-meret='kozepes'] {
+    width: 45%;
+  }
+
+  .cikk-kep[data-meret='nagy'] {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
   .cikk-kep[data-meret][data-korbefut] {
     float: none;
     width: 100%;

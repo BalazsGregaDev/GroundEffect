@@ -54,3 +54,11 @@
   transform: translateX(20px);
   background: var(--black);
 }
+
+@media (pointer: coarse) {
+  .switch::after {
+    content: '';
+    position: absolute;
+    inset: -11px;
+  }
+}
