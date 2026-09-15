@@ -130,6 +130,7 @@ export default function ArticleEditor() {
   const navigate = useNavigate()
   const { session, canEdit, isSuperadmin } = useAuth()
   const { rows: categories } = useLookup('categories')
+  const { rows: allTags } = useLookup('tags', 'id, slug, name, kind')
 
   const [form, setForm] = useState(emptyForm)
   const [tags, setTags] = useState([])
@@ -225,6 +226,15 @@ export default function ArticleEditor() {
     }
   }
 
+  function chooseSeries(event) {
+    const picked = seriesTags.find((tag) => tag.id === event.target.value) ?? null
+
+    setTags((current) => [
+      ...current.filter((tag) => tag.kind !== 'series'),
+      ...(picked ? [picked] : []),
+    ])
+  }
+
   async function otherFeatured() {
     const { data, error: lookupError } = await supabase
       .from('articles')
@@ -242,6 +252,12 @@ export default function ArticleEditor() {
 
   async function handleSubmit(event) {
     event.preventDefault()
+
+    if (!seriesTag) {
+      setError('Válassz versenysorozatot, e nélkül nem menthető a cikk.')
+      return
+    }
+
     setSaving(true)
     setError(null)
 
@@ -307,6 +323,8 @@ export default function ArticleEditor() {
   }
 
   const readOnly = !canEdit
+  const seriesTags = allTags.filter((tag) => tag.kind === 'series')
+  const seriesTag = tags.find((tag) => tag.kind === 'series') ?? null
   const canPublish = isSuperadmin || saved?.form.status === 'published'
   const isLive =
     saved?.form.status === 'published' &&
@@ -468,7 +486,23 @@ export default function ArticleEditor() {
             </select>
           </label>
 
-          <TagField tags={tags} onChange={setTags} disabled={readOnly} />
+          <label className="admin-field">
+            <span>Versenysorozat</span>
+            <select value={seriesTag?.id ?? ''} onChange={chooseSeries} disabled={readOnly}>
+              <option value="">Válassz sorozatot</option>
+              {seriesTags.map((tag) => (
+                <option key={tag.id} value={tag.id}>
+                  {tag.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <TagField
+            tags={tags.filter((tag) => tag.kind !== 'series')}
+            onChange={(next) => setTags(seriesTag ? [...next, seriesTag] : next)}
+            disabled={readOnly}
+          />
 
           <CoverField
             value={form.cover_url}

@@ -1,18 +1,9 @@
-export const pieColors = [
-  '#c98500',
-  '#d55181',
-  '#008300',
-  '#9085e9',
-  '#e66767',
-  '#3987e5',
-  '#d95926',
-  '#199e70',
-]
+import { chartColors } from '../lib/palette.js'
 
-export const maxSlices = pieColors.length
+export const maxSlices = chartColors.length
 
 export function sliceColor(index) {
-  return pieColors[Math.min(index, maxSlices - 1)]
+  return chartColors[Math.min(index, maxSlices - 1)]
 }
 
 function arcPath(cx, cy, r, from, to) {

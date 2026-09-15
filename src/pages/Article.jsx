@@ -1,4 +1,5 @@
 import { Link, useParams } from 'react-router-dom'
+import SeriesCover from '../components/SeriesCover.jsx'
 import { useArticle } from '../hooks/useArticle.js'
 import { sanitizeHtml } from '../lib/richText.js'
 import { coverUrl } from '../lib/cloudinary.js'
@@ -25,6 +26,7 @@ export default function Article() {
   }
 
   const tags = article.article_tags.map((row) => row.tags)
+  const series = tags.find((tag) => tag.kind === 'series')
   const meta = [
     relativeTime(article.published_at),
     article.reading_minutes && `${article.reading_minutes} perc olvasás`,
@@ -36,13 +38,15 @@ export default function Article() {
         Vissza a főoldalra
       </Link>
 
-      {article.cover_url && (
+      {article.cover_url ? (
         <img
           className="article-cover"
           src={coverUrl(article.cover_url)}
           style={{ objectPosition: article.cover_focus }}
           alt=""
         />
+      ) : (
+        <SeriesCover className="article-cover" slug={series?.slug} name={series?.name} />
       )}
 
       {article.categories && <p className="article-category">{article.categories.name}</p>}

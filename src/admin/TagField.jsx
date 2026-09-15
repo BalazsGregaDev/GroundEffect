@@ -4,6 +4,7 @@ import { tagKinds } from './tagKinds.js'
 import './TagField.css'
 
 const optionLimit = 15
+const freeKinds = tagKinds.filter((kind) => kind.value !== 'series')
 
 export default function TagField({ tags, onChange, disabled }) {
   const [query, setQuery] = useState('')
@@ -24,7 +25,7 @@ export default function TagField({ tags, onChange, disabled }) {
         .rpc('search_tags', { search: query.trim(), limit_count: optionLimit })
         .then(({ data }) => {
           if (active) {
-            setOptions(data ?? [])
+            setOptions((data ?? []).filter((tag) => tag.kind !== 'series'))
             setSearching(false)
           }
         })
@@ -128,7 +129,7 @@ export default function TagField({ tags, onChange, disabled }) {
               </span>
 
               <select value={newKind} onChange={(event) => setNewKind(event.target.value)}>
-                {tagKinds.map((kind) => (
+                {freeKinds.map((kind) => (
                   <option key={kind.value} value={kind.value}>
                     {kind.label}
                   </option>

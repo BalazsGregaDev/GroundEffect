@@ -4,5 +4,6 @@ export const tagKinds = [
   { value: 'principal', label: 'Csapatfőnök' },
   { value: 'circuit', label: 'Pálya' },
   { value: 'country', label: 'Ország' },
+  { value: 'series', label: 'Versenysorozat' },
   { value: 'other', label: 'Egyéb' },
 ]

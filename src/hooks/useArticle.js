@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase.js'
 
 const columns =
   'id, slug, title, lead, body, cover_url, cover_focus, reading_minutes, published_at, ' +
-  'categories (name, slug), article_tags (tags (id, slug, name))'
+  'categories (name, slug), article_tags (tags (id, slug, name, kind))'
 
 export function useArticle(slug) {
   const [article, setArticle] = useState(null)

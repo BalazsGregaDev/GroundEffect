@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import { slugify } from '../lib/text.js'
@@ -7,6 +7,43 @@ export default function RaceSeriesManager({ series, canEdit, onChange, onError }
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
   const [confirmId, setConfirmId] = useState(null)
+  const [articles, setArticles] = useState([])
+
+  useEffect(() => {
+    let active = true
+
+    supabase
+      .from('articles')
+      .select('id, title, published_at')
+      .eq('status', 'published')
+      .order('published_at', { ascending: false })
+      .limit(50)
+      .then(({ data }) => {
+        if (active) {
+          setArticles(data ?? [])
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
+
+  async function pinArticle(item, articleId) {
+    onError(null)
+
+    const { error } = await supabase
+      .from('race_series')
+      .update({ featured_article_id: articleId || null })
+      .eq('id', item.id)
+
+    if (error) {
+      onError(`A kitűzés nem sikerült: ${error.message}`)
+      return
+    }
+
+    await onChange()
+  }
 
   async function add() {
     const trimmed = name.trim()
@@ -99,6 +136,7 @@ export default function RaceSeriesManager({ series, canEdit, onChange, onError }
             <th>Azonosító</th>
             <th>Forrás</th>
             <th>Futam</th>
+            <th>Kitűzött cikk</th>
             <th>Naptárban</th>
             <th></th>
           </tr>
@@ -135,6 +173,21 @@ export default function RaceSeriesManager({ series, canEdit, onChange, onError }
                   )}
                 </td>
                 <td className="list-number">{count}</td>
+                <td>
+                  <select
+                    className="series-pin"
+                    value={item.featured_article_id ?? ''}
+                    onChange={(event) => pinArticle(item, event.target.value)}
+                    disabled={!canEdit}
+                  >
+                    <option value="">Legfrissebb a sorozatból</option>
+                    {articles.map((article) => (
+                      <option key={article.id} value={article.id}>
+                        {article.title}
+                      </option>
+                    ))}
+                  </select>
+                </td>
                 <td>
                   <ToggleSwitch
                     checked={item.visible}

@@ -113,6 +113,21 @@
   color: var(--smoke);
 }
 
+.series-pin {
+  max-width: 14rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.82rem;
+}
+
+.series-pin:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
 .series-auto {
   color: var(--gold-deep);
 }

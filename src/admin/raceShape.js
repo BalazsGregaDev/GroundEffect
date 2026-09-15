@@ -12,7 +12,8 @@ export const raceColumns =
   'id, series_id, season, round, name, location, circuit, country, latitude, longitude, ' +
   'starts_at, tbc, note, synced_at, race_sessions (id, kind, label, starts_at)'
 
-export const seriesColumns = 'id, slug, name, source_key, visible, sort_order, synced_at'
+export const seriesColumns =
+  'id, slug, name, source_key, visible, sort_order, tag_id, featured_article_id, synced_at'
 
 export function kindLabel(value) {
   return sessionKinds.find((kind) => kind.value === value)?.label ?? 'Egyéb'

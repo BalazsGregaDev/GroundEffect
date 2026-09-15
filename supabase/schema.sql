@@ -91,6 +91,10 @@ create table if not exists tags (
   created_at timestamptz not null default now()
 );
 
+alter table tags drop constraint if exists tags_kind_check;
+alter table tags add constraint tags_kind_check
+  check (kind in ('driver', 'team', 'circuit', 'country', 'principal', 'series', 'other'));
+
 create table if not exists articles (
   id uuid primary key default gen_random_uuid(),
   slug text not null unique,
@@ -224,10 +228,39 @@ create table if not exists race_series (
   source_key text unique,
   visible boolean not null default true,
   sort_order integer not null default 0,
+  tag_id uuid references tags (id) on delete set null,
+  featured_article_id uuid references articles (id) on delete set null,
   synced_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+alter table race_series add column if not exists tag_id uuid references tags (id) on delete set null;
+alter table race_series add column if not exists featured_article_id uuid
+  references articles (id) on delete set null;
+
+create or replace function ensure_series_tag()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_tag uuid;
+begin
+  insert into tags (slug, name, kind)
+  values (new.slug, new.name, 'series')
+  on conflict (slug) do update set kind = 'series', name = excluded.name
+  returning id into v_tag;
+
+  new.tag_id := v_tag;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists race_series_ensure_tag on race_series;
+create trigger race_series_ensure_tag
+  before insert or update of slug, name on race_series
+  for each row execute function ensure_series_tag();
 
 create table if not exists races (
   id uuid primary key default gen_random_uuid(),
@@ -267,15 +300,19 @@ insert into race_series (slug, name, source_key, sort_order) values
   ('indycar', 'IndyCar', 'indycar', 5)
 on conflict (slug) do nothing;
 
+insert into tags (slug, name, kind)
+select slug, name, 'series' from race_series
+on conflict (slug) do update set kind = 'series';
+
+update race_series s set tag_id = t.id
+from tags t
+where t.slug = s.slug and t.kind = 'series' and s.tag_id is distinct from t.id;
+
 create table if not exists site_settings (
   id boolean primary key default true check (id),
   sections_order jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
-
-alter table tags drop constraint if exists tags_kind_check;
-alter table tags add constraint tags_kind_check
-  check (kind in ('driver', 'team', 'circuit', 'country', 'principal', 'other'));
 
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
@@ -426,6 +463,65 @@ create trigger race_sessions_stamp_race
   after insert or update or delete on race_sessions
   for each row execute function stamp_race_start();
 
+create or replace function series_articles()
+returns table (
+  series_id uuid,
+  article_id uuid,
+  slug text,
+  title text,
+  cover_url text,
+  cover_focus text,
+  published_at timestamptz,
+  reading_minutes integer
+)
+language sql
+stable
+as $$
+  with newest as (
+    select f.id from articles f
+    where f.status = 'published' and f.published_at <= now()
+    order by f.published_at desc
+    limit 1
+  ),
+  picked as (
+    select
+      s.id as for_series,
+      coalesce(
+        (
+          select p.id from articles p
+          where p.id = s.featured_article_id
+            and p.status = 'published'
+            and p.published_at <= now()
+        ),
+        (
+          select m.id from articles m
+          join article_tags j on j.article_id = m.id
+          where j.tag_id = s.tag_id
+            and m.status = 'published'
+            and m.published_at <= now()
+          order by m.published_at desc
+          limit 1
+        ),
+        (select n.id from newest n)
+      ) as for_article
+    from race_series s
+    where s.visible
+  )
+  select
+    k.for_series,
+    a.id,
+    a.slug,
+    a.title,
+    a.cover_url,
+    a.cover_focus,
+    a.published_at,
+    a.reading_minutes
+  from picked k
+  join articles a on a.id = k.for_article;
+$$;
+
+grant execute on function series_articles() to anon, authenticated;
+
 create or replace function apply_race_sync(p_source_key text, p_season integer, p_races jsonb)
 returns integer
 language plpgsql
@@ -465,10 +561,10 @@ begin
     on conflict (series_id, season, round) where round is not null
     do update set
       name = excluded.name,
-      location = excluded.location,
-      circuit = excluded.circuit,
-      latitude = excluded.latitude,
-      longitude = excluded.longitude,
+      location = coalesce(excluded.location, races.location),
+      circuit = coalesce(excluded.circuit, races.circuit),
+      latitude = coalesce(excluded.latitude, races.latitude),
+      longitude = coalesce(excluded.longitude, races.longitude),
       slug = excluded.slug,
       tbc = excluded.tbc,
       synced_at = now()
