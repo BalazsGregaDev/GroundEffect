@@ -201,15 +201,71 @@ create table if not exists poll_votes (
   unique (option_id, voter_id)
 );
 
+do $$
+declare
+  v_rows integer;
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public' and table_name = 'races' and column_name = 'series'
+  ) then
+    execute 'select count(*) from races' into v_rows;
+
+    if v_rows = 0 then
+      drop table races cascade;
+    end if;
+  end if;
+end $$;
+
+create table if not exists race_series (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  source_key text unique,
+  visible boolean not null default true,
+  sort_order integer not null default 0,
+  synced_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists races (
   id uuid primary key default gen_random_uuid(),
-  series text not null default 'f1',
+  series_id uuid not null references race_series (id) on delete cascade,
+  season integer not null,
+  round integer,
   name text not null,
+  location text,
   circuit text,
   country text,
+  latitude double precision,
+  longitude double precision,
+  slug text,
+  starts_at timestamptz,
+  tbc boolean not null default false,
+  note text,
+  synced_at timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists race_sessions (
+  id uuid primary key default gen_random_uuid(),
+  race_id uuid not null references races (id) on delete cascade,
+  kind text not null default 'other'
+    check (kind in ('practice', 'qualifying', 'sprint_qualifying', 'sprint', 'warmup', 'race', 'other')),
+  label text not null,
   starts_at timestamptz not null,
   created_at timestamptz not null default now()
 );
+
+insert into race_series (slug, name, source_key, sort_order) values
+  ('f1', 'Forma-1', 'f1', 1),
+  ('f2', 'Forma-2', 'f2', 2),
+  ('f3', 'Forma-3', 'f3', 3),
+  ('motogp', 'MotoGP', 'motogp', 4),
+  ('indycar', 'IndyCar', 'indycar', 5)
+on conflict (slug) do nothing;
 
 create table if not exists site_settings (
   id boolean primary key default true check (id),
@@ -322,7 +378,12 @@ create index if not exists poll_questions_poll_idx on poll_questions (poll_id, s
 create index if not exists poll_options_question_idx on poll_options (question_id, sort_order);
 create index if not exists polls_active_idx on polls (active) where active;
 
+create unique index if not exists races_round_idx
+  on races (series_id, season, round) where round is not null;
 create index if not exists races_starts_idx on races (starts_at);
+create index if not exists races_series_idx on races (series_id, season, round);
+create index if not exists race_sessions_race_idx on race_sessions (race_id, starts_at);
+create index if not exists race_sessions_starts_idx on race_sessions (starts_at);
 
 drop trigger if exists articles_set_updated_at on articles;
 create trigger articles_set_updated_at
@@ -333,6 +394,107 @@ drop trigger if exists site_settings_set_updated_at on site_settings;
 create trigger site_settings_set_updated_at
   before update on site_settings
   for each row execute function set_updated_at();
+
+drop trigger if exists race_series_set_updated_at on race_series;
+create trigger race_series_set_updated_at
+  before update on race_series
+  for each row execute function set_updated_at();
+
+drop trigger if exists races_set_updated_at on races;
+create trigger races_set_updated_at
+  before update on races
+  for each row execute function set_updated_at();
+
+create or replace function stamp_race_start()
+returns trigger
+language plpgsql
+as $$
+begin
+  update races
+  set starts_at = (
+    select min(starts_at) from race_sessions
+    where race_id = coalesce(new.race_id, old.race_id) and kind = 'race'
+  )
+  where id = coalesce(new.race_id, old.race_id);
+
+  return null;
+end;
+$$;
+
+drop trigger if exists race_sessions_stamp_race on race_sessions;
+create trigger race_sessions_stamp_race
+  after insert or update or delete on race_sessions
+  for each row execute function stamp_race_start();
+
+create or replace function apply_race_sync(p_source_key text, p_season integer, p_races jsonb)
+returns integer
+language plpgsql
+as $$
+declare
+  v_series uuid;
+  v_race uuid;
+  v_row jsonb;
+  v_session jsonb;
+  v_count integer := 0;
+begin
+  select id into v_series from race_series where source_key = p_source_key;
+
+  if v_series is null then
+    return 0;
+  end if;
+
+  for v_row in select value from jsonb_array_elements(p_races)
+  loop
+    insert into races (
+      series_id, season, round, name, location, circuit,
+      latitude, longitude, slug, tbc, synced_at
+    )
+    values (
+      v_series,
+      p_season,
+      (v_row ->> 'round')::integer,
+      v_row ->> 'name',
+      v_row ->> 'location',
+      v_row ->> 'circuit',
+      (v_row ->> 'latitude')::double precision,
+      (v_row ->> 'longitude')::double precision,
+      v_row ->> 'slug',
+      coalesce((v_row ->> 'tbc')::boolean, false),
+      now()
+    )
+    on conflict (series_id, season, round) where round is not null
+    do update set
+      name = excluded.name,
+      location = excluded.location,
+      circuit = excluded.circuit,
+      latitude = excluded.latitude,
+      longitude = excluded.longitude,
+      slug = excluded.slug,
+      tbc = excluded.tbc,
+      synced_at = now()
+    returning id into v_race;
+
+    delete from race_sessions where race_id = v_race;
+
+    for v_session in select value from jsonb_array_elements(v_row -> 'sessions')
+    loop
+      insert into race_sessions (race_id, kind, label, starts_at)
+      values (
+        v_race,
+        v_session ->> 'kind',
+        v_session ->> 'label',
+        (v_session ->> 'starts_at')::timestamptz
+      );
+    end loop;
+
+    v_count := v_count + 1;
+  end loop;
+
+  update race_series set synced_at = now() where id = v_series;
+
+  return v_count;
+end;
+$$;
 
 create or replace function enforce_publish_rights()
 returns trigger
@@ -594,7 +756,9 @@ alter table polls enable row level security;
 alter table poll_questions enable row level security;
 alter table poll_options enable row level security;
 alter table poll_votes enable row level security;
+alter table race_series enable row level security;
 alter table races enable row level security;
+alter table race_sessions enable row level security;
 alter table site_settings enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
@@ -683,12 +847,28 @@ drop policy if exists poll_votes_read on poll_votes;
 create policy poll_votes_read on poll_votes
   for select using (is_staff());
 
+drop policy if exists race_series_read on race_series;
+create policy race_series_read on race_series
+  for select using (true);
+
+drop policy if exists race_series_write on race_series;
+create policy race_series_write on race_series
+  for all using (can_edit()) with check (can_edit());
+
 drop policy if exists races_read on races;
 create policy races_read on races
   for select using (true);
 
 drop policy if exists races_write on races;
 create policy races_write on races
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists race_sessions_read on race_sessions;
+create policy race_sessions_read on race_sessions
+  for select using (true);
+
+drop policy if exists race_sessions_write on race_sessions;
+create policy race_sessions_write on race_sessions
   for all using (can_edit()) with check (can_edit());
 
 drop policy if exists site_settings_read on site_settings;

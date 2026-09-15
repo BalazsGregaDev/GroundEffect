@@ -17,6 +17,8 @@ const VideoList = lazy(() => import('./admin/VideoList.jsx'))
 const FacebookPostList = lazy(() => import('./admin/FacebookPostList.jsx'))
 const PollList = lazy(() => import('./admin/PollList.jsx'))
 const PollEditor = lazy(() => import('./admin/PollEditor.jsx'))
+const RaceList = lazy(() => import('./admin/RaceList.jsx'))
+const RaceEditor = lazy(() => import('./admin/RaceEditor.jsx'))
 const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 
@@ -66,6 +68,9 @@ export default function App() {
           <Route path="szavazas" element={<PollList />} />
           <Route path="szavazas/uj" element={<PollEditor />} />
           <Route path="szavazas/:id" element={<PollEditor />} />
+          <Route path="naptar" element={<RaceList />} />
+          <Route path="naptar/uj" element={<RaceEditor />} />
+          <Route path="naptar/:id" element={<RaceEditor />} />
           <Route path="felhasznalok" element={<AdminUsers />} />
 
           {adminNav

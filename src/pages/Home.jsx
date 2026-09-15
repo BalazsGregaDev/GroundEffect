@@ -7,7 +7,7 @@ import FacebookPosts from '../components/FacebookPosts.jsx'
 import NextRacePanel from '../components/NextRacePanel.jsx'
 import JoinPanel from '../components/JoinPanel.jsx'
 import { useVideos } from '../hooks/useVideos.js'
-import { nextRace, joinLinks } from '../data/placeholder.js'
+import { joinLinks } from '../data/placeholder.js'
 import './Home.css'
 
 const gridSize = 8
@@ -26,7 +26,7 @@ export default function Home() {
       <div className="bottom">
         <FacebookPosts />
         <div className="panels">
-          <NextRacePanel race={nextRace} />
+          <NextRacePanel />
           <JoinPanel links={joinLinks} />
         </div>
       </div>

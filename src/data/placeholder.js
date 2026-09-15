@@ -6,11 +6,6 @@ export const railNav = [
   { label: 'Közösség', meta: 'Discord', href: '#kozosseg' },
 ]
 
-export const nextRace = {
-  name: 'Szingapúr',
-  startsAt: '2026-10-11T14:00:00+02:00',
-}
-
 export const joinLinks = [
   { label: 'Discord', note: 'ingyenes', href: '#' },
   { label: 'Patreon', note: 'támogatás', href: '#' },

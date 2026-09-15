@@ -1,0 +1,129 @@
+.raced .editor-back {
+  display: inline-block;
+  margin-bottom: 0.4rem;
+  color: var(--smoke);
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+.raced .editor-back:hover {
+  color: var(--gold);
+}
+
+.raced .editor-hint {
+  margin: 0;
+  color: var(--smoke);
+  font-size: 0.82rem;
+}
+
+.raced-group {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: 1.4rem;
+  padding: 1.2rem;
+  border: 1px solid var(--graphite);
+}
+
+.raced-group h2 {
+  font-size: 1.05rem;
+  color: var(--bone);
+}
+
+.raced-fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.9rem;
+}
+
+.raced-switch {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--smoke);
+}
+
+.raced-sessions {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.raced-session {
+  display: grid;
+  grid-template-columns: 11rem minmax(0, 1fr) 15rem auto;
+  gap: 0.7rem;
+  align-items: end;
+  padding: 0.8rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.raced-group > .admin-button {
+  justify-self: start;
+}
+
+.raced-remove {
+  padding: 0.55rem 0.8rem;
+  border: 1px solid var(--graphite);
+  background: none;
+  color: var(--smoke);
+  font-family: var(--body);
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.raced-remove:hover {
+  border-color: #e66767;
+  color: #e66767;
+}
+
+.raced-danger {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1.6rem;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.raced-delete {
+  padding: 0.55rem 1.1rem;
+  border: 1px solid #e66767;
+  background: none;
+  color: #e66767;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.raced-delete:hover:not(:disabled) {
+  background: #e66767;
+  color: var(--black);
+}
+
+@media (max-width: 900px) {
+  .raced-session {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .raced-remove {
+    grid-column: 2;
+    justify-self: end;
+  }
+}
+
+@media (max-width: 700px) {
+  .raced-group {
+    padding: 1rem 0.9rem;
+  }
+
+  .raced-session {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .raced-remove {
+    grid-column: 1;
+    justify-self: start;
+  }
+}

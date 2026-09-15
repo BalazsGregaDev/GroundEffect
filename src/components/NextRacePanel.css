@@ -7,10 +7,22 @@
   line-height: 1;
 }
 
+.next-meta {
+  margin: 0 0 0.7rem;
+  color: var(--smoke);
+  font-size: 0.85rem;
+}
+
 .clock {
   margin: 0;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-size: 1.4rem;
   color: var(--gold);
+}
+
+.next-empty {
+  margin: 0;
+  color: var(--smoke);
+  font-size: 0.9rem;
 }
