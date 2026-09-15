@@ -238,6 +238,8 @@ create table if not exists race_series (
 alter table race_series add column if not exists tag_id uuid references tags (id) on delete set null;
 alter table race_series add column if not exists featured_article_id uuid
   references articles (id) on delete set null;
+alter table race_series add column if not exists cover_tone text;
+alter table race_series add column if not exists cover_url text;
 
 create or replace function ensure_series_tag()
 returns trigger
@@ -313,6 +315,9 @@ create table if not exists site_settings (
   sections_order jsonb not null default '[]'::jsonb,
   updated_at timestamptz not null default now()
 );
+
+alter table site_settings add column if not exists cover_design jsonb not null default '{}'::jsonb;
+alter table site_settings add column if not exists cover_fallback_url text;
 
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';

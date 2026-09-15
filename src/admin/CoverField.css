@@ -11,21 +11,6 @@
   flex-wrap: wrap;
 }
 
-.cover-clear {
-  padding: 0;
-  border: none;
-  background: none;
-  color: var(--smoke);
-  font-family: var(--body);
-  font-size: 0.82rem;
-  cursor: pointer;
-}
-
-.cover-clear:hover {
-  color: var(--gold);
-  text-decoration: underline;
-}
-
 .cover-preview {
   display: block;
   width: 100%;

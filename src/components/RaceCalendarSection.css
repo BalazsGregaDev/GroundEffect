@@ -108,7 +108,7 @@
 }
 
 .rcal-cover img,
-.rcal-cover .series-cover {
+.rcal-cover .cover-art {
   position: absolute;
   inset: 0;
   width: 100%;

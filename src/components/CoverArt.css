@@ -1,0 +1,25 @@
+.cover-art {
+  display: block;
+  width: 100%;
+  background: linear-gradient(
+    148deg,
+    color-mix(in oklab, var(--tone) var(--tint), var(--black)),
+    var(--black) 72%
+  );
+}
+
+.cover-art-stripes {
+  fill: var(--tone);
+  opacity: var(--stripe-opacity);
+}
+
+.cover-art-rule {
+  fill: var(--tone);
+}
+
+.cover-art-name {
+  fill: var(--bone);
+  font-family: var(--display);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}

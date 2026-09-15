@@ -8,22 +8,40 @@ const tones = new Map([
   ['f3', teal],
   ['motogp', orange],
   ['indycar', blue],
-  ['groundeffect', amber],
 ])
 
 const spare = [amber, pink, green]
 
-const fallbackName = 'GroundEffect'
+export const coverWidth = 320
+export const coverHeight = 180
 
-export const inset = 24
+export const defaultDesign = {
+  tint: 38,
+  stripeCount: 3,
+  stripeWidth: 11,
+  stripeGap: 25,
+  stripeLean: 44,
+  stripeOpacity: 34,
+  stripeStart: 240,
+  ruleHeight: 6,
+  textInset: 24,
+  maxFont: 38,
+  fallbackName: 'GroundEffect',
+  fallbackTone: amber,
+}
 
-const stripeStart = 240
-const room = stripeStart - inset
 const advance = 0.72
-const maxSize = 38
-const minSize = 20
+const minFont = 20
+
+export function mergeDesign(stored) {
+  return { ...defaultDesign, ...stored }
+}
 
 export function seriesTone(slug) {
+  if (!slug) {
+    return null
+  }
+
   const known = tones.get(slug)
 
   if (known) {
@@ -32,15 +50,35 @@ export function seriesTone(slug) {
 
   let sum = 0
 
-  for (const char of slug ?? '') {
+  for (const char of slug) {
     sum = (sum * 31 + char.codePointAt(0)) % 9973
   }
 
   return spare[sum % spare.length]
 }
 
-function wrap(text) {
-  if (text.length * advance * minSize <= room) {
+export function stripePoints(design) {
+  const shapes = []
+
+  for (let index = 0; index < design.stripeCount; index += 1) {
+    const base = design.stripeStart + index * design.stripeGap
+    const top = base + design.stripeLean
+
+    shapes.push(
+      `${base},${coverHeight} ${top},0 ${top + design.stripeWidth},0 ` +
+        `${base + design.stripeWidth},${coverHeight}`,
+    )
+  }
+
+  return shapes
+}
+
+function room(design) {
+  return Math.max(40, design.stripeStart - design.textInset)
+}
+
+function wrap(text, design) {
+  if (text.length * advance * minFont <= room(design)) {
     return [text]
   }
 
@@ -64,9 +102,13 @@ function wrap(text) {
   return best.rows
 }
 
-export function coverText(name) {
-  const rows = wrap(((name ?? '').trim() || fallbackName).toUpperCase())
+export function coverText(name, design) {
+  const label = ((name ?? '').trim() || design.fallbackName).toUpperCase()
+  const rows = wrap(label, design)
   const longest = Math.max(...rows.map((row) => row.length))
 
-  return { rows, size: Math.min(maxSize, Math.max(12, room / (longest * advance))) }
+  return {
+    rows,
+    size: Math.min(design.maxFont, Math.max(12, room(design) / (longest * advance))),
+  }
 }
