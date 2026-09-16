@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom'
+import PasswordChange from './PasswordChange.jsx'
 import { useAuth } from './useAuth.js'
 import './admin.css'
 
@@ -28,7 +29,7 @@ function NoAccess() {
 }
 
 export default function RequireAuth({ children }) {
-  const { loading, session, role } = useAuth()
+  const { loading, session, role, mustChangePassword } = useAuth()
 
   if (loading) {
     return <div className="admin-notice">Betöltés…</div>
@@ -40,6 +41,10 @@ export default function RequireAuth({ children }) {
 
   if (!role) {
     return <NoAccess />
+  }
+
+  if (mustChangePassword) {
+    return <PasswordChange />
   }
 
   return children

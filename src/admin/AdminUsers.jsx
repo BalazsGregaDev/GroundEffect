@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import { adminRoles } from './roles.js'
+import { functionErrorMessage } from '../lib/functionError.js'
 import './AdminUsers.css'
 
 export default function AdminUsers() {
@@ -11,6 +12,9 @@ export default function AdminUsers() {
   const [error, setError] = useState(null)
   const [newEmail, setNewEmail] = useState('')
   const [newRole, setNewRole] = useState('admin')
+  const [newPassword, setNewPassword] = useState('')
+  const [adding, setAdding] = useState(false)
+  const [notice, setNotice] = useState(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -47,17 +51,24 @@ export default function AdminUsers() {
       return
     }
 
-    const { error } = await supabase
-      .from('admin_users')
-      .upsert({ email, role: newRole }, { onConflict: 'email' })
+    setAdding(true)
+    setError(null)
+    setNotice(null)
 
-    if (error) {
-      setError(error)
+    const { error: functionError } = await supabase.functions.invoke('create-admin-user', {
+      body: { email, password: newPassword, role: newRole },
+    })
+
+    setAdding(false)
+
+    if (functionError) {
+      setError({ message: await functionErrorMessage(functionError, 'A felvétel nem sikerült.') })
       return
     }
 
     setNewEmail('')
-    setError(null)
+    setNewPassword('')
+    setNotice(`${email} felvéve. Az első belépésnél kötelező lesz jelszót cserélnie.`)
     load()
   }
 
@@ -88,10 +99,10 @@ export default function AdminUsers() {
       <h1>Felhasználók</h1>
 
       <p className="admin-readonly">
-        Itt a szerepkört osztod ki, nem a belépést. A Supabase-fiókot továbbra is a
-        Supabase Auth felületén kell létrehozni. Ha előre felveszed valakit e-mail cím
-        alapján, a fiók elkészültekor rögtön a megadott szerepkörrel lép be; ha előbb
-        készül el a fiók, demó szerepkörrel jelenik meg itt, és utána állíthatod át.
+        A felvétellel egyszerre készül el a belépéshez használható fiók és a szerepkör.
+        Az itt megadott jelszó ideiglenes: az illető első belépésekor a rendszer a
+        jelszócserét kéri, és addig semmi mást nem enged. Ha a címhez már tartozik fiók,
+        a felvétel nem megy át — annak a szerepkörét a lenti listában állítsd.
       </p>
 
       <form className="users-add" onSubmit={addUser}>
@@ -117,10 +128,24 @@ export default function AdminUsers() {
           </select>
         </label>
 
-        <button type="submit" className="admin-button">
-          Felvétel
+        <label className="admin-field">
+          <span>Ideiglenes jelszó</span>
+          <input
+            type="text"
+            value={newPassword}
+            onChange={(event) => setNewPassword(event.target.value)}
+            autoComplete="off"
+            minLength={8}
+            required
+          />
+        </label>
+
+        <button type="submit" className="admin-button" disabled={adding}>
+          {adding ? 'Felvétel…' : 'Felvétel'}
         </button>
       </form>
+
+      {notice && <p className="admin-readonly">{notice}</p>}
 
       {error && <p className="admin-error">Hiba: {error.message}</p>}
 

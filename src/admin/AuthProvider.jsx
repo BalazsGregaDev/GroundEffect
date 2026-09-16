@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { AuthContext } from './authContext.js'
 
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
   const [role, setRole] = useState(undefined)
+  const [mustChangePassword, setMustChangePassword] = useState(false)
   const [roleError, setRoleError] = useState(null)
 
   useEffect(() => {
@@ -17,6 +18,20 @@ export default function AuthProvider({ children }) {
     return () => listener.subscription.unsubscribe()
   }, [])
 
+  const readProfile = useCallback(async () => {
+    if (!session) {
+      return { role: null, mustChange: false, error: null }
+    }
+
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('role, must_change_password')
+      .eq('email', session.user.email)
+      .maybeSingle()
+
+    return { role: data?.role ?? null, mustChange: data?.must_change_password ?? false, error }
+  }, [session])
+
   useEffect(() => {
     if (session === undefined) {
       return
@@ -24,23 +39,25 @@ export default function AuthProvider({ children }) {
 
     if (session === null) {
       setRole(null)
+      setMustChangePassword(false)
       setRoleError(null)
       return
     }
 
     let active = true
 
-    supabase.rpc('current_admin_role').then(({ data, error }) => {
+    readProfile().then((profile) => {
       if (active) {
-        setRole(data ?? null)
-        setRoleError(error)
+        setRole(profile.role)
+        setMustChangePassword(profile.mustChange)
+        setRoleError(profile.error)
       }
     })
 
     return () => {
       active = false
     }
-  }, [session])
+  }, [session, readProfile])
 
   const value = {
     session,
@@ -49,8 +66,16 @@ export default function AuthProvider({ children }) {
     loading: session === undefined || role === undefined,
     canEdit: role === 'superadmin' || role === 'admin',
     isSuperadmin: role === 'superadmin',
+    mustChangePassword,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     signOut: () => supabase.auth.signOut(),
+    refreshProfile: async () => {
+      const profile = await readProfile()
+
+      setRole(profile.role)
+      setMustChangePassword(profile.mustChange)
+      setRoleError(profile.error)
+    },
   }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
