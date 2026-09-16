@@ -111,3 +111,13 @@
     margin-left: 0.3rem;
   }
 }
+
+.board-skeleton {
+  display: grid;
+  gap: 1px;
+}
+
+.board-skel-row {
+  display: block;
+  height: 3.4rem;
+}

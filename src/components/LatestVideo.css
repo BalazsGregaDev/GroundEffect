@@ -136,3 +136,16 @@ button.player:hover img {
     max-width: none;
   }
 }
+
+.latest-skel-title {
+  display: block;
+  width: min(60%, 26rem);
+  height: 1.1rem;
+}
+
+.latest-skel-meta {
+  display: block;
+  width: 12rem;
+  height: 0.8rem;
+  margin-top: 0.6rem;
+}

@@ -4,6 +4,7 @@ import PlayIcon from './PlayIcon.jsx'
 import { youtubeChannel } from '../data/site.js'
 import { embedUrl, playerPermissions, thumbnailUrl } from '../lib/youtube.js'
 import { formatCount, relativeTime } from '../lib/format.js'
+import '../styles/skeleton.css'
 import './LatestVideo.css'
 
 export default function LatestVideo({ video, loading }) {
@@ -15,7 +16,15 @@ export default function LatestVideo({ video, loading }) {
         Legfrissebb adás
       </SectionTitle>
 
-      {loading && <p className="latest-message">Videók betöltése…</p>}
+      {loading && (
+        <div className="latest-inner">
+          <div className="player skel" />
+          <div className="latest-meta">
+            <span className="skel latest-skel-title" />
+            <span className="skel latest-skel-meta" />
+          </div>
+        </div>
+      )}
 
       {!loading && !video && (
         <p className="latest-message">Még nincs szinkronizált videó a csatornáról.</p>

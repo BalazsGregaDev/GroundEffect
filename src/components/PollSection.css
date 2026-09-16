@@ -74,12 +74,25 @@
 }
 
 .poll-score {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  justify-content: flex-end;
   min-width: 5.5rem;
-  text-align: right;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.88rem;
   color: var(--gold);
+}
+
+.poll-score .varrow {
+  width: 0.85em;
+  height: 0.85em;
+  stroke-width: 2.6;
+}
+
+.poll-score .varrow.is-down {
+  color: var(--smoke);
 }
 
 .poll-bar {

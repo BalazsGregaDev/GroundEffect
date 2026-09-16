@@ -16,6 +16,19 @@ const raceKeys: Record<string, string> = {
   indycar: 'race',
 }
 
+const seriesLabels: Record<string, Record<string, string>> = {
+  motogp: {
+    fp1: 'FP1',
+    practice: 'Practice',
+    fp2: 'FP2',
+    qualifying1: 'Q1',
+    qualifying2: 'Q2',
+    sprint: 'Sprint',
+    warmup: 'Warm Up',
+    race: 'Futam',
+  },
+}
+
 const labels: Record<string, string> = {
   fp1: '1. szabadedzés',
   fp2: '2. szabadedzés',
@@ -37,7 +50,6 @@ type RawRace = {
   round?: number
   name?: string
   location?: string
-  track?: string
   latitude?: number | string
   longitude?: number | string
   slug?: string
@@ -53,37 +65,39 @@ function json(body: unknown, status = 200) {
 }
 
 function describe(series: string, key: string) {
+  const named = seriesLabels[series]?.[key] ?? labels[key]
+
   if (key === raceKeys[series]) {
-    return { kind: 'race', label: labels[key] ?? 'Futam' }
+    return { kind: 'race', label: named ?? 'Futam' }
   }
 
   const numbered = /^practice(\d+)$/.exec(key)
 
   if (numbered) {
-    return { kind: 'practice', label: `${numbered[1]}. szabadedzés` }
+    return { kind: 'practice', label: named ?? `${numbered[1]}. szabadedzés` }
   }
 
   if (key === 'practice' || key === 'FinalPractice' || /^fp\d+$/.test(key)) {
-    return { kind: 'practice', label: labels[key] ?? 'Szabadedzés' }
+    return { kind: 'practice', label: named ?? 'Szabadedzés' }
   }
 
   if (key === 'sprintQualifying') {
-    return { kind: 'sprint_qualifying', label: labels[key] }
+    return { kind: 'sprint_qualifying', label: named ?? 'Sprint időmérő' }
   }
 
   if (key.startsWith('qualifying')) {
-    return { kind: 'qualifying', label: labels[key] ?? 'Időmérő' }
+    return { kind: 'qualifying', label: named ?? 'Időmérő' }
   }
 
   if (key === 'sprint') {
-    return { kind: 'sprint', label: labels[key] }
+    return { kind: 'sprint', label: named ?? 'Sprintfutam' }
   }
 
   if (key === 'warmup') {
-    return { kind: 'warmup', label: labels[key] }
+    return { kind: 'warmup', label: named ?? 'Warm-up' }
   }
 
-  return { kind: 'other', label: labels[key] ?? key }
+  return { kind: 'other', label: named ?? key }
 }
 
 function coordinate(value: unknown) {
@@ -97,7 +111,6 @@ export function normalize(series: string, races: RawRace[]) {
     round: race.round ?? null,
     name: race.name ?? '',
     location: race.location ?? null,
-    circuit: race.track ?? null,
     latitude: coordinate(race.latitude),
     longitude: coordinate(race.longitude),
     slug: race.slug ?? null,

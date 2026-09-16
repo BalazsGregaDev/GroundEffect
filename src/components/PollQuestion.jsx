@@ -32,14 +32,23 @@ function SimpleVote({ option, mine, onVote }) {
   )
 }
 
-function score(question, option, options, view) {
+function Score({ question, option, options, view, updown }) {
   if (view === 'percent') {
-    return `${sharePercent(question, options, option)}%`
+    return <span className="poll-score">{sharePercent(question, options, option)}%</span>
   }
 
-  return question.vote_style === 'simple'
-    ? `↑${option.up_votes}`
-    : `↑${option.up_votes} ↓${option.down_votes}`
+  if (!updown) {
+    return <span className="poll-score">{option.up_votes}</span>
+  }
+
+  return (
+    <span className="poll-score">
+      <VoteArrow direction="up" />
+      <span>{option.up_votes}</span>
+      <VoteArrow direction="down" />
+      <span>{option.down_votes}</span>
+    </span>
+  )
 }
 
 export default function PollQuestion({ question, closed, view, myVotes, onVote, onSuggest }) {
@@ -89,6 +98,13 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
                   {question.has_votes && (
                     <td className="poll-result-col">
                       <div className="poll-result">
+                        <span className="poll-bar">
+                          <span
+                            className="poll-bar-fill"
+                            style={{ width: `${sharePercent(question, options, option)}%` }}
+                          />
+                        </span>
+
                         {!closed && updown && (
                           <VoteButton
                             direction="up"
@@ -98,13 +114,13 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
                           />
                         )}
 
-                        <span className="poll-bar">
-                          <span
-                            className="poll-bar-fill"
-                            style={{ width: `${sharePercent(question, options, option)}%` }}
-                          />
-                        </span>
-                        <span className="poll-score">{score(question, option, options, view)}</span>
+                        <Score
+                          question={question}
+                          option={option}
+                          options={options}
+                          view={view}
+                          updown={updown}
+                        />
 
                         {!closed && updown && (
                           <VoteButton

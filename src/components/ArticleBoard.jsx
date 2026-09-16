@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import SectionTitle from './SectionTitle.jsx'
 import { usePublishedArticles } from '../hooks/usePublishedArticles.js'
 import { relativeTime } from '../lib/format.js'
+import '../styles/skeleton.css'
 import './ArticleBoard.css'
 
 export default function ArticleBoard() {
@@ -13,7 +14,13 @@ export default function ArticleBoard() {
         Cikkek
       </SectionTitle>
 
-      {loading && <p className="board-message">Cikkek betöltése…</p>}
+      {loading && (
+        <div className="board-skeleton" aria-hidden="true">
+          {[0, 1, 2, 3].map((row) => (
+            <span className="skel board-skel-row" key={row} />
+          ))}
+        </div>
+      )}
 
       {error && <p className="board-message">A cikkeket most nem sikerült betölteni.</p>}
 
