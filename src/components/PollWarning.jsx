@@ -84,8 +84,8 @@ export default function PollWarning() {
                 </span>
                 <strong>
                   {question.vote_style === 'simple'
-                    ? `▲${option.up_votes}`
-                    : `▲${option.up_votes} ▼${option.down_votes}`}
+                    ? `↑${option.up_votes}`
+                    : `↑${option.up_votes} ↓${option.down_votes}`}
                 </strong>
               </li>
             ))}

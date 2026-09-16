@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import SeriesCover from './SeriesCover.jsx'
-import { raceCountdown, racePlace } from '../lib/raceClock.js'
+import { raceCountdown, raceMoment, racePlace } from '../lib/raceClock.js'
 
 function ArticleCard({ article, series }) {
   if (!article) {
@@ -41,6 +41,7 @@ export default function NextRaceCard({ series, now }) {
                 <>
                   <span className="rcal-race">{item.race.name}</span>
                   <span className="rcal-where">{racePlace(item.race)}</span>
+                  <span className="rcal-when">{raceMoment(item.race.starts_at)}</span>
                   <span className="rcal-clock">{raceCountdown(item.race.starts_at, now)}</span>
                 </>
               ) : (

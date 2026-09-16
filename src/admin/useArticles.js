@@ -2,7 +2,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 
 const columns =
-  'id, slug, title, status, featured, views, reading_minutes, published_at, updated_at, categories (name)'
+  'id, slug, title, lead, status, featured, views, reading_minutes, published_at, updated_at, ' +
+  'categories (name)'
 
 export function useArticles({ status, search }) {
   const [articles, setArticles] = useState([])
@@ -19,7 +20,8 @@ export function useArticles({ status, search }) {
     }
 
     if (search) {
-      query = query.ilike('title', `%${search}%`)
+      const pattern = `%${search}%`.replace(/\\/g, '\\\\').replace(/"/g, '\\"')
+      query = query.or(`title.ilike."${pattern}",lead.ilike."${pattern}"`)
     }
 
     const result = await query

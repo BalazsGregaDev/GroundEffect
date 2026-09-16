@@ -2,45 +2,33 @@ import { useState } from 'react'
 import VoteArrow from './VoteArrow.jsx'
 import { columnNames, optionLabel, rankedOptions, sharePercent } from '../lib/poll.js'
 
-function VoteButtons({ question, option, mine, onVote }) {
-  if (question.vote_style === 'simple') {
-    return (
-      <button
-        type="button"
-        className={mine === 'up' ? 'poll-simple-vote is-mine' : 'poll-simple-vote'}
-        onClick={() => onVote(option, 'up')}
-        aria-label={`Szavazat erre: ${optionLabel(option)}`}
-        aria-pressed={mine === 'up'}
-      >
-        Szavazok
-      </button>
-    )
-  }
+function VoteButton({ direction, option, mine, onVote }) {
+  const active = mine === direction
 
   return (
-    <span className="poll-vote">
-      <button
-        type="button"
-        className={mine === 'up' ? 'poll-vbtn poll-vbtn--up is-mine' : 'poll-vbtn poll-vbtn--up'}
-        onClick={() => onVote(option, 'up')}
-        aria-label={`${optionLabel(option)} felfelé`}
-        aria-pressed={mine === 'up'}
-      >
-        <VoteArrow direction="up" />
-      </button>
+    <button
+      type="button"
+      className={`poll-vbtn poll-vbtn--${direction}${active ? ' is-mine' : ''}`}
+      onClick={() => onVote(option, direction)}
+      aria-label={`${optionLabel(option)} ${direction === 'up' ? 'felfelé' : 'lefelé'}`}
+      aria-pressed={active}
+    >
+      <VoteArrow direction={direction} />
+    </button>
+  )
+}
 
-      <button
-        type="button"
-        className={
-          mine === 'down' ? 'poll-vbtn poll-vbtn--down is-mine' : 'poll-vbtn poll-vbtn--down'
-        }
-        onClick={() => onVote(option, 'down')}
-        aria-label={`${optionLabel(option)} lefelé`}
-        aria-pressed={mine === 'down'}
-      >
-        <VoteArrow direction="down" />
-      </button>
-    </span>
+function SimpleVote({ option, mine, onVote }) {
+  return (
+    <button
+      type="button"
+      className={mine === 'up' ? 'poll-simple-vote is-mine' : 'poll-simple-vote'}
+      onClick={() => onVote(option, 'up')}
+      aria-label={`Szavazat erre: ${optionLabel(option)}`}
+      aria-pressed={mine === 'up'}
+    >
+      Szavazok
+    </button>
   )
 }
 
@@ -50,8 +38,8 @@ function score(question, option, options, view) {
   }
 
   return question.vote_style === 'simple'
-    ? `▲${option.up_votes}`
-    : `▲${option.up_votes} ▼${option.down_votes}`
+    ? `↑${option.up_votes}`
+    : `↑${option.up_votes} ↓${option.down_votes}`
 }
 
 export default function PollQuestion({ question, closed, view, myVotes, onVote, onSuggest }) {
@@ -60,6 +48,7 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
 
   const options = rankedOptions(question, question.poll_options, closed)
   const names = columnNames(question)
+  const updown = question.vote_style !== 'simple'
 
   async function submit() {
     setState('sending')
@@ -100,6 +89,15 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
                   {question.has_votes && (
                     <td className="poll-result-col">
                       <div className="poll-result">
+                        {!closed && updown && (
+                          <VoteButton
+                            direction="up"
+                            option={option}
+                            mine={myVotes[option.id]}
+                            onVote={onVote}
+                          />
+                        )}
+
                         <span className="poll-bar">
                           <span
                             className="poll-bar-fill"
@@ -107,9 +105,18 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
                           />
                         </span>
                         <span className="poll-score">{score(question, option, options, view)}</span>
-                        {!closed && (
-                          <VoteButtons
-                            question={question}
+
+                        {!closed && updown && (
+                          <VoteButton
+                            direction="down"
+                            option={option}
+                            mine={myVotes[option.id]}
+                            onVote={onVote}
+                          />
+                        )}
+
+                        {!closed && !updown && (
+                          <SimpleVote
                             option={option}
                             mine={myVotes[option.id]}
                             onVote={onVote}

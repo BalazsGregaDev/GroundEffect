@@ -45,6 +45,16 @@ export async function uploadImage(file, onStage) {
   return result.secure_url
 }
 
+export async function deleteImages(...urls) {
+  const wanted = urls.flat().filter((url) => typeof url === 'string' && url.includes('/upload/'))
+
+  if (wanted.length === 0) {
+    return
+  }
+
+  await supabase.functions.invoke('delete-image', { body: { urls: wanted } })
+}
+
 export function coverUrl(url) {
   return cloudinaryUrl(url, 'f_auto,q_auto,w_1200')
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
 import { useRaceSeries } from './useRaceSeries.js'
@@ -21,11 +21,12 @@ import './RaceEditor.css'
 
 export default function RaceEditor() {
   const { id } = useParams()
+  const [params] = useSearchParams()
   const navigate = useNavigate()
   const { canEdit } = useAuth()
   const { series } = useRaceSeries()
 
-  const [race, setRace] = useState(id ? null : emptyRace())
+  const [race, setRace] = useState(id ? null : emptyRace(params.get('sorozat') ?? ''))
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState(null)
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -355,7 +356,7 @@ export default function RaceEditor() {
           />
         </label>
 
-        <div className="raced-switch">
+        <label className="raced-switch">
           <ToggleSwitch
             checked={race.tbc}
             onChange={(next) => update('tbc', next)}
@@ -363,7 +364,7 @@ export default function RaceEditor() {
             disabled={!canEdit}
           />
           <span>Nem végleges időpont</span>
-        </div>
+        </label>
       </div>
 
       <div className="raced-group">

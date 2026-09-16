@@ -53,32 +53,6 @@ export function closedMoment(poll) {
   return stamp ? new Date(stamp).getTime() : null
 }
 
-export function remainingVisible(poll, now) {
-  if (!isClosed(poll, now) || poll.hide_after_hours === 0) {
-    return null
-  }
-
-  const moment = closedMoment(poll)
-
-  return moment === null ? null : moment + poll.hide_after_hours * 3600000 - now
-}
-
-export function humanDuration(ms) {
-  const minutes = Math.max(0, Math.floor(ms / 60000))
-  const days = Math.floor(minutes / 1440)
-  const hours = Math.floor((minutes % 1440) / 60)
-
-  if (days > 0) {
-    return hours > 0 ? `${days} nap ${hours} óra` : `${days} nap`
-  }
-
-  if (hours > 0) {
-    return `${hours} óra`
-  }
-
-  return `${minutes} perc`
-}
-
 export function isExpired(poll, now) {
   if (!isClosed(poll, now) || poll.hide_after_hours === 0) {
     return false

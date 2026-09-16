@@ -205,6 +205,11 @@
     border-color 0.15s;
 }
 
+.polled-add--below {
+  align-self: flex-start;
+  margin-top: 0.6rem;
+}
+
 .polled-line button:hover:not(:disabled),
 .polled-rowbtns button:hover:not(:disabled),
 .polled-add:hover {

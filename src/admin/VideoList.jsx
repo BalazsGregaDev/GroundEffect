@@ -197,7 +197,7 @@ export default function VideoList() {
                 <td className="list-number">{relativeTime(video.published_at)}</td>
                 <td>
                   <div className="video-actions">
-                    <div className={video.featured ? 'video-switch is-on' : 'video-switch'}>
+                    <label className={video.featured ? 'video-switch is-on' : 'video-switch'}>
                       <ToggleSwitch
                         checked={video.featured}
                         onChange={() => toggleFeatured(video)}
@@ -205,9 +205,9 @@ export default function VideoList() {
                         disabled={!canEdit}
                       />
                       <span className="video-switch-label">Kiemelt</span>
-                    </div>
+                    </label>
 
-                    <div className={video.hidden ? 'video-switch is-on' : 'video-switch'}>
+                    <label className={video.hidden ? 'video-switch is-on' : 'video-switch'}>
                       <ToggleSwitch
                         checked={video.hidden}
                         onChange={() => toggleHidden(video)}
@@ -215,7 +215,7 @@ export default function VideoList() {
                         disabled={!canEdit}
                       />
                       <span className="video-switch-label">Rejtett</span>
-                    </div>
+                    </label>
                   </div>
                 </td>
               </tr>

@@ -4,7 +4,7 @@ import StarterKit from '@tiptap/starter-kit'
 import { FigureNode } from './FigureNode.js'
 import FigurePanel from './FigurePanel.jsx'
 import { defaultFigure } from './figureOptions.js'
-import { uploadImage } from '../lib/cloudinary.js'
+import { deleteImages, uploadImage } from '../lib/cloudinary.js'
 import { uploadLabel } from './uploadStage.js'
 import '../styles/figure.css'
 import './RichTextField.css'
@@ -123,6 +123,14 @@ export default function RichTextField({ label, value, onChange, disabled }) {
         wrap: attrs.wrap,
       },
     })
+  }
+
+  function cancelFigure() {
+    if (figure.mode === 'insert') {
+      deleteImages(figure.src)
+    }
+
+    setFigure(null)
   }
 
   function applyFigure() {
@@ -286,7 +294,7 @@ export default function RichTextField({ label, value, onChange, disabled }) {
           values={figure.values}
           onChange={(values) => setFigure({ ...figure, values })}
           onSubmit={applyFigure}
-          onCancel={() => setFigure(null)}
+          onCancel={cancelFigure}
           submitLabel={figure.mode === 'insert' ? 'Beszúrás' : 'Frissítés'}
         />
       )}

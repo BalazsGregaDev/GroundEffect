@@ -31,3 +31,15 @@ export function nextSessionIndex(sessions, now) {
 export function racePlace(race) {
   return race.circuit || race.location || race.name
 }
+
+const hungarianTime = new Intl.DateTimeFormat('hu-HU', {
+  timeZone: 'Europe/Budapest',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
+export function raceMoment(startsAt) {
+  return startsAt ? hungarianTime.format(new Date(startsAt)) : null
+}

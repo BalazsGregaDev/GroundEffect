@@ -84,7 +84,7 @@ export function exportTxt(polls) {
         const votes = question.hasVotes
           ? question.voteStyle === 'simple'
             ? ` — ${option.up} szavazat`
-            : ` — ▲${option.up} / ▼${option.down} (nettó: ${net(question, option) >= 0 ? '+' : ''}${net(question, option)})`
+            : ` — ↑${option.up} / ↓${option.down} (nettó: ${net(question, option) >= 0 ? '+' : ''}${net(question, option)})`
           : ''
 
         lines.push(`${index + 1}. ${label(option)}${votes}`)
@@ -153,7 +153,7 @@ export function exportPng(polls) {
 
       if (question.hasVotes) {
         ctx.fillText(
-          question.voteStyle === 'simple' ? '▲' : '▲/▼',
+          question.voteStyle === 'simple' ? '↑' : '↑/↓',
           png.pad + names.length * columnWidth + 4,
           y + 20,
         )
@@ -174,7 +174,7 @@ export function exportPng(polls) {
 
         if (question.hasVotes) {
           ctx.fillText(
-            question.voteStyle === 'simple' ? `▲${option.up}` : `▲${option.up} ▼${option.down}`,
+            question.voteStyle === 'simple' ? `↑${option.up}` : `↑${option.up} ↓${option.down}`,
             png.pad + names.length * columnWidth + 4,
             y + 20,
           )

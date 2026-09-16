@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { readingMinutes, slugify } from '../lib/text.js'
+import { deleteImages } from '../lib/cloudinary.js'
+import { bodyImages, droppedImages } from '../lib/imageCleanup.js'
 import { useAuth } from './useAuth.js'
 import { useLookup } from './useLookup.js'
 import { statuses } from './statuses.js'
@@ -26,6 +28,7 @@ const emptyForm = {
   featured: false,
   reading_minutes: '',
   published_at: '',
+  primary_series_tag_id: '',
 }
 
 function toLocalInput(iso) {
@@ -65,10 +68,33 @@ async function loadArticle(id) {
       featured: data.featured,
       reading_minutes: data.reading_minutes ?? '',
       published_at: toLocalInput(data.published_at),
+      primary_series_tag_id: data.primary_series_tag_id ?? '',
     },
     tags: data.article_tags.map((row) => row.tags),
     facebookPostId: data.facebook_post_id,
   }
+}
+
+function SeriesSelect({ label, value, options, onChange, disabled }) {
+  return (
+    <label className="admin-field">
+      <span>{label}</span>
+      <select
+        value={value?.id ?? ''}
+        onChange={(event) =>
+          onChange(options.find((tag) => tag.id === event.target.value) ?? null)
+        }
+        disabled={disabled}
+      >
+        <option value="">{label === 'Versenysorozat' ? 'Válassz sorozatot' : 'Nincs'}</option>
+        {options.map((tag) => (
+          <option key={tag.id} value={tag.id}>
+            {tag.name}
+          </option>
+        ))}
+      </select>
+    </label>
+  )
 }
 
 function toPayload(form) {
@@ -87,6 +113,7 @@ function toPayload(form) {
     reading_minutes: form.reading_minutes ? Number(form.reading_minutes) : null,
     published_at:
       form.status === 'published' && !publishedAt ? new Date().toISOString() : publishedAt,
+    primary_series_tag_id: form.primary_series_tag_id || null,
   }
 }
 
@@ -184,6 +211,16 @@ export default function ArticleEditor() {
     setForm((current) => ({ ...current, [field]: value }))
   }
 
+  function changeCover(url) {
+    const current = form.cover_url
+
+    if (current && current !== url && current !== saved?.form.cover_url) {
+      deleteImages(current)
+    }
+
+    update('cover_url', url)
+  }
+
   function restorePrevious() {
     setForm(previous.form)
     setTags(previous.tags)
@@ -218,7 +255,18 @@ export default function ArticleEditor() {
       return
     }
 
-    setPrevious(saved)
+    const orphans = [
+      ...(saved?.form.cover_url && saved.form.cover_url !== payload.cover_url
+        ? [saved.form.cover_url]
+        : []),
+      ...droppedImages(saved?.form.body, payload.body),
+    ]
+
+    if (orphans.length > 0) {
+      deleteImages(orphans)
+    }
+
+    setPrevious(orphans.length > 0 ? null : saved)
     setSaved({ form, tags })
 
     if (!id) {
@@ -226,13 +274,18 @@ export default function ArticleEditor() {
     }
   }
 
-  function chooseSeries(event) {
-    const picked = seriesTags.find((tag) => tag.id === event.target.value) ?? null
+  function setSeries(primary, related) {
+    const chosen = [primary, ...related].filter(Boolean)
 
-    setTags((current) => [
-      ...current.filter((tag) => tag.kind !== 'series'),
-      ...(picked ? [picked] : []),
-    ])
+    update('primary_series_tag_id', primary?.id ?? '')
+    setTags((current) => [...current.filter((tag) => tag.kind !== 'series'), ...chosen])
+  }
+
+  function pickRelated(index, tag) {
+    const slots = [relatedSeries[0] ?? null, relatedSeries[1] ?? null]
+    slots[index] = tag
+
+    setSeries(seriesTag, slots.filter(Boolean))
   }
 
   async function otherFeatured() {
@@ -315,6 +368,7 @@ export default function ArticleEditor() {
       return
     }
 
+    deleteImages(saved?.form.cover_url, bodyImages(saved?.form.body))
     navigate('/admin/cikkek')
   }
 
@@ -324,7 +378,10 @@ export default function ArticleEditor() {
 
   const readOnly = !canEdit
   const seriesTags = allTags.filter((tag) => tag.kind === 'series')
-  const seriesTag = tags.find((tag) => tag.kind === 'series') ?? null
+  const seriesTag = seriesTags.find((tag) => tag.id === form.primary_series_tag_id) ?? null
+  const relatedSeries = tags.filter(
+    (tag) => tag.kind === 'series' && tag.id !== form.primary_series_tag_id,
+  )
   const canPublish = isSuperadmin || saved?.form.status === 'published'
   const isLive =
     saved?.form.status === 'published' &&
@@ -486,17 +543,30 @@ export default function ArticleEditor() {
             </select>
           </label>
 
-          <label className="admin-field">
-            <span>Versenysorozat</span>
-            <select value={seriesTag?.id ?? ''} onChange={chooseSeries} disabled={readOnly}>
-              <option value="">Válassz sorozatot</option>
-              {seriesTags.map((tag) => (
-                <option key={tag.id} value={tag.id}>
-                  {tag.name}
-                </option>
-              ))}
-            </select>
-          </label>
+          <SeriesSelect
+            label="Versenysorozat"
+            value={seriesTag}
+            options={seriesTags.filter(
+              (tag) => !relatedSeries.some((other) => other.id === tag.id),
+            )}
+            onChange={(tag) => setSeries(tag, relatedSeries)}
+            disabled={readOnly}
+          />
+
+          {[0, 1].map((index) => (
+            <SeriesSelect
+              key={index}
+              label="Kapcsolódó sorozat"
+              value={relatedSeries[index] ?? null}
+              options={seriesTags.filter(
+                (tag) =>
+                  tag.id !== seriesTag?.id &&
+                  tag.id !== (relatedSeries[index === 0 ? 1 : 0] ?? {}).id,
+              )}
+              onChange={(tag) => pickRelated(index, tag)}
+              disabled={readOnly || !seriesTag}
+            />
+          ))}
 
           <TagField
             tags={tags.filter((tag) => tag.kind !== 'series')}
@@ -507,7 +577,7 @@ export default function ArticleEditor() {
           <CoverField
             value={form.cover_url}
             focus={form.cover_focus}
-            onChange={(url) => update('cover_url', url)}
+            onChange={changeCover}
             onFocusChange={(focus) => update('cover_focus', focus)}
             disabled={readOnly}
           />

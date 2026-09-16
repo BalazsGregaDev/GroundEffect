@@ -89,7 +89,7 @@ export default function FigurePanel({ src, values, onChange, onSubmit, onCancel,
           />
         </label>
 
-        <div className="figure-row">
+        <label className="figure-row">
           <span className="figure-label">Szöveg körbefuttatása</span>
           <ToggleSwitch
             checked={wrapping}
@@ -97,7 +97,7 @@ export default function FigurePanel({ src, values, onChange, onSubmit, onCancel,
             label="Szöveg körbefuttatása"
             disabled={fullWidth}
           />
-        </div>
+        </label>
 
         {fullWidth && (
           <p className="figure-hint">Teljes szélességnél nincs mit körbefuttatni.</p>

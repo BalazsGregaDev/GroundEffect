@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import { slugify } from '../lib/text.js'
@@ -196,7 +197,13 @@ export default function RaceSeriesManager({ series, canEdit, onChange, onError }
                     disabled={!canEdit}
                   />
                 </td>
-                <td>
+                <td className="series-actions">
+                  {canEdit && !item.source_key && (
+                    <Link className="series-add-race" to={`/admin/naptar/uj?sorozat=${item.id}`}>
+                      Futam felvétele
+                    </Link>
+                  )}
+
                   {canEdit && !item.source_key && count === 0 && confirmId !== item.id && (
                     <button
                       type="button"
@@ -237,7 +244,6 @@ export default function RaceSeriesManager({ series, canEdit, onChange, onError }
               type="text"
               value={name}
               onChange={(event) => setName(event.target.value)}
-              placeholder="Pl. Dakar Rali"
             />
           </label>
 

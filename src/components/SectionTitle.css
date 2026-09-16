@@ -9,6 +9,10 @@
   border-bottom: 1px solid var(--graphite);
 }
 
+.section-title-text {
+  min-width: 0;
+}
+
 .section-title a {
   font-family: var(--body);
   font-weight: 400;

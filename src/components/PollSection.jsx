@@ -2,26 +2,20 @@ import { useEffect, useState } from 'react'
 import SectionTitle from './SectionTitle.jsx'
 import PollQuestion from './PollQuestion.jsx'
 import ChoiceSwitch from './ChoiceSwitch.jsx'
+import VoteArrow from './VoteArrow.jsx'
 import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
-import { useIsAdmin } from '../hooks/useIsAdmin.js'
-import {
-  countdown,
-  hasStarted,
-  humanDuration,
-  isClosed,
-  isExpired,
-  remainingVisible,
-} from '../lib/poll.js'
+import { countdown, hasStarted, isClosed, isExpired } from '../lib/poll.js'
 import { readPreference, readVotes, voterId, writePreference, writeVote } from '../lib/pollVoter.js'
 import './PollSection.css'
 
 const viewKey = 'ge_poll_view'
+const openKey = 'ge_poll_open'
 
 export default function PollSection() {
   const { poll, loading, reload } = useActivePoll()
-  const isAdmin = useIsAdmin()
   const [view, setView] = useState(null)
+  const [open, setOpen] = useState(() => readPreference(openKey, true) !== false)
   const [myVotes, setMyVotes] = useState(readVotes)
   const [now, setNow] = useState(() => Date.now())
   const [voter] = useState(voterId)
@@ -46,12 +40,18 @@ export default function PollSection() {
   }
 
   const closed = isClosed(poll, now)
-  const remaining = remainingVisible(poll, now)
   const withVotes = poll.poll_questions.some((question) => question.has_votes)
 
   function chooseView(next) {
     setView(next)
     writePreference(viewKey, next)
+  }
+
+  function toggleOpen() {
+    setOpen((current) => {
+      writePreference(openKey, !current)
+      return !current
+    })
   }
 
   async function vote(option, direction) {
@@ -90,15 +90,38 @@ export default function PollSection() {
 
   return (
     <section className="poll" id="szavazas">
-      <SectionTitle>{poll.title || 'Szavazás'}</SectionTitle>
+      <SectionTitle
+        action={
+          <button
+            type="button"
+            className="poll-collapse"
+            aria-expanded={open}
+            aria-label={open ? 'Szavazás összecsukása' : 'Szavazás lenyitása'}
+            onClick={toggleOpen}
+          >
+            <VoteArrow direction={open ? 'up' : 'down'} />
+          </button>
+        }
+      >
+        {poll.title || 'Szavazás'}
+        {closed && <span className="poll-title-closed"> – Lezárult</span>}
+      </SectionTitle>
 
-      {!closed && poll.closes_at && (
+      {!open && (
+        <ul className="poll-collapsed">
+          {poll.poll_questions.map((question, index) => (
+            <li key={question.id}>{question.title || `${index + 1}. kérdés`}</li>
+          ))}
+        </ul>
+      )}
+
+      {open && !closed && poll.closes_at && (
         <p className="poll-countdown">
           A szavazás zárul: <strong>{countdown(new Date(poll.closes_at).getTime() - now)}</strong>
         </p>
       )}
 
-      {withVotes && (
+      {open && withVotes && (
         <div className="poll-toggles">
           <ChoiceSwitch
             value={view ?? poll.default_view}
@@ -110,28 +133,18 @@ export default function PollSection() {
         </div>
       )}
 
-      {poll.poll_questions.map((question) => (
-        <PollQuestion
-          key={question.id}
-          question={question}
-          closed={closed}
-          view={view ?? poll.default_view}
-          myVotes={myVotes}
-          onVote={vote}
-          onSuggest={suggest}
-        />
-      ))}
-
-      {closed && (
-        <p className="poll-closed">
-          A szavazás lezárult.
-          {isAdmin && remaining !== null && (
-            <span className="poll-admin-note">
-              Csak adminként látod: az eredmény még {humanDuration(remaining)} marad a főoldalon.
-            </span>
-          )}
-        </p>
-      )}
+      {open &&
+        poll.poll_questions.map((question) => (
+          <PollQuestion
+            key={question.id}
+            question={question}
+            closed={closed}
+            view={view ?? poll.default_view}
+            myVotes={myVotes}
+            onVote={vote}
+            onSuggest={suggest}
+          />
+        ))}
     </section>
   )
 }

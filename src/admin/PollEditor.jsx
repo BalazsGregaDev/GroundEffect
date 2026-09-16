@@ -27,6 +27,7 @@ export default function PollEditor() {
 
   const [poll, setPoll] = useState(id ? null : emptyPoll)
   const [liveActive, setLiveActive] = useState(false)
+  const [savedCloses, setSavedCloses] = useState(null)
   const [closing, setClosing] = useState(false)
   const [confirmClose, setConfirmClose] = useState(false)
   const [removedQuestions, setRemovedQuestions] = useState([])
@@ -58,6 +59,7 @@ export default function PollEditor() {
         } else {
           setPoll(fromRow(data))
           setLiveActive(data.active)
+          setSavedCloses(data.closes_at)
         }
 
         setLoading(false)
@@ -76,7 +78,7 @@ export default function PollEditor() {
     return <p className="admin-error">{error}</p>
   }
 
-  const expired = poll.closes_at && new Date(poll.closes_at).getTime() <= Date.now()
+  const expired = Boolean(savedCloses) && new Date(savedCloses).getTime() <= Date.now()
   const closed = poll.status === 'closed' || expired
   const readOnly = !canEdit
 
@@ -225,6 +227,8 @@ export default function PollEditor() {
         pollId = data.id
       }
 
+      setSavedCloses(payload.closes_at)
+
       if (removedOptions.length > 0) {
         await supabase.from('poll_options').delete().in('id', removedOptions)
       }
@@ -287,6 +291,11 @@ export default function PollEditor() {
   }
 
   async function setStatus(next) {
+    if (!poll.id) {
+      setError('Előbb mentsd el a szavazást, utána állítható az állapota.')
+      return
+    }
+
     setClosing(true)
     setConfirmClose(false)
     setError(null)
@@ -304,6 +313,10 @@ export default function PollEditor() {
         closes_at: changes.closes_at === null ? '' : current.closes_at,
         closed_at: next === 'open' ? null : current.closed_at,
       }))
+
+      if (changes.closes_at === null) {
+        setSavedCloses(null)
+      }
     }
 
     setClosing(false)
@@ -403,7 +416,7 @@ export default function PollEditor() {
           />
         </label>
 
-        <div className="polled-switch">
+        <label className="polled-switch">
           <ToggleSwitch
             checked={poll.active}
             onChange={(next) => update('active', next)}
@@ -411,11 +424,11 @@ export default function PollEditor() {
             disabled={readOnly}
           />
           <span>Megjelenik a főoldalon</span>
-        </div>
+        </label>
 
         <p className="editor-hint">Egyszerre egy szavazás lehet a főoldalon.</p>
 
-        <div className="polled-switch">
+        <label className="polled-switch">
           <ToggleSwitch
             checked={poll.test_mode}
             onChange={(next) => update('test_mode', next)}
@@ -423,7 +436,7 @@ export default function PollEditor() {
             disabled={readOnly}
           />
           <span>Teszt mód</span>
-        </div>
+        </label>
 
         {poll.test_mode && (
           <p className="editor-hint">
@@ -590,7 +603,7 @@ export default function PollEditor() {
             />
           </label>
 
-          <div className="polled-switch">
+          <label className="polled-switch">
             <ToggleSwitch
               checked={question.has_votes}
               onChange={(next) => updateQuestion(index, { has_votes: next })}
@@ -598,7 +611,7 @@ export default function PollEditor() {
               disabled={readOnly}
             />
             <span>Lehet rá szavazni</span>
-          </div>
+          </label>
 
           {question.has_votes && (
             <>
@@ -609,13 +622,13 @@ export default function PollEditor() {
                   onChange={(event) => updateQuestion(index, { vote_style: event.target.value })}
                   disabled={readOnly}
                 >
-                  <option value="updown">Fel és le (▲ / ▼)</option>
-                  <option value="simple">Egyszerű (csak ▲)</option>
+                  <option value="updown">Fel és le (↑ / ↓)</option>
+                  <option value="simple">Egyszerű (csak ↑)</option>
                 </select>
               </label>
 
               {question.vote_style === 'updown' ? (
-                <div className="polled-switch">
+                <label className="polled-switch">
                   <ToggleSwitch
                     checked={question.live_sort}
                     onChange={(next) => updateQuestion(index, { live_sort: next })}
@@ -623,7 +636,7 @@ export default function PollEditor() {
                     disabled={readOnly}
                   />
                   <span>Élő rangsor</span>
-                </div>
+                </label>
               ) : (
                 <p className="editor-hint">
                   Egyszerű szavazásnál a sorrend az itt megadott marad, a szavazatok nem rendezik át.
@@ -632,7 +645,7 @@ export default function PollEditor() {
             </>
           )}
 
-          <div className="polled-switch">
+          <label className="polled-switch">
             <ToggleSwitch
               checked={question.allow_suggestions}
               onChange={(next) => updateQuestion(index, { allow_suggestions: next })}
@@ -640,7 +653,7 @@ export default function PollEditor() {
               disabled={readOnly}
             />
             <span>Látogatók javasolhatnak opciót</span>
-          </div>
+          </label>
 
           <div className="polled-sub">
             <div className="polled-group-head">
@@ -695,7 +708,7 @@ export default function PollEditor() {
                     {optionIndex + 1}.
                     {question.has_votes && (
                       <span className="polled-votes">
-                        ▲ {option.up_votes} ▼ {option.down_votes}
+                        ↑ {option.up_votes} ↓ {option.down_votes}
                       </span>
                     )}
                   </strong>
@@ -750,6 +763,16 @@ export default function PollEditor() {
                 </div>
               </div>
             ))}
+
+            {canEdit && question.options.length > 0 && (
+              <button
+                type="button"
+                className="polled-add polled-add--below"
+                onClick={() => addOption(index)}
+              >
+                + Opció
+              </button>
+            )}
           </div>
         </div>
       ))}

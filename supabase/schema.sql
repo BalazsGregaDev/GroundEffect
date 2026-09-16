@@ -322,6 +322,27 @@ alter table site_settings add column if not exists cover_fallback_url text;
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
 alter table articles add column if not exists facebook_post_id text;
+alter table articles add column if not exists primary_series_tag_id uuid
+  references tags (id) on delete set null;
+
+create index if not exists articles_primary_series_idx
+  on articles (primary_series_tag_id, published_at desc)
+  where primary_series_tag_id is not null;
+
+update articles a
+set primary_series_tag_id = (
+  select j.tag_id
+  from article_tags j
+  join tags t on t.id = j.tag_id
+  where j.article_id = a.id and t.kind = 'series'
+)
+where a.primary_series_tag_id is null
+  and (
+    select count(*)
+    from article_tags j
+    join tags t on t.id = j.tag_id
+    where j.article_id = a.id and t.kind = 'series'
+  ) = 1;
 
 alter table articles add column if not exists search_vector tsvector generated always as (
   to_tsvector(
@@ -497,6 +518,14 @@ as $$
           where p.id = s.featured_article_id
             and p.status = 'published'
             and p.published_at <= now()
+        ),
+        (
+          select f.id from articles f
+          where f.primary_series_tag_id = s.tag_id
+            and f.status = 'published'
+            and f.published_at <= now()
+          order by f.published_at desc
+          limit 1
         ),
         (
           select m.id from articles m

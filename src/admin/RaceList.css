@@ -132,6 +132,24 @@
   color: var(--gold-deep);
 }
 
+.series-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.series-add-race {
+  color: var(--gold);
+  font-size: 0.78rem;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.series-add-race:hover {
+  text-decoration: underline;
+}
+
 .series-remove {
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--graphite);

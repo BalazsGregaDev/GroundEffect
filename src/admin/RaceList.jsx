@@ -8,23 +8,13 @@ import { useRaceSeasons } from './useRaceSeasons.js'
 import RaceSeriesManager from './RaceSeriesManager.jsx'
 import { functionErrorMessage } from '../lib/functionError.js'
 import { relativeTime } from '../lib/format.js'
+import { raceMoment } from '../lib/raceClock.js'
 import './RaceList.css'
 
 function lastSync(series) {
   const stamps = series.map((item) => item.synced_at).filter(Boolean)
 
   return stamps.length === 0 ? null : stamps.reduce((newest, stamp) => (stamp > newest ? stamp : newest))
-}
-
-function raceMoment(race) {
-  return race.starts_at
-    ? new Date(race.starts_at).toLocaleString('hu-HU', {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    : '—'
 }
 
 export default function RaceList() {
@@ -163,7 +153,7 @@ export default function RaceList() {
                 </td>
                 <td>{named.get(race.series_id) ?? '—'}</td>
                 <td>{race.location || race.circuit || '—'}</td>
-                <td className="list-number">{raceMoment(race)}</td>
+                <td className="list-number">{raceMoment(race.starts_at) ?? '—'}</td>
                 <td className="list-number">{race.race_sessions.length}</td>
               </tr>
             ))}

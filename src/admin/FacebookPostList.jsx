@@ -117,7 +117,7 @@ export default function FacebookPostList() {
               )}
             </div>
 
-            <div className="fbadmin-switch">
+            <label className="fbadmin-switch">
               <ToggleSwitch
                 checked={post.visible}
                 onChange={(next) => setVisible(post, next)}
@@ -125,7 +125,7 @@ export default function FacebookPostList() {
                 disabled={!canEdit}
               />
               <span className="fbadmin-state">Főoldalon</span>
-            </div>
+            </label>
           </article>
         ))}
       </div>

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { coverUrl } from '../lib/cloudinary.js'
+import { coverUrl, deleteImages } from '../lib/cloudinary.js'
 import { refreshCoverConfig } from '../lib/coverConfig.js'
 import { defaultDesign, mergeDesign, seriesTone } from '../lib/seriesCover.js'
 import CoverArt from '../components/CoverArt.jsx'
@@ -82,6 +82,25 @@ export default function CoverSettings() {
     setDesign((current) => ({ ...current, [key]: value }))
   }
 
+  function changeFallback(next) {
+    if (fallbackUrl && fallbackUrl !== next && fallbackUrl !== settings?.cover_fallback_url) {
+      deleteImages(fallbackUrl)
+    }
+
+    setNotice(null)
+    setFallbackUrl(next)
+  }
+
+  function changeRowCover(row, next) {
+    const original = series.find((item) => item.id === row.id)
+
+    if (row.cover_url && row.cover_url !== next && row.cover_url !== original?.cover_url) {
+      deleteImages(row.cover_url)
+    }
+
+    setRow(row.id, { cover_url: next })
+  }
+
   function setRow(id, patch) {
     setNotice(null)
     setRows((current) => current.map((row) => (row.id === id ? { ...row, ...patch } : row)))
@@ -99,6 +118,20 @@ export default function CoverSettings() {
     setBusy(true)
     setFailure(null)
     setNotice(null)
+
+    const orphans = changed
+      .map((row) => {
+        const original = series.find((item) => item.id === row.id)
+
+        return original?.cover_url && original.cover_url !== row.cover_url
+          ? original.cover_url
+          : null
+      })
+      .filter(Boolean)
+
+    if (settings?.cover_fallback_url && settings.cover_fallback_url !== fallbackUrl) {
+      orphans.push(settings.cover_fallback_url)
+    }
 
     const results = await Promise.all([
       supabase
@@ -120,6 +153,10 @@ export default function CoverSettings() {
     if (failed) {
       setFailure(`A mentés nem sikerült: ${failed.error.message}`)
       return
+    }
+
+    if (orphans.length > 0) {
+      deleteImages(orphans)
     }
 
     refreshCoverConfig()
@@ -226,10 +263,7 @@ export default function CoverSettings() {
             <CoverUpload
               value={fallbackUrl}
               disabled={!canEdit}
-              onChange={(next) => {
-                setNotice(null)
-                setFallbackUrl(next)
-              }}
+              onChange={changeFallback}
             />
           </div>
         </div>
@@ -278,7 +312,7 @@ export default function CoverSettings() {
                   <CoverUpload
                     value={row.cover_url}
                     disabled={!canEdit}
-                    onChange={(next) => setRow(row.id, { cover_url: next })}
+                    onChange={(next) => changeRowCover(row, next)}
                   />
                 </td>
               </tr>

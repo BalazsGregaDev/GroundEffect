@@ -185,8 +185,8 @@ export default function PollResults({ poll, expired, canEdit, busy, onReopen, on
                               {view === 'percent'
                                 ? `${sharePercent(source, rows, option)}%`
                                 : question.vote_style === 'simple'
-                                  ? `▲${option.up_votes}`
-                                  : `▲${option.up_votes} ▼${option.down_votes}`}
+                                  ? `↑${option.up_votes}`
+                                  : `↑${option.up_votes} ↓${option.down_votes}`}
                             </span>
                           </td>
                         )}

@@ -67,6 +67,15 @@
   color: var(--smoke);
 }
 
+.rcal-when {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--bone);
+}
+
 .rcal-clock {
   margin-top: 0.2rem;
   font-family: var(--mono);
@@ -205,8 +214,18 @@
 }
 
 .rcal-session-label {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+  flex-wrap: wrap;
   font-size: 0.92rem;
   color: var(--bone);
+}
+
+.rcal-session-when {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--smoke);
 }
 
 .rcal-session-clock {

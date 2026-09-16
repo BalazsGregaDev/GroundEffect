@@ -26,7 +26,9 @@ export default function Article() {
   }
 
   const tags = article.article_tags.map((row) => row.tags)
-  const series = tags.find((tag) => tag.kind === 'series')
+  const series =
+    tags.find((tag) => tag.id === article.primary_series_tag_id) ??
+    tags.find((tag) => tag.kind === 'series')
   const meta = [
     relativeTime(article.published_at),
     article.reading_minutes && `${article.reading_minutes} perc olvasás`,

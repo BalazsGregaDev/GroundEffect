@@ -1,4 +1,10 @@
-import { isPast, nextSessionIndex, raceCountdown, racePlace } from '../lib/raceClock.js'
+import {
+  isPast,
+  nextSessionIndex,
+  raceCountdown,
+  raceMoment,
+  racePlace,
+} from '../lib/raceClock.js'
 
 export default function NextSessionsCard({ series, now, chosen, onChoose }) {
   const active = series.find((item) => item.id === chosen) ?? series[0]
@@ -46,7 +52,10 @@ export default function NextSessionsCard({ series, now, chosen, onChoose }) {
 
                 return (
                   <li className={names.join(' ')} key={session.id}>
-                    <span className="rcal-session-label">{session.label}</span>
+                    <span className="rcal-session-label">
+                      {session.label}
+                      <span className="rcal-session-when">{raceMoment(session.starts_at)}</span>
+                    </span>
                     <span className="rcal-session-clock">
                       {done ? 'Vége' : raceCountdown(session.starts_at, now)}
                     </span>

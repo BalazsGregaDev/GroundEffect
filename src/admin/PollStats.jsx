@@ -167,8 +167,8 @@ export default function PollStats() {
                                       {view === 'percent'
                                         ? `${sharePercent(shaped, rows, option)}%`
                                         : question.vote_style === 'simple'
-                                          ? `▲${option.up_votes}`
-                                          : `▲${option.up_votes} ▼${option.down_votes}`}
+                                          ? `↑${option.up_votes}`
+                                          : `↑${option.up_votes} ↓${option.down_votes}`}
                                     </span>
                                   </td>
                                 )}
