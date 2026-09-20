@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { coverUrl, deleteImages } from '../lib/cloudinary.js'
-import { refreshCoverConfig } from '../lib/coverConfig.js'
+import { refreshSiteConfig } from '../lib/siteConfig.js'
 import { defaultDesign, mergeDesign, seriesTone } from '../lib/seriesCover.js'
 import CoverArt from '../components/CoverArt.jsx'
 import CoverUpload from './CoverUpload.jsx'
@@ -159,7 +159,7 @@ export default function CoverSettings() {
       deleteImages(orphans)
     }
 
-    refreshCoverConfig()
+    refreshSiteConfig()
     setNotice('Mentve.')
     await reload()
   }

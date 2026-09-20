@@ -1,10 +1,10 @@
 import CoverArt from './CoverArt.jsx'
 import { coverUrl } from '../lib/cloudinary.js'
-import { useCoverConfig } from '../lib/coverConfig.js'
+import { useSiteConfig } from '../lib/siteConfig.js'
 import { seriesTone } from '../lib/seriesCover.js'
 
 export default function SeriesCover({ slug, name, className }) {
-  const { design, fallbackUrl, series } = useCoverConfig()
+  const { design, fallbackUrl, series } = useSiteConfig()
   const row = series.get(slug)
   const image = row?.cover_url || fallbackUrl
 

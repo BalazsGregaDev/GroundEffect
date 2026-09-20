@@ -1,0 +1,83 @@
+.sections {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-width: 44rem;
+}
+
+.section-row {
+  display: grid;
+  grid-template-columns: 2.2rem 1fr auto auto;
+  gap: 1rem;
+  align-items: center;
+  padding: 0.7rem 0.9rem;
+  border: 1px solid var(--graphite);
+  border-bottom: none;
+  background: var(--ink);
+  cursor: grab;
+}
+
+.section-row:last-child {
+  border-bottom: 1px solid var(--graphite);
+}
+
+.section-row--dragged {
+  opacity: 0.45;
+}
+
+.section-row--over {
+  border-color: var(--gold);
+  box-shadow: inset 0 2px 0 var(--gold);
+}
+
+.section-index {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.section-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bone);
+}
+
+.section-steps {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.section-step {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.section-notice {
+  margin: 0 0 1rem;
+  font-size: 0.85rem;
+  color: var(--smoke);
+}
+
+@media (max-width: 700px) {
+  .section-row {
+    grid-template-columns: 1.8rem 1fr auto;
+    gap: 0.6rem 0.7rem;
+  }
+
+  .section-index {
+    grid-area: 1 / 1;
+  }
+
+  .section-label {
+    grid-area: 1 / 2;
+  }
+
+  .section-row > .switch {
+    grid-area: 1 / 3;
+  }
+
+  .section-steps {
+    grid-area: 2 / 2 / 2 / -1;
+  }
+}

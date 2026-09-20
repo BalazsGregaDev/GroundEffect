@@ -3,6 +3,13 @@ import { supabase } from '../lib/supabase.js'
 
 const columns = 'id, slug, title, reading_minutes, published_at, categories (name)'
 
+function withCategory(rows) {
+  return (rows ?? []).map(({ categories, ...article }) => ({
+    ...article,
+    category: categories?.name ?? null,
+  }))
+}
+
 export function usePublishedArticles(limit) {
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -23,7 +30,7 @@ export function usePublishedArticles(limit) {
           return
         }
 
-        setArticles(result.data ?? [])
+        setArticles(withCategory(result.data))
         setError(result.error)
         setLoading(false)
       })

@@ -5,7 +5,7 @@ import './FeaturedArticle.css'
 
 function metaLine(article) {
   return [
-    article.categories?.name,
+    article.category,
     relativeTime(article.published_at),
     article.reading_minutes && `${article.reading_minutes} perc olvasás`,
   ]

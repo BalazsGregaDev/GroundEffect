@@ -21,7 +21,10 @@ export function useArticleArchive(pageSize) {
         .order('published_at', { ascending: false })
         .range(offset, offset + pageSize - 1)
 
-      const page = result.data ?? []
+      const page = (result.data ?? []).map(({ categories, ...article }) => ({
+        ...article,
+        category: categories?.name ?? null,
+      }))
 
       setArticles((current) => (offset === 0 ? page : [...current, ...page]))
       setError(result.error)

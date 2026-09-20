@@ -1,31 +1,45 @@
 import { Link } from 'react-router-dom'
 import SectionTitle from '../components/SectionTitle.jsx'
 import { useArticleArchive } from '../hooks/useArticleArchive.js'
+import { useSearch } from '../hooks/useSearch.js'
+import { useSearchResults } from '../hooks/useSearchResults.js'
+import { isSearching } from '../lib/search.js'
 import { relativeTime } from '../lib/format.js'
 import './ArticleArchive.css'
 
 const pageSize = 20
+const searchLimit = 40
 
 export default function ArticleArchive() {
+  const { query } = useSearch()
   const { articles, loading, error, done, loadMore } = useArticleArchive(pageSize)
+  const found = useSearchResults(query, { withVideos: false, limit: searchLimit })
+
+  const searching = isSearching(query)
+  const list = searching ? found.articles : articles
+  const busy = searching ? found.loading : loading
 
   return (
     <section className="archive">
       <SectionTitle linkLabel="Vissza a főoldalra" linkTo="/">
-        Összes cikk
+        {searching ? 'Találatok' : 'Összes cikk'}
       </SectionTitle>
 
-      {error && <p className="archive-message">A cikkeket most nem sikerült betölteni.</p>}
+      {error && !searching && (
+        <p className="archive-message">A cikkeket most nem sikerült betölteni.</p>
+      )}
 
-      {!loading && !error && articles.length === 0 && (
-        <p className="archive-message">Még nincs publikált cikk.</p>
+      {!busy && list.length === 0 && (
+        <p className="archive-message">
+          {searching ? 'Nincs cikk erre a keresésre.' : 'Még nincs publikált cikk.'}
+        </p>
       )}
 
       <div className="archive-list">
-        {articles.map((article) => (
+        {list.map((article) => (
           <Link className="archive-item" to={`/cikkek/${article.slug}`} key={article.id}>
             <span className="archive-meta">
-              {article.categories?.name ?? 'Egyéb'} · {relativeTime(article.published_at)}
+              {article.category ?? 'Egyéb'} · {relativeTime(article.published_at)}
             </span>
             <h3>{article.title}</h3>
             {article.lead && <p>{article.lead}</p>}
@@ -36,9 +50,9 @@ export default function ArticleArchive() {
         ))}
       </div>
 
-      {loading && <p className="archive-message">Cikkek betöltése…</p>}
+      {busy && <p className="archive-message">{searching ? 'Keresés…' : 'Cikkek betöltése…'}</p>}
 
-      {!loading && !done && articles.length > 0 && (
+      {!searching && !loading && !done && articles.length > 0 && (
         <button type="button" className="archive-more" onClick={loadMore}>
           Több cikk
         </button>

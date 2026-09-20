@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useLocation } from 'react-router-dom'
+import SearchField from './SearchField.jsx'
 import { useRailStatus } from '../hooks/useRailStatus.js'
+import { useSearch } from '../hooks/useSearch.js'
+import { useSiteConfig } from '../lib/siteConfig.js'
 import { isClosed, isLive } from '../lib/poll.js'
 import { seriesShortNames, socialLinks } from '../data/site.js'
 import logo from '../assets/logo-kor.jpg'
@@ -8,11 +11,9 @@ import './Rail.css'
 
 const tick = 30000
 
-function pollMeta(poll, now) {
-  if (!isLive(poll, now)) {
-    return null
-  }
+const searchPaths = ['/', '/cikkek']
 
+function pollMeta(poll, now) {
   return isClosed(poll, now) ? 'Lezárult' : 'aktív'
 }
 
@@ -24,19 +25,43 @@ function raceMeta(race) {
   return `${seriesShortNames[race.series.slug] ?? race.series.name}:${race.name}`
 }
 
-function navItems(pollState, nextRace) {
-  return [
-    { label: 'Videók', href: '#videok' },
-    { label: 'Cikkek', href: '#cikkek', meta: 'friss' },
-    pollState && { label: 'Szavazás', href: '#szavazas', meta: pollState },
-    { label: 'Versenynaptár', href: '#naptar', meta: nextRace },
-    { label: 'Merch', href: '#merch', meta: 'Bolt' },
-    { label: 'Közösség', href: '#kozosseg' },
-  ].filter(Boolean)
+function metaFor(key, poll, race, now) {
+  if (key === 'poll') {
+    return pollMeta(poll, now)
+  }
+
+  if (key === 'calendar') {
+    return raceMeta(race)
+  }
+
+  if (key === 'articles') {
+    return 'friss'
+  }
+
+  if (key === 'merch') {
+    return 'Bolt'
+  }
+
+  return null
+}
+
+function navItems(sections, poll, race, now) {
+  const live = isLive(poll, now)
+
+  return sections
+    .filter((section) => section.nav && section.visible && (section.key !== 'poll' || live))
+    .map((section) => ({
+      key: section.key,
+      ...section.nav,
+      meta: metaFor(section.key, poll, race, now),
+    }))
 }
 
 export default function Rail() {
   const { poll, race } = useRailStatus()
+  const { sections } = useSiteConfig()
+  const { setQuery, phase } = useSearch()
+  const { pathname } = useLocation()
   const [now, setNow] = useState(() => Date.now())
   const hasPoll = Boolean(poll)
 
@@ -50,14 +75,21 @@ export default function Rail() {
     return () => clearInterval(timer)
   }, [hasPoll])
 
+  const searchable = searchPaths.includes(pathname)
+  const classes = [
+    'rail',
+    searchable && phase !== 'idle' && 'rail--searching',
+    searchable && phase === 'fading' && 'rail--fading',
+  ].filter(Boolean)
+
   return (
-    <aside className="rail">
-      <Link className="brand" to="/">
+    <aside className={classes.join(' ')}>
+      <Link className="brand" to="/" onClick={() => setQuery('')}>
         <img className="brand-logo" src={logo} width="48" height="48" alt="" />
         <span>Ground Effect</span>
       </Link>
 
-      <div>
+      <div className="rail-intro">
         <h1 className="rail-statement">
           Minden,
           <br />
@@ -68,12 +100,14 @@ export default function Rail() {
         </p>
       </div>
 
-      <div>
+      <div className="rail-main">
+        {searchable && <SearchField />}
+
         <nav>
           <ul>
-            {navItems(pollMeta(poll, now), raceMeta(race)).map((item) => (
-              <li key={item.href}>
-                <Link to={`/${item.href}`}>
+            {navItems(sections, poll, race, now).map((item) => (
+              <li key={item.key}>
+                <Link to={`/${item.href}`} onClick={() => setQuery('')}>
                   {item.label}
                   {item.meta && <span className="nav-meta">{item.meta}</span>}
                 </Link>

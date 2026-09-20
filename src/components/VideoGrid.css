@@ -1,17 +1,6 @@
-.video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(max(260px, (100% - 3.6rem) / 4), 1fr));
-  gap: 1.2rem;
-}
-
 @media (max-width: 700px) {
-  .video-grid > .vcard:nth-child(n + 7) {
+  .video-grid-section .video-grid > .vcard:nth-child(n + 7) {
     display: none;
   }
 }
 
-@media (max-width: 420px) {
-  .video-grid {
-    grid-template-columns: 1fr;
-  }
-}

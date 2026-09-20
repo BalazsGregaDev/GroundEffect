@@ -20,7 +20,12 @@ export function useFeaturedArticles() {
       .limit(featuredArticleLimit)
       .then(({ data }) => {
         if (active) {
-          setArticles(data ?? [])
+          setArticles(
+            (data ?? []).map(({ categories, ...article }) => ({
+              ...article,
+              category: categories?.name ?? null,
+            })),
+          )
         }
       })
 

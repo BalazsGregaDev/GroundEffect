@@ -6,7 +6,7 @@ export const adminNav = [
   { path: '/admin/naptar', label: 'Versenynaptár' },
   { path: '/admin/boritokepek', label: 'Borítóképek' },
   { path: '/admin/merch', label: 'Merch' },
-  { path: '/admin/szekciok', label: 'Szekciók', pending: true },
+  { path: '/admin/szekciok', label: 'Szekciók' },
   { path: '/admin/szavazas', label: 'Szavazás' },
   { path: '/admin/popup', label: 'Popup üzenetek' },
   { path: '/admin/felhasznalok', label: 'Felhasználók', superadminOnly: true },

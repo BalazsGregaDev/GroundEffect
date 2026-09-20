@@ -728,6 +728,49 @@ as $$
   limit limit_count;
 $$;
 
+create or replace function search_terms(p_text text)
+returns text
+language sql
+immutable
+as $$
+  select nullif(string_agg(word || ':*', ' & ' order by position), '')
+  from regexp_split_to_table(
+    regexp_replace(lower(coalesce(p_text, '')), '[^[:alnum:][:space:]]', ' ', 'g'),
+    '\s+'
+  ) with ordinality as parts (word, position)
+  where word <> '';
+$$;
+
+create or replace function search_articles(p_query text, p_limit integer default 20)
+returns table (
+  id uuid,
+  slug text,
+  title text,
+  lead text,
+  reading_minutes integer,
+  published_at timestamptz,
+  category text
+)
+language sql
+stable
+set search_path = public
+as $$
+  select a.id, a.slug, a.title, a.lead, a.reading_minutes, a.published_at, c.name
+  from articles a
+  left join categories c on c.id = a.category_id
+  cross join (select search_terms(p_query) as terms) q
+  where q.terms is not null
+    and a.status = 'published'
+    and a.published_at <= now()
+    and a.search_vector @@ to_tsquery('hungarian', q.terms)
+  order by
+    ts_rank(a.search_vector, to_tsquery('hungarian', q.terms)) desc,
+    a.published_at desc
+  limit greatest(coalesce(p_limit, 20), 1);
+$$;
+
+grant execute on function search_articles(text, integer) to anon, authenticated;
+
 drop trigger if exists polls_set_updated_at on polls;
 create trigger polls_set_updated_at
   before update on polls
@@ -1120,6 +1163,26 @@ begin
 end;
 $$;
 
-insert into site_settings (id, sections_order) values
-  (true, '["latest-video", "video-grid", "articles", "facebook", "poll", "next-race", "join"]'::jsonb)
+insert into site_settings (id) values (true)
 on conflict (id) do nothing;
+
+update site_settings
+set sections_order = '[
+  {"key": "latest", "visible": true},
+  {"key": "featured", "visible": true},
+  {"key": "videos", "visible": true},
+  {"key": "calendar", "visible": true},
+  {"key": "articles", "visible": true},
+  {"key": "poll", "visible": true},
+  {"key": "merch", "visible": true},
+  {"key": "facebook", "visible": true},
+  {"key": "community", "visible": true},
+  {"key": "discounts", "visible": true}
+]'::jsonb
+where not exists (
+  select 1
+  from jsonb_array_elements(
+    case when jsonb_typeof(sections_order) = 'array' then sections_order else '[]'::jsonb end
+  ) entry
+  where jsonb_typeof(entry) = 'object' and entry ? 'key'
+);
