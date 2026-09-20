@@ -63,6 +63,10 @@ export function isExpired(poll, now) {
   return moment !== null && now >= moment + poll.hide_after_hours * 3600000
 }
 
+export function isLive(poll, now) {
+  return Boolean(poll) && hasStarted(poll, now) && !isExpired(poll, now)
+}
+
 export function countdown(ms) {
   if (ms <= 0) {
     return 'lezárult'

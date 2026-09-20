@@ -4,6 +4,14 @@ export const merchShop = 'https://lospolo.hu/groundeffect'
 
 export const featuredArticleLimit = 3
 
+export const seriesShortNames = {
+  f1: 'F1',
+  f2: 'F2',
+  f3: 'F3',
+  motogp: 'MotoGP',
+  indycar: 'IndyCar',
+}
+
 export const socialLinks = [
   { label: 'YouTube', href: youtubeChannel },
   { label: 'Facebook', href: facebookPage },

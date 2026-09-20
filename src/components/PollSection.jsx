@@ -5,7 +5,7 @@ import ChoiceSwitch from './ChoiceSwitch.jsx'
 import VoteArrow from './VoteArrow.jsx'
 import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
-import { countdown, hasStarted, isClosed, isExpired } from '../lib/poll.js'
+import { countdown, isClosed, isLive } from '../lib/poll.js'
 import { readPreference, readVotes, voterId, writePreference, writeVote } from '../lib/pollVoter.js'
 import './PollSection.css'
 
@@ -35,7 +35,7 @@ export default function PollSection() {
     return () => clearInterval(timer)
   }, [poll?.closes_at, poll?.starts_at])
 
-  if (loading || !poll || !hasStarted(poll, now) || isExpired(poll, now)) {
+  if (loading || !isLive(poll, now)) {
     return null
   }
 

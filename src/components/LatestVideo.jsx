@@ -11,7 +11,7 @@ export default function LatestVideo({ video, loading }) {
   const [playing, setPlaying] = useState(false)
 
   return (
-    <section className="latest" id="videok">
+    <section className="latest">
       <SectionTitle linkLabel="YouTube csatorna" linkHref={youtubeChannel}>
         Legfrissebb adás
       </SectionTitle>
