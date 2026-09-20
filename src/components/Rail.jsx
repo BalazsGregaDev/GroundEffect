@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { railNav } from '../data/placeholder.js'
 import { socialLinks } from '../data/site.js'
 import logo from '../assets/logo-kor.jpg'
@@ -6,10 +7,10 @@ import './Rail.css'
 export default function Rail() {
   return (
     <aside className="rail">
-      <a className="brand" href="/">
+      <Link className="brand" to="/">
         <img className="brand-logo" src={logo} width="48" height="48" alt="" />
         <span>Ground Effect</span>
-      </a>
+      </Link>
 
       <div>
         <h1 className="rail-statement">
@@ -27,10 +28,10 @@ export default function Rail() {
           <ul>
             {railNav.map((item) => (
               <li key={item.href}>
-                <a href={item.href}>
+                <Link to={`/${item.href}`}>
                   {item.label}
                   <span className="nav-meta">{item.meta}</span>
-                </a>
+                </Link>
               </li>
             ))}
           </ul>
@@ -38,7 +39,7 @@ export default function Rail() {
 
         <div className="rail-foot">
           {socialLinks.map((link) => (
-            <a key={link.label} href={link.href}>
+            <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
               {link.label}
             </a>
           ))}

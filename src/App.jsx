@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout.jsx'
 import SitePopup from './components/SitePopup.jsx'
+import HashScroll from './components/HashScroll.jsx'
 import { publicRoutes } from './routes/publicRoutes.jsx'
 import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
@@ -28,6 +29,7 @@ const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 export default function App() {
   return (
     <>
+      <HashScroll />
       <SitePopup />
 
       <Routes>
