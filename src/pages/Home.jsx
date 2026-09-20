@@ -4,11 +4,11 @@ import VideoGrid from '../components/VideoGrid.jsx'
 import RaceCalendarSection from '../components/RaceCalendarSection.jsx'
 import ArticleBoard from '../components/ArticleBoard.jsx'
 import PollSection from '../components/PollSection.jsx'
+import MerchGrid from '../components/MerchGrid.jsx'
 import FacebookPosts from '../components/FacebookPosts.jsx'
-import JoinPanel from '../components/JoinPanel.jsx'
+import CommunityLinks from '../components/CommunityLinks.jsx'
+import DiscountCodes from '../components/DiscountCodes.jsx'
 import { useVideos } from '../hooks/useVideos.js'
-import { joinLinks } from '../data/placeholder.js'
-import './Home.css'
 
 const gridSize = 8
 
@@ -23,13 +23,10 @@ export default function Home() {
       <RaceCalendarSection />
       <ArticleBoard />
       <PollSection />
-
-      <div className="bottom">
-        <FacebookPosts />
-        <div className="panels">
-          <JoinPanel links={joinLinks} />
-        </div>
-      </div>
+      <MerchGrid />
+      <FacebookPosts />
+      <CommunityLinks />
+      <DiscountCodes />
     </>
   )
 }

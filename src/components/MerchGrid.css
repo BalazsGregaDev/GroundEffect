@@ -1,0 +1,90 @@
+.merch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(max(200px, (100% - 3.6rem) / 4), 1fr));
+  gap: 1.2rem;
+}
+
+.merch-skel {
+  display: block;
+  aspect-ratio: 4 / 5;
+}
+
+.mcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  min-width: 0;
+  text-decoration: none;
+}
+
+.mcard-shot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  transition: border-color 0.15s;
+}
+
+.mcard:hover .mcard-shot {
+  border-color: var(--gold-deep);
+}
+
+.mcard-shot img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.25s;
+}
+
+.mcard:hover .mcard-shot img {
+  transform: scale(1.04);
+}
+
+.mcard-nophoto {
+  padding: 0 0.5rem;
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 0.74rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  text-align: center;
+  color: var(--graphite);
+}
+
+.mcard-name {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.3;
+  color: var(--bone);
+}
+
+.mcard:hover .mcard-name {
+  color: var(--gold);
+}
+
+.mcard-price {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.merch-empty {
+  color: var(--smoke);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .merch-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.9rem;
+  }
+}

@@ -1,0 +1,100 @@
+.merch-add {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+  margin: 1.4rem 0 1.2rem;
+  padding-bottom: 1.2rem;
+  border-bottom: 1px solid var(--graphite);
+}
+
+.merch-add .admin-field {
+  flex: 1;
+  min-width: 12rem;
+}
+
+.merch-price {
+  flex: 0 0 7rem;
+  min-width: 0;
+}
+
+.merch-table td {
+  vertical-align: middle;
+}
+
+.merch-shot {
+  display: block;
+  width: 3.4rem;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+}
+
+.merch-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.merch-field {
+  width: 100%;
+  min-width: 7rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid transparent;
+  background: none;
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.88rem;
+}
+
+.merch-field--price {
+  min-width: 5rem;
+  font-family: var(--mono);
+}
+
+.merch-field:hover:not(:disabled),
+.merch-field:focus {
+  border-color: var(--graphite);
+  background: var(--black);
+}
+
+.merch-field:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.merch-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  flex-wrap: wrap;
+}
+
+.merch-confirm {
+  display: inline-flex;
+  gap: 0.6rem;
+}
+
+@media (max-width: 900px) {
+  .merch-table,
+  .merch-table tbody,
+  .merch-table tr,
+  .merch-table td {
+    display: block;
+  }
+
+  .merch-table thead {
+    display: none;
+  }
+
+  .merch-table tr {
+    padding: 0.9rem 0;
+    border-bottom: 1px solid var(--graphite);
+  }
+
+  .merch-table td {
+    padding: 0.25rem 0;
+    border: none;
+  }
+}

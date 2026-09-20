@@ -7,6 +7,8 @@ create table if not exists admin_users (
   created_at timestamptz not null default now()
 );
 
+alter table admin_users add column if not exists must_change_password boolean not null default false;
+
 create or replace function current_admin_role()
 returns text
 language sql
@@ -153,6 +155,18 @@ create table if not exists facebook_posts (
   visible boolean not null default false,
   synced_at timestamptz,
   created_at timestamptz not null default now()
+);
+
+create table if not exists merch_products (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  price integer,
+  url text not null,
+  image_url text,
+  visible boolean not null default true,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
 create table if not exists polls (
@@ -451,6 +465,11 @@ create index if not exists race_sessions_starts_idx on race_sessions (starts_at)
 drop trigger if exists articles_set_updated_at on articles;
 create trigger articles_set_updated_at
   before update on articles
+  for each row execute function set_updated_at();
+
+drop trigger if exists merch_products_set_updated_at on merch_products;
+create trigger merch_products_set_updated_at
+  before update on merch_products
   for each row execute function set_updated_at();
 
 drop trigger if exists site_settings_set_updated_at on site_settings;
@@ -875,6 +894,20 @@ as $$
   where slug = article_slug and status = 'published';
 $$;
 
+create or replace function complete_password_change()
+returns boolean
+language sql
+security definer
+set search_path = public
+as $$
+  update admin_users
+  set must_change_password = false
+  where email = (auth.jwt() ->> 'email')::citext
+  returning true;
+$$;
+
+grant execute on function complete_password_change() to authenticated;
+
 alter table admin_users enable row level security;
 alter table categories enable row level security;
 alter table tags enable row level security;
@@ -889,6 +922,7 @@ alter table poll_votes enable row level security;
 alter table race_series enable row level security;
 alter table races enable row level security;
 alter table race_sessions enable row level security;
+alter table merch_products enable row level security;
 alter table site_settings enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
@@ -999,6 +1033,14 @@ create policy race_sessions_read on race_sessions
 
 drop policy if exists race_sessions_write on race_sessions;
 create policy race_sessions_write on race_sessions
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists merch_products_read on merch_products;
+create policy merch_products_read on merch_products
+  for select using (visible or is_staff());
+
+drop policy if exists merch_products_write on merch_products;
+create policy merch_products_write on merch_products
   for all using (can_edit()) with check (can_edit());
 
 drop policy if exists site_settings_read on site_settings;

@@ -1,0 +1,40 @@
+.community-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+}
+
+.ccard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  min-width: 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  text-decoration: none;
+  transition:
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.ccard:hover {
+  border-color: var(--gold-deep);
+  background: var(--black);
+}
+
+.ccard-label {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bone);
+}
+
+.ccard:hover .ccard-label {
+  color: var(--gold);
+}
+
+.ccard-note {
+  font-size: 0.82rem;
+  color: var(--smoke);
+}

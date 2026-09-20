@@ -3,12 +3,6 @@ export const railNav = [
   { label: 'Cikkek', meta: 'friss', href: '#cikkek' },
   { label: 'Szavazás', meta: '1 aktív', href: '#szavazas' },
   { label: 'Versenynaptár', meta: 'Szingapúr', href: '#naptar' },
+  { label: 'Merch', meta: 'bolt', href: '#merch' },
   { label: 'Közösség', meta: 'Discord', href: '#kozosseg' },
-]
-
-export const joinLinks = [
-  { label: 'Discord', note: 'ingyenes', href: '#' },
-  { label: 'Patreon', note: 'támogatás', href: '#' },
-  { label: 'Merch', note: 'webshop', href: '#' },
-  { label: 'eSports', note: '1 800 feliratkozó', href: '#' },
 ]

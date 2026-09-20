@@ -1,0 +1,68 @@
+.discounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.dcard {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  min-width: 0;
+  padding: 1.1rem 1.2rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.dcard-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dcard-head a {
+  font-family: var(--display);
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--bone);
+  text-decoration: none;
+}
+
+.dcard-head a:hover {
+  color: var(--gold);
+}
+
+.dcard-head span {
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.dcard-code {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px dashed var(--gold-deep);
+  background: var(--black);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.dcard-code:hover {
+  border-color: var(--gold);
+}
+
+.dcard-code span {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  color: var(--gold);
+}
+
+.dcard-code small {
+  font-family: var(--body);
+  font-size: 0.76rem;
+  color: var(--smoke);
+}

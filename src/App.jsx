@@ -20,6 +20,7 @@ const PollEditor = lazy(() => import('./admin/PollEditor.jsx'))
 const RaceList = lazy(() => import('./admin/RaceList.jsx'))
 const RaceEditor = lazy(() => import('./admin/RaceEditor.jsx'))
 const CoverSettings = lazy(() => import('./admin/CoverSettings.jsx'))
+const MerchList = lazy(() => import('./admin/MerchList.jsx'))
 const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
 
@@ -73,6 +74,7 @@ export default function App() {
           <Route path="naptar/uj" element={<RaceEditor />} />
           <Route path="naptar/:id" element={<RaceEditor />} />
           <Route path="boritokepek" element={<CoverSettings />} />
+          <Route path="merch" element={<MerchList />} />
           <Route path="felhasznalok" element={<AdminUsers />} />
 
           {adminNav
