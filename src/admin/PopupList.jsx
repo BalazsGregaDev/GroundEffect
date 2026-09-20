@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { pageLabel, publicPages } from '../lib/popupPages.js'
+import { popupTargets, targetLabel } from '../routes/publicRoutes.jsx'
 import PopupCard from '../components/PopupCard.jsx'
 import ToggleSwitch from '../components/ToggleSwitch.jsx'
 import { useAuth } from './useAuth.js'
@@ -28,7 +28,7 @@ function places(popup) {
 
   const pages = Array.isArray(popup.pages) ? popup.pages : []
 
-  return pages.length === 0 ? 'nincs oldal kiválasztva' : pages.map(pageLabel).join(', ')
+  return pages.length === 0 ? 'nincs oldal kiválasztva' : pages.map(targetLabel).join(', ')
 }
 
 export default function PopupList() {
@@ -64,6 +64,14 @@ export default function PopupList() {
 
   function set(field, value) {
     setDraft((current) => ({ ...current, [field]: value }))
+  }
+
+  function selectAll() {
+    setDraft((current) => ({ ...current, pages: popupTargets.map((page) => page.path) }))
+  }
+
+  function selectNone() {
+    setDraft((current) => ({ ...current, pages: [] }))
   }
 
   function togglePage(path) {
@@ -141,6 +149,10 @@ export default function PopupList() {
     await reload()
   }
 
+  const stalePages = (draft?.pages ?? []).filter(
+    (path) => !popupTargets.some((page) => page.path === path),
+  )
+
   return (
     <div>
       <div className="list-head">
@@ -203,7 +215,7 @@ export default function PopupList() {
               <fieldset className="popup-when">
                 <legend>Mely oldalakon?</legend>
 
-                {publicPages.map((page) => (
+                {popupTargets.map((page) => (
                   <label key={page.path}>
                     <input
                       type="checkbox"
@@ -215,6 +227,24 @@ export default function PopupList() {
                     </span>
                   </label>
                 ))}
+
+                {stalePages.map((path) => (
+                  <label key={path}>
+                    <input type="checkbox" checked onChange={() => togglePage(path)} />
+                    <span>
+                      {path} <small>ez az oldal már nincs meg</small>
+                    </span>
+                  </label>
+                ))}
+
+                <div className="popup-bulk">
+                  <button type="button" className="cover-clear" onClick={selectAll}>
+                    Mind
+                  </button>
+                  <button type="button" className="cover-clear" onClick={selectNone}>
+                    Egyik sem
+                  </button>
+                </div>
               </fieldset>
             )}
 

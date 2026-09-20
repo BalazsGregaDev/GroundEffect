@@ -1,14 +1,12 @@
 import { Suspense, lazy } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout.jsx'
-import Home from './pages/Home.jsx'
 import SitePopup from './components/SitePopup.jsx'
+import { publicRoutes } from './routes/publicRoutes.jsx'
 import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
 
 const Article = lazy(() => import('./pages/Article.jsx'))
-const ArticleArchive = lazy(() => import('./pages/ArticleArchive.jsx'))
-const MerchPage = lazy(() => import('./pages/MerchPage.jsx'))
 const AdminRoot = lazy(() => import('./admin/AdminRoot.jsx'))
 const AdminArea = lazy(() => import('./admin/AdminArea.jsx'))
 const Login = lazy(() => import('./admin/Login.jsx'))
@@ -34,23 +32,13 @@ export default function App() {
 
       <Routes>
         <Route element={<PublicLayout />}>
-          <Route index element={<Home />} />
-          <Route
-            path="cikkek"
-            element={
-              <Suspense fallback={<p className="admin-boot">Betöltés…</p>}>
-                <ArticleArchive />
-              </Suspense>
-            }
-          />
-          <Route
-            path="merch"
-            element={
-              <Suspense fallback={<p className="admin-boot">Betöltés…</p>}>
-                <MerchPage />
-              </Suspense>
-            }
-          />
+          {publicRoutes.map((route) =>
+            route.path === '/' ? (
+              <Route key={route.path} index element={route.element} />
+            ) : (
+              <Route key={route.path} path={route.path.slice(1)} element={route.element} />
+            ),
+          )}
         </Route>
 
         <Route path="cikkek/:slug" element={<ArticleLayout />}>

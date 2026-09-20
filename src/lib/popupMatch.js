@@ -1,10 +1,3 @@
-export const publicPages = [
-  { path: '/', label: 'Főoldal' },
-  { path: '/cikkek', label: 'Cikkek' },
-  { path: '/cikkek/*', label: 'Cikkoldalak (mind)' },
-  { path: '/merch', label: 'Merch' },
-]
-
 export const privatePrefixes = ['/admin']
 
 export function pageMatches(popup, path) {
@@ -21,8 +14,4 @@ export function pageMatches(popup, path) {
 
     return path === page || path === `${page}/`
   })
-}
-
-export function pageLabel(path) {
-  return publicPages.find((page) => page.path === path)?.label ?? path
 }

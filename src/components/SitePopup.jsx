@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
-import { pageMatches, privatePrefixes } from '../lib/popupPages.js'
+import { pageMatches, privatePrefixes } from '../lib/popupMatch.js'
 import PopupCard from './PopupCard.jsx'
 import './SitePopup.css'
 
