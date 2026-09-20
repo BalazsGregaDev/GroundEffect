@@ -169,6 +169,25 @@ create table if not exists merch_products (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists site_popups (
+  id uuid primary key default gen_random_uuid(),
+  name text not null default '',
+  enabled boolean not null default false,
+  trigger_kind text not null default 'first_visit'
+    check (trigger_kind in ('first_visit', 'subpage')),
+  pages jsonb not null default '[]'::jsonb,
+  eyebrow text not null default '',
+  title1 text not null default '',
+  title2 text not null default '',
+  body text not null default '',
+  button text not null default '',
+  link text not null default '',
+  version bigint not null default 0,
+  sort_order integer not null default 0,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists polls (
   id uuid primary key default gen_random_uuid(),
   title text not null default '',
@@ -465,6 +484,11 @@ create index if not exists race_sessions_starts_idx on race_sessions (starts_at)
 drop trigger if exists articles_set_updated_at on articles;
 create trigger articles_set_updated_at
   before update on articles
+  for each row execute function set_updated_at();
+
+drop trigger if exists site_popups_set_updated_at on site_popups;
+create trigger site_popups_set_updated_at
+  before update on site_popups
   for each row execute function set_updated_at();
 
 drop trigger if exists merch_products_set_updated_at on merch_products;
@@ -923,6 +947,7 @@ alter table race_series enable row level security;
 alter table races enable row level security;
 alter table race_sessions enable row level security;
 alter table merch_products enable row level security;
+alter table site_popups enable row level security;
 alter table site_settings enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
@@ -1033,6 +1058,14 @@ create policy race_sessions_read on race_sessions
 
 drop policy if exists race_sessions_write on race_sessions;
 create policy race_sessions_write on race_sessions
+  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists site_popups_read on site_popups;
+create policy site_popups_read on site_popups
+  for select using (enabled or is_staff());
+
+drop policy if exists site_popups_write on site_popups;
+create policy site_popups_write on site_popups
   for all using (can_edit()) with check (can_edit());
 
 drop policy if exists merch_products_read on merch_products;

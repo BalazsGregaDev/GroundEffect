@@ -1,29 +1,53 @@
-import SectionTitle from './SectionTitle.jsx'
+import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase.js'
 import { coverUrl } from '../lib/cloudinary.js'
-import { useMerch } from '../hooks/useMerch.js'
+import { merchShop } from '../data/site.js'
+import SectionTitle from '../components/SectionTitle.jsx'
+import '../components/MerchGrid.css'
 import '../styles/skeleton.css'
-import './MerchGrid.css'
-
-const shown = 8
 
 function price(value) {
-  return value === null || value === undefined
-    ? null
-    : `${value.toLocaleString('hu-HU')} Ft`
+  return value === null || value === undefined ? null : `${value.toLocaleString('hu-HU')} Ft`
 }
 
-export default function MerchGrid() {
-  const { products, loading } = useMerch(shown)
+export default function MerchPage() {
+  const [products, setProducts] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let active = true
+
+    supabase
+      .from('merch_products')
+      .select('id, name, price, url, image_url')
+      .eq('visible', true)
+      .order('price', { ascending: true, nullsFirst: false })
+      .then(({ data }) => {
+        if (active) {
+          setProducts(data ?? [])
+          setLoading(false)
+        }
+      })
+
+    return () => {
+      active = false
+    }
+  }, [])
 
   return (
-    <section className="merch" id="merch">
-      <SectionTitle linkLabel="Összes termék" linkTo="/merch">
-        Merch
+    <section className="merch">
+      <Link to="/" className="merch-back">
+        Vissza a főoldalra
+      </Link>
+
+      <SectionTitle linkLabel="Tovább a boltba" linkHref={merchShop}>
+        Összes termék
       </SectionTitle>
 
       {loading && (
         <div className="merch-grid" aria-hidden="true">
-          {Array.from({ length: shown }, (_, index) => (
+          {Array.from({ length: 12 }, (_, index) => (
             <span className="skel merch-skel" key={index} />
           ))}
         </div>

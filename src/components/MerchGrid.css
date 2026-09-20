@@ -88,3 +88,15 @@
     gap: 0.9rem;
   }
 }
+
+.merch-back {
+  display: inline-block;
+  margin-bottom: 1.2rem;
+  font-size: 0.85rem;
+  color: var(--smoke);
+  text-decoration: none;
+}
+
+.merch-back:hover {
+  color: var(--gold);
+}

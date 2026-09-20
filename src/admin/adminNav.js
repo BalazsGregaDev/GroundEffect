@@ -8,6 +8,6 @@ export const adminNav = [
   { path: '/admin/merch', label: 'Merch' },
   { path: '/admin/szekciok', label: 'Szekciók', pending: true },
   { path: '/admin/szavazas', label: 'Szavazás' },
-  { path: '/admin/popup', label: 'Popup üzenetek', pending: true },
+  { path: '/admin/popup', label: 'Popup üzenetek' },
   { path: '/admin/felhasznalok', label: 'Felhasználók', superadminOnly: true },
 ]

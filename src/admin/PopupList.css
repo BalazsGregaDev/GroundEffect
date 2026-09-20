@@ -1,0 +1,118 @@
+.popup-editor {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 24rem);
+  gap: 2rem;
+  align-items: start;
+  margin: 1.4rem 0 2rem;
+  padding-bottom: 1.6rem;
+  border-bottom: 1px solid var(--graphite);
+}
+
+.popup-editor-form {
+  display: grid;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.popup-when {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0.8rem 1rem;
+  border: 1px solid var(--graphite);
+}
+
+.popup-when legend {
+  padding: 0 0.4rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+.popup-when label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.9rem;
+  color: var(--bone);
+  cursor: pointer;
+}
+
+.popup-when input {
+  accent-color: var(--gold);
+}
+
+.popup-when small {
+  font-family: var(--mono);
+  font-size: 0.74rem;
+  color: var(--graphite);
+}
+
+.popup-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  flex-wrap: wrap;
+  margin-top: 0.4rem;
+}
+
+.popup-confirm {
+  display: inline-flex;
+  gap: 0.8rem;
+}
+
+.popup-editor-preview {
+  position: sticky;
+  top: 1.5rem;
+  min-width: 0;
+}
+
+.popup-preview-label {
+  display: block;
+  margin-bottom: 0.6rem;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
+.popup-editor-preview .popup-box {
+  width: 100%;
+  transform: none;
+  opacity: 1;
+}
+
+.popup-open {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.popup-open:hover {
+  color: var(--gold);
+}
+
+.popup-place {
+  font-size: 0.84rem;
+  color: var(--smoke);
+}
+
+.popup-table td {
+  vertical-align: middle;
+}
+
+@media (max-width: 1024px) {
+  .popup-editor {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .popup-editor-preview {
+    position: static;
+  }
+}
