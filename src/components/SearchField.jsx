@@ -4,6 +4,12 @@ import './SearchField.css'
 
 const label = 'Keresés'
 
+function toTop() {
+  const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
+  window.scrollTo({ top: 0, behavior: smooth ? 'smooth' : 'auto' })
+}
+
 export default function SearchField() {
   const { query, setQuery } = useSearch()
   const typed = query.trim().length
@@ -16,7 +22,10 @@ export default function SearchField() {
         value={query}
         placeholder={label}
         aria-label={label}
-        onChange={(event) => setQuery(event.target.value)}
+        onChange={(event) => {
+          setQuery(event.target.value)
+          toTop()
+        }}
         onKeyDown={(event) => {
           if (event.key === 'Escape') {
             setQuery('')

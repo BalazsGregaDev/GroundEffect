@@ -69,7 +69,11 @@ export default function CoverSettings() {
       return false
     }
 
-    return original.cover_tone !== row.cover_tone || original.cover_url !== row.cover_url
+    return (
+      original.cover_tone !== row.cover_tone ||
+      original.cover_url !== row.cover_url ||
+      original.share_image_url !== row.share_image_url
+    )
   })
 
   const dirty =
@@ -91,14 +95,14 @@ export default function CoverSettings() {
     setFallbackUrl(next)
   }
 
-  function changeRowCover(row, next) {
+  function changeRowImage(row, field, next) {
     const original = series.find((item) => item.id === row.id)
 
-    if (row.cover_url && row.cover_url !== next && row.cover_url !== original?.cover_url) {
-      deleteImages(row.cover_url)
+    if (row[field] && row[field] !== next && row[field] !== original?.[field]) {
+      deleteImages(row[field])
     }
 
-    setRow(row.id, { cover_url: next })
+    setRow(row.id, { [field]: next })
   }
 
   function setRow(id, patch) {
@@ -120,12 +124,12 @@ export default function CoverSettings() {
     setNotice(null)
 
     const orphans = changed
-      .map((row) => {
+      .flatMap((row) => {
         const original = series.find((item) => item.id === row.id)
 
-        return original?.cover_url && original.cover_url !== row.cover_url
-          ? original.cover_url
-          : null
+        return ['cover_url', 'share_image_url'].map((field) =>
+          original?.[field] && original[field] !== row[field] ? original[field] : null,
+        )
       })
       .filter(Boolean)
 
@@ -141,7 +145,11 @@ export default function CoverSettings() {
       ...changed.map((row) =>
         supabase
           .from('race_series')
-          .update({ cover_tone: row.cover_tone, cover_url: row.cover_url })
+          .update({
+            cover_tone: row.cover_tone,
+            cover_url: row.cover_url,
+            share_image_url: row.share_image_url,
+          })
           .eq('id', row.id),
       ),
     ])
@@ -273,7 +281,9 @@ export default function CoverSettings() {
         <h2>Sorozatok</h2>
         <p className="editor-hint">
           A sorozat default képe felülírja a rajzot. Ha nincs feltöltve, a rajz színe ez a szín
-          lesz. A sorozatok nevét a Versenynaptár menüpontban tudod átírni.
+          lesz. A sorozatok nevét a Versenynaptár menüpontban tudod átírni. A megosztókép csak
+          Facebookon és Discordon jelenik meg, olyan cikkeknél, amelyekhez nincs saját borítókép:
+          ide a sorozat generált rajza való, 1200×630-ban.
         </p>
 
         <table className="list-table cover-table">
@@ -282,6 +292,7 @@ export default function CoverSettings() {
               <th>Sorozat</th>
               <th>Szín</th>
               <th>Default kép</th>
+              <th>Megosztókép</th>
             </tr>
           </thead>
           <tbody>
@@ -312,7 +323,14 @@ export default function CoverSettings() {
                   <CoverUpload
                     value={row.cover_url}
                     disabled={!canEdit}
-                    onChange={(next) => changeRowCover(row, next)}
+                    onChange={(next) => changeRowImage(row, 'cover_url', next)}
+                  />
+                </td>
+                <td>
+                  <CoverUpload
+                    value={row.share_image_url}
+                    disabled={!canEdit}
+                    onChange={(next) => changeRowImage(row, 'share_image_url', next)}
                   />
                 </td>
               </tr>

@@ -273,6 +273,7 @@ alter table race_series add column if not exists featured_article_id uuid
   references articles (id) on delete set null;
 alter table race_series add column if not exists cover_tone text;
 alter table race_series add column if not exists cover_url text;
+alter table race_series add column if not exists share_image_url text;
 
 create or replace function ensure_series_tag()
 returns trigger
@@ -727,6 +728,38 @@ as $$
   order by count(link.article_id) desc, t.name
   limit limit_count;
 $$;
+
+create or replace function article_share(p_slug text)
+returns table (
+  title text,
+  lead text,
+  cover_url text,
+  published_at timestamptz,
+  series_cover_url text,
+  series_share_url text,
+  site_cover_url text
+)
+language sql
+stable
+set search_path = public
+as $$
+  select
+    a.title,
+    a.lead,
+    a.cover_url,
+    a.published_at,
+    s.cover_url,
+    s.share_image_url,
+    (select cover_fallback_url from site_settings limit 1)
+  from articles a
+  left join race_series s on s.tag_id = a.primary_series_tag_id and s.visible
+  where a.slug = p_slug
+    and a.status = 'published'
+    and a.published_at <= now()
+  limit 1;
+$$;
+
+grant execute on function article_share(text) to anon, authenticated;
 
 create or replace function search_terms(p_text text)
 returns text

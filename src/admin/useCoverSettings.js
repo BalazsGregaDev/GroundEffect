@@ -12,7 +12,7 @@ export function useCoverSettings() {
       supabase.from('site_settings').select('cover_design, cover_fallback_url').maybeSingle(),
       supabase
         .from('race_series')
-        .select('id, slug, name, cover_tone, cover_url')
+        .select('id, slug, name, cover_tone, cover_url, share_image_url')
         .order('sort_order'),
     ])
 
