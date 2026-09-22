@@ -752,6 +752,8 @@ export default function ArticleEditor() {
             tags={tags.filter((tag) => tag.kind !== 'series')}
             onChange={(next) => setTags([...next, ...tags.filter((tag) => tag.kind === 'series')])}
             disabled={readOnly}
+            all={allTags}
+            text={`${form.title} ${form.lead} ${form.body}`}
           />
 
           <CoverField

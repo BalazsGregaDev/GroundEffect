@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { kindLabel, tagKinds } from './tagKinds.js'
 import './TagField.css'
@@ -6,11 +6,42 @@ import './TagField.css'
 const optionLimit = 15
 const freeKinds = tagKinds.filter((kind) => kind.value !== 'series')
 
-export default function TagField({ tags, onChange, disabled }) {
+function plainText(html) {
+  return html
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&[a-z]+;|&#\d+;/gi, ' ')
+    .replace(/\s+/g, ' ')
+}
+
+function mentioned(name, text) {
+  const cleaned = name.trim()
+
+  if (cleaned.length < 2) {
+    return false
+  }
+
+  const escaped = cleaned.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+  return new RegExp(`(^|[^\\p{L}\\p{N}])${escaped}`, 'iu').test(text)
+}
+
+export default function TagField({ tags, onChange, disabled, all = [], text = '' }) {
   const [query, setQuery] = useState('')
   const [options, setOptions] = useState([])
   const [searching, setSearching] = useState(false)
   const [newKind, setNewKind] = useState('driver')
+
+  const found = useMemo(() => {
+    const haystack = plainText(text)
+
+    if (!haystack.trim()) {
+      return []
+    }
+
+    return all
+      .filter((tag) => tag.kind !== 'series' && mentioned(tag.name, haystack))
+      .sort((first, second) => second.name.length - first.name.length)
+  }, [all, text])
 
   useEffect(() => {
     if (disabled) {
@@ -42,6 +73,10 @@ export default function TagField({ tags, onChange, disabled }) {
   const exactMatch =
     selected.has(trimmed.toLowerCase()) ||
     options.some((tag) => tag.name.toLowerCase() === trimmed.toLowerCase())
+  const suggested = found.filter(
+    (tag) => !trimmed || tag.name.toLowerCase().includes(trimmed.toLowerCase()),
+  )
+  const others = options.filter((tag) => !suggested.some((hit) => hit.id === tag.id))
 
   function toggle(tag) {
     if (selected.has(tag.name.toLowerCase())) {
@@ -102,7 +137,33 @@ export default function TagField({ tags, onChange, disabled }) {
           />
 
           <div className="tag-options">
-            {options.map((tag) => (
+            {suggested.length > 0 && (
+              <span className="tag-group">A cikk szövegéből</span>
+            )}
+
+            {suggested.map((tag) => (
+              <button
+                key={tag.id}
+                type="button"
+                className={[
+                  'tag-option',
+                  'tag-option--match',
+                  selected.has(tag.name.toLowerCase()) ? 'is-active' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                onClick={() => toggle(tag)}
+              >
+                {tag.name}
+                <span className="tag-option-kind">- {kindLabel(tag.kind)}</span>
+              </button>
+            ))}
+
+            {suggested.length > 0 && others.length > 0 && (
+              <span className="tag-group">További tagek</span>
+            )}
+
+            {others.map((tag) => (
               <button
                 key={tag.id}
                 type="button"
@@ -116,7 +177,7 @@ export default function TagField({ tags, onChange, disabled }) {
               </button>
             ))}
 
-            {!searching && options.length === 0 && (
+            {!searching && suggested.length === 0 && others.length === 0 && (
               <span className="tag-empty">Nincs találat.</span>
             )}
           </div>

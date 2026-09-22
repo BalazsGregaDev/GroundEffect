@@ -87,6 +87,19 @@
   border-color: var(--gold-deep);
 }
 
+.tag-option--match {
+  background: var(--ink);
+  border-color: var(--gold-deep);
+}
+
+.tag-group {
+  flex-basis: 100%;
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--smoke);
+}
+
 .tag-option-kind {
   font-size: 0.74rem;
   color: var(--gold);
