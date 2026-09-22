@@ -43,6 +43,10 @@
   }
 }
 
+.feed > [id] {
+  scroll-margin-top: 2.5rem;
+}
+
 @media (max-width: 1024px) {
   .shell {
     grid-template-columns: 1fr;
@@ -60,7 +64,7 @@
   }
 
   .feed > [id] {
-    scroll-margin-top: 4.75rem;
+    scroll-margin-top: 5.75rem;
   }
 
   .feed > * + * {
