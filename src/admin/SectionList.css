@@ -53,6 +53,12 @@
   font-size: 0.8rem;
 }
 
+@media (pointer: coarse) {
+  .section-step {
+    min-height: 2.6rem;
+  }
+}
+
 .section-notice {
   margin: 0 0 1rem;
   font-size: 0.85rem;

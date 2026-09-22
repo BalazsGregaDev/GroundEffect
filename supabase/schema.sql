@@ -729,12 +729,15 @@ as $$
   limit limit_count;
 $$;
 
+drop function if exists article_share(text);
+
 create or replace function article_share(p_slug text)
 returns table (
   title text,
   lead text,
   cover_url text,
   published_at timestamptz,
+  updated_at timestamptz,
   series_cover_url text,
   series_share_url text,
   site_cover_url text
@@ -748,6 +751,7 @@ as $$
     a.lead,
     a.cover_url,
     a.published_at,
+    a.updated_at,
     s.cover_url,
     s.share_image_url,
     (select cover_fallback_url from site_settings limit 1)

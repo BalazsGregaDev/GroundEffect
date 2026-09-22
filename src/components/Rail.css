@@ -2,6 +2,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -175,8 +176,27 @@
 
 @media (max-width: 700px) {
   .rail {
-    gap: 1.3rem;
-    padding-top: 1.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0 0.7rem;
+    padding: 0.6rem clamp(1rem, 4vw, 1.6rem);
+  }
+
+  .rail-bar,
+  .rail-main {
+    display: contents;
+  }
+
+  .brand {
+    grid-area: 1 / 1;
+  }
+
+  .brand span {
+    display: none;
   }
 
   .brand-logo {
@@ -184,34 +204,49 @@
     height: 40px;
   }
 
-  .rail nav ul {
+  .rail-search {
+    grid-area: 1 / 2;
     margin-bottom: 0;
   }
-}
 
-@media (max-width: 700px) {
-  .rail--fading :is(.brand, .rail-intro, nav, .rail-foot) {
-    opacity: 0;
-    transition: opacity 1s linear;
+  .rail-search-hint {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    margin: 0;
+    padding: 0.3rem 0.6rem;
+    background: var(--ink);
+    border: 1px solid var(--graphite);
+    border-top: none;
   }
 
-  .rail--searching:not(.rail--fading) {
-    gap: 0;
-    padding-block: 1rem;
+  .menu-toggle {
+    display: flex;
+    grid-area: 1 / 3;
+    justify-self: end;
   }
 
-  .rail--searching:not(.rail--fading) :is(.brand, .rail-intro, nav, .rail-foot) {
+  .rail-intro {
     display: none;
   }
 
-  .rail--searching:not(.rail--fading) .rail-search {
-    margin-bottom: 0;
+  .rail-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    padding: 0.3rem clamp(1rem, 4vw, 1.6rem) 1.1rem;
+    background: var(--black);
+    border-bottom: 1px solid var(--graphite);
   }
-}
 
-@media (max-width: 700px) and (prefers-reduced-motion: reduce) {
-  .rail--fading :is(.brand, .rail-intro, nav, .rail-foot) {
-    transition: none;
+  .rail--open .rail-panel {
+    display: block;
+  }
+
+  .rail nav ul {
+    margin-bottom: 1rem;
   }
 }
 

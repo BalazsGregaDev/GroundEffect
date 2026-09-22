@@ -2,6 +2,7 @@
   display: grid;
   grid-template-columns: clamp(260px, 24vw, 380px) minmax(0, 1fr);
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .feed {
@@ -56,6 +57,10 @@
 @media (max-width: 700px) {
   .feed {
     padding-top: 1.8rem;
+  }
+
+  .feed > [id] {
+    scroll-margin-top: 4.75rem;
   }
 
   .feed > * + * {

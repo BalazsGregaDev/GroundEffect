@@ -4,6 +4,7 @@
 }
 
 .rail-search-input {
+  appearance: none;
   width: 100%;
   padding: 0.62rem 2.2rem 0.62rem 0.8rem;
   border: 1px solid var(--graphite);
@@ -65,6 +66,7 @@
 @media (pointer: coarse) {
   .rail-search-input {
     padding: 0.72rem 3rem 0.72rem 0.8rem;
+    font-size: 16px;
   }
 
   .rail-search-clear {

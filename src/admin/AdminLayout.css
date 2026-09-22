@@ -2,18 +2,25 @@
   display: grid;
   grid-template-columns: 272px 1fr;
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 .admin-rail {
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   flex-direction: column;
   gap: 2rem;
   padding: 1.8rem 1.4rem;
   border-right: 1px solid var(--graphite);
   background: var(--ink);
+}
+
+.admin-bar,
+.admin-panel {
+  display: contents;
 }
 
 .admin-brand {
@@ -115,13 +122,47 @@
 @media (max-width: 900px) {
   .admin {
     grid-template-columns: 1fr;
+    grid-template-rows: auto 1fr;
   }
 
   .admin-rail {
-    position: static;
+    z-index: 20;
     height: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 0;
+    padding: 0.6rem 1.2rem;
     border-right: none;
     border-bottom: 1px solid var(--graphite);
+  }
+
+  .admin-bar {
+    display: contents;
+  }
+
+  .menu-toggle {
+    display: flex;
+    justify-self: end;
+  }
+
+  .admin-panel {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    display: none;
+    padding: 0.4rem 1.2rem 1.2rem;
+    background: var(--ink);
+    border-bottom: 1px solid var(--graphite);
+  }
+
+  .admin--open .admin-panel {
+    display: block;
+  }
+
+  .admin-user {
+    margin-top: 1rem;
   }
 
   .admin-main {

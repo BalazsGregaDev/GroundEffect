@@ -62,6 +62,18 @@
   color: var(--smoke);
 }
 
+@media (pointer: coarse) {
+  .admin-field input,
+  .admin-field select,
+  .admin-field textarea {
+    font-size: 16px;
+  }
+
+  .cover-clear {
+    min-height: 2.6rem;
+  }
+}
+
 .admin-field input,
 .admin-field select,
 .admin-field textarea {

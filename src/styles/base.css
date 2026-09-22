@@ -2,6 +2,10 @@
   box-sizing: border-box;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
   background: var(--black);
@@ -33,6 +37,18 @@ a {
 .admin-boot {
   padding: 3rem 2rem;
   color: var(--smoke);
+}
+
+@media (pointer: coarse) {
+  .section-title a,
+  .article-back,
+  .merch-back,
+  .dcard-head a,
+  .fb-consent a,
+  .admin-user a {
+    padding-block: 0.8rem;
+    margin-block: -0.8rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

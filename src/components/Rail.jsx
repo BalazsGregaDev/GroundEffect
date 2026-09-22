@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import SearchField from './SearchField.jsx'
+import MenuToggle from './MenuToggle.jsx'
 import { useRailStatus } from '../hooks/useRailStatus.js'
 import { useSearch } from '../hooks/useSearch.js'
 import { useSiteConfig } from '../lib/siteConfig.js'
@@ -63,6 +64,7 @@ export default function Rail() {
   const { setQuery, phase } = useSearch()
   const { pathname } = useLocation()
   const [now, setNow] = useState(() => Date.now())
+  const [open, setOpen] = useState(false)
   const hasPoll = Boolean(poll)
 
   useEffect(() => {
@@ -75,19 +77,49 @@ export default function Rail() {
     return () => clearInterval(timer)
   }, [hasPoll])
 
+  useEffect(() => {
+    if (!open) {
+      return
+    }
+
+    function onKey(event) {
+      if (event.key === 'Escape') {
+        setOpen(false)
+      }
+    }
+
+    window.addEventListener('keydown', onKey)
+
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open])
+
+  function leave() {
+    setQuery('')
+    setOpen(false)
+  }
+
   const searchable = searchPaths.includes(pathname)
   const classes = [
     'rail',
+    open && 'rail--open',
     searchable && phase !== 'idle' && 'rail--searching',
     searchable && phase === 'fading' && 'rail--fading',
   ].filter(Boolean)
 
   return (
     <aside className={classes.join(' ')}>
-      <Link className="brand" to="/" onClick={() => setQuery('')}>
-        <img className="brand-logo" src={logo} width="48" height="48" alt="" />
-        <span>Ground Effect</span>
-      </Link>
+      <div className="rail-bar">
+        <Link className="brand" to="/" onClick={leave}>
+          <img className="brand-logo" src={logo} width="48" height="48" alt="" />
+          <span>Ground Effect</span>
+        </Link>
+
+        <MenuToggle
+          open={open}
+          controls="rail-panel"
+          onToggle={() => setOpen((current) => !current)}
+        />
+      </div>
 
       <div className="rail-intro">
         <h1 className="rail-statement">
@@ -103,25 +135,27 @@ export default function Rail() {
       <div className="rail-main">
         {searchable && <SearchField />}
 
-        <nav>
-          <ul>
-            {navItems(sections, poll, race, now).map((item) => (
-              <li key={item.key}>
-                <Link to={`/${item.href}`} onClick={() => setQuery('')}>
-                  {item.label}
-                  {item.meta && <span className="nav-meta">{item.meta}</span>}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        <div className="rail-panel" id="rail-panel">
+          <nav>
+            <ul>
+              {navItems(sections, poll, race, now).map((item) => (
+                <li key={item.key}>
+                  <Link to={`/${item.href}`} onClick={leave}>
+                    {item.label}
+                    {item.meta && <span className="nav-meta">{item.meta}</span>}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
 
-        <div className="rail-foot">
-          {socialLinks.map((link) => (
-            <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
-              {link.label}
-            </a>
-          ))}
+          <div className="rail-foot">
+            {socialLinks.map((link) => (
+              <a key={link.label} href={link.href} target="_blank" rel="noreferrer">
+                {link.label}
+              </a>
+            ))}
+          </div>
         </div>
       </div>
     </aside>

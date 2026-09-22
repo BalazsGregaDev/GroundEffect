@@ -91,8 +91,8 @@ export default function SectionList() {
       </div>
 
       <p className="admin-readonly">
-        Ez a főoldal sorrendje fentről lefelé. A rejtett szekció nem jelenik meg, és a bal
-        oldali menüből is kimarad. Húzd a sorokat a helyükre, vagy told őket a Fel és Le
+        Ez a főoldal sorrendje fentről lefelé. A rejtett szekció nem jelenik meg, és az
+        oldal menüjéből is kimarad. Húzd a sorokat a helyükre, vagy told őket a Fel és Le
         gombokkal.
       </p>
 
