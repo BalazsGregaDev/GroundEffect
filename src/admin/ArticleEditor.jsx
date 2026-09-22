@@ -76,6 +76,32 @@ async function loadArticle(id) {
   }
 }
 
+function mergeTopics(categories, seriesTags) {
+  const merged = new Map()
+
+  for (const tag of seriesTags) {
+    const key = tag.name.trim().toLowerCase()
+    merged.set(key, { key, name: tag.name, tagId: tag.id, categoryId: null })
+  }
+
+  for (const category of categories) {
+    const key = category.name.trim().toLowerCase()
+    const found = merged.get(key)
+
+    if (found) {
+      found.categoryId = category.id
+    } else {
+      merged.set(key, { key, name: category.name, tagId: null, categoryId: category.id })
+    }
+  }
+
+  return [...merged.values()].sort((first, second) => first.name.localeCompare(second.name, 'hu'))
+}
+
+function autoMinutes(body) {
+  return body.replace(/<[^>]+>/g, ' ').trim() ? readingMinutes(body) : null
+}
+
 function SeriesSelect({ label, value, options, onChange, disabled }) {
   return (
     <label className="admin-field">
@@ -111,7 +137,8 @@ function toPayload(form) {
     category_id: form.category_id || null,
     status: form.status,
     featured: form.featured,
-    reading_minutes: form.reading_minutes ? Number(form.reading_minutes) : null,
+    reading_minutes:
+      Number(form.reading_minutes) > 0 ? Number(form.reading_minutes) : autoMinutes(form.body),
     published_at:
       form.status === 'published' && !publishedAt ? new Date().toISOString() : publishedAt,
     primary_series_tag_id: form.primary_series_tag_id || null,
@@ -157,8 +184,8 @@ export default function ArticleEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { session, canEdit, isSuperadmin } = useAuth()
-  const { rows: categories } = useLookup('categories')
-  const { rows: allTags } = useLookup('tags', 'id, slug, name, kind')
+  const { rows: categories, reload: reloadCategories } = useLookup('categories')
+  const { rows: allTags, reload: reloadTags } = useLookup('tags', 'id, slug, name, kind')
 
   const [form, setForm] = useState(emptyForm)
   const [tags, setTags] = useState([])
@@ -172,6 +199,9 @@ export default function ArticleEditor() {
   const [sharing, setSharing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saveDone, setSaveDone] = useState(false)
+  const [adding, setAdding] = useState(false)
+  const [topicName, setTopicName] = useState('')
+  const [pending, setPending] = useState(null)
 
   useEffect(() => {
     if (!id) {
@@ -229,8 +259,103 @@ export default function ArticleEditor() {
     setPrevious(null)
   }
 
-  async function persist() {
-    const payload = toPayload(form)
+  async function ensureTopic(topic) {
+    const resolved = { name: topic.name, tagId: topic.tagId, categoryId: topic.categoryId }
+    const slug = slugify(topic.name)
+
+    if (!resolved.tagId) {
+      const { data, error: tagError } = await supabase
+        .from('tags')
+        .upsert({ slug, name: topic.name, kind: 'series' }, { onConflict: 'slug' })
+        .select('id')
+        .single()
+
+      if (tagError) {
+        setError(`A kategória mentése nem sikerült: ${tagError.message}`)
+        return null
+      }
+
+      resolved.tagId = data.id
+    }
+
+    if (!resolved.categoryId) {
+      const { data, error: categoryError } = await supabase
+        .from('categories')
+        .upsert({ slug, name: topic.name }, { onConflict: 'slug' })
+        .select('id')
+        .single()
+
+      if (categoryError) {
+        setError(`A kategória mentése nem sikerült: ${categoryError.message}`)
+        return null
+      }
+
+      resolved.categoryId = data.id
+    }
+
+    return resolved
+  }
+
+  function applyTopic(chosen) {
+    const tag = chosen?.tagId
+      ? (seriesTags.find((item) => item.id === chosen.tagId) ?? {
+          id: chosen.tagId,
+          name: chosen.name,
+          kind: 'series',
+        })
+      : null
+
+    update('category_id', chosen?.categoryId ?? '')
+    setSeries(
+      tag,
+      relatedSeries.filter((item) => item.id !== chosen?.tagId),
+    )
+  }
+
+  async function addTopic() {
+    const name = topicName.trim()
+
+    if (!name) {
+      return
+    }
+
+    const known = topics.find((item) => item.key === name.toLowerCase())
+    const resolved = await ensureTopic(known ?? { name, tagId: null, categoryId: null })
+
+    if (!resolved) {
+      return
+    }
+
+    await Promise.all([reloadTags(), reloadCategories()])
+
+    setAdding(false)
+    setTopicName('')
+    applyTopic(resolved)
+  }
+
+  async function persist(resolved) {
+    const payload = {
+      ...toPayload(form),
+      category_id: resolved.categoryId,
+      primary_series_tag_id: resolved.tagId,
+    }
+    const tagList = tags.some((tag) => tag.id === resolved.tagId)
+      ? tags
+      : [
+          ...tags,
+          {
+            id: resolved.tagId,
+            slug: slugify(resolved.name),
+            name: resolved.name,
+            kind: 'series',
+          },
+        ]
+    const nextForm = {
+      ...form,
+      category_id: resolved.categoryId,
+      primary_series_tag_id: resolved.tagId,
+      reading_minutes: payload.reading_minutes ?? '',
+    }
     let articleId = id
     let failure = null
 
@@ -249,7 +374,7 @@ export default function ArticleEditor() {
     }
 
     if (!failure) {
-      failure = await saveTags(articleId, tags)
+      failure = await saveTags(articleId, tagList)
     }
 
     if (failure) {
@@ -269,8 +394,12 @@ export default function ArticleEditor() {
     }
 
     setPrevious(orphans.length > 0 ? null : saved)
-    setSaved({ form, tags })
+    setForm(nextForm)
+    setTags(tagList)
+    setSaved({ form: nextForm, tags: tagList })
     setSaveDone(true)
+
+    await Promise.all([reloadTags(), reloadCategories()])
 
     if (!id) {
       navigate(`/admin/cikkek/${articleId}`, { replace: true })
@@ -309,8 +438,8 @@ export default function ArticleEditor() {
   async function handleSubmit(event) {
     event.preventDefault()
 
-    if (!seriesTag) {
-      setError('Válassz versenysorozatot, e nélkül nem menthető a cikk.')
+    if (!topic) {
+      setError('Válassz kategóriát, e nélkül nem menthető a cikk.')
       return
     }
 
@@ -318,6 +447,12 @@ export default function ArticleEditor() {
     setError(null)
 
     try {
+      const resolved = await ensureTopic(topic)
+
+      if (!resolved) {
+        return
+      }
+
       if (form.featured && !saved?.form.featured) {
         const others = await otherFeatured()
 
@@ -326,12 +461,13 @@ export default function ArticleEditor() {
         }
 
         if (others.length >= featuredArticleLimit) {
+          setPending(resolved)
           setCrowded(others)
           return
         }
       }
 
-      await persist()
+      await persist(resolved)
     } catch (failure) {
       setError(`Mentés sikertelen: ${failure.message}`)
     } finally {
@@ -355,7 +491,7 @@ export default function ArticleEditor() {
         return
       }
 
-      await persist()
+      await persist(pending)
     } catch (failure) {
       setError(`Mentés sikertelen: ${failure.message}`)
     } finally {
@@ -385,6 +521,13 @@ export default function ArticleEditor() {
   const relatedSeries = tags.filter(
     (tag) => tag.kind === 'series' && tag.id !== form.primary_series_tag_id,
   )
+  const topics = mergeTopics(categories, seriesTags)
+  const topic =
+    topics.find(
+      (item) =>
+        (form.primary_series_tag_id && item.tagId === form.primary_series_tag_id) ||
+        (form.category_id && item.categoryId === form.category_id),
+    ) ?? null
   const canPublish = isSuperadmin || saved?.form.status === 'published'
   const isLive =
     saved?.form.status === 'published' &&
@@ -533,30 +676,62 @@ export default function ArticleEditor() {
           <p className="editor-hint">Jövőbeli időpont esetén a cikk csak akkor jelenik meg.</p>
 
           <label className="admin-field">
-            <span>Kategória</span>
+            <span>Kategória / Versenysorozat</span>
             <select
-              value={form.category_id}
-              onChange={(event) => update('category_id', event.target.value)}
+              value={adding ? 'uj' : (topic?.key ?? '')}
+              onChange={(event) => {
+                const value = event.target.value
+
+                if (value === 'uj') {
+                  setAdding(true)
+                  return
+                }
+
+                setAdding(false)
+                applyTopic(topics.find((item) => item.key === value) ?? null)
+              }}
               disabled={readOnly}
             >
-              <option value="">Nincs</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
+              <option value="">Válassz kategóriát</option>
+              {topics.map((item) => (
+                <option key={item.key} value={item.key}>
+                  {item.name}
                 </option>
               ))}
+              {!readOnly && <option value="uj">+ Hozzáadás</option>}
             </select>
           </label>
 
-          <SeriesSelect
-            label="Versenysorozat"
-            value={seriesTag}
-            options={seriesTags.filter(
-              (tag) => !relatedSeries.some((other) => other.id === tag.id),
-            )}
-            onChange={(tag) => setSeries(tag, relatedSeries)}
-            disabled={readOnly}
-          />
+          {adding && !readOnly && (
+            <div className="editor-new">
+              <input
+                type="text"
+                value={topicName}
+                onChange={(event) => setTopicName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    addTopic()
+                  }
+                }}
+                placeholder="Új kategória neve"
+              />
+
+              <button
+                type="button"
+                className="admin-button admin-button--ghost"
+                onClick={addTopic}
+                disabled={!topicName.trim()}
+              >
+                Hozzáadás
+              </button>
+            </div>
+          )}
+
+          <p className="editor-hint">
+            A kategória egyben a cikk versenysorozata is. A versenynaptárba nem kerül be
+            automatikusan.
+          </p>
 
           {[0, 1].map((index) => (
             <SeriesSelect
@@ -569,13 +744,13 @@ export default function ArticleEditor() {
                   tag.id !== (relatedSeries[index === 0 ? 1 : 0] ?? {}).id,
               )}
               onChange={(tag) => pickRelated(index, tag)}
-              disabled={readOnly || !seriesTag}
+              disabled={readOnly || !topic}
             />
           ))}
 
           <TagField
             tags={tags.filter((tag) => tag.kind !== 'series')}
-            onChange={(next) => setTags(seriesTag ? [...next, seriesTag] : next)}
+            onChange={(next) => setTags([...next, ...tags.filter((tag) => tag.kind === 'series')])}
             disabled={readOnly}
           />
 
@@ -607,6 +782,8 @@ export default function ArticleEditor() {
               Számold ki a szövegből
             </button>
           )}
+
+          <p className="editor-hint">Üresen hagyva mentéskor a szövegből számoljuk ki.</p>
 
           <label className="editor-checkbox">
             <input

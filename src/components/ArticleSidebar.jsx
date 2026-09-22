@@ -18,7 +18,8 @@ function ArticleLinks({ title, articles }) {
             <Link to={`/cikkek/${article.slug}`}>
               <span className="aside-title">{article.title}</span>
               <span className="aside-meta">
-                {article.categories?.name ?? 'Egyéb'} · {relativeTime(article.published_at)}
+                <span className="aside-cat">{article.categories?.name ?? 'Egyéb'}</span> ·{' '}
+                {relativeTime(article.published_at)}
               </span>
             </Link>
           </li>

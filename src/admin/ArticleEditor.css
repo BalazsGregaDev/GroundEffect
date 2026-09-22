@@ -53,6 +53,35 @@
   color: var(--smoke);
 }
 
+.editor-new {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: -0.4rem;
+}
+
+.editor-new input {
+  flex: 1;
+  min-width: 9rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.95rem;
+}
+
+.editor-new input:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+@media (pointer: coarse) {
+  .editor-new input {
+    font-size: 16px;
+  }
+}
+
 .editor-link {
   align-self: flex-start;
   margin-top: -0.6rem;

@@ -59,6 +59,10 @@
   color: var(--smoke);
 }
 
+.row .cat-name {
+  color: var(--gold);
+}
+
 .row .read {
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;

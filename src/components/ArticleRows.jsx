@@ -21,7 +21,8 @@ export default function ArticleRows({ articles }) {
           <div>
             <h3>{article.title}</h3>
             <span className="cat">
-              {article.category ?? 'Egyéb'} · {relativeTime(article.published_at)}
+              <span className="cat-name">{article.category ?? 'Egyéb'}</span> ·{' '}
+              {relativeTime(article.published_at)}
             </span>
           </div>
           <span className="read">

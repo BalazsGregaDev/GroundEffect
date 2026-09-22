@@ -112,9 +112,7 @@ export default function TagField({ tags, onChange, disabled }) {
                 onClick={() => toggle(tag)}
               >
                 {tag.name}
-                <span className="tag-option-kind">
-                  {kindLabel(tag.kind)}
-                </span>
+                <span className="tag-option-kind">- {kindLabel(tag.kind)}</span>
               </button>
             ))}
 

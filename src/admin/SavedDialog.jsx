@@ -23,7 +23,6 @@ export default function SavedDialog({ onClose }) {
         onMouseDown={(event) => event.stopPropagation()}
       >
         <h2 id="saved-title">Sikeres mentés</h2>
-        <p>Bezárás után a cikkek listájára lépünk vissza.</p>
 
         <button type="button" className="admin-button" onClick={onClose} autoFocus>
           Rendben

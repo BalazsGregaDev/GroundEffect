@@ -778,6 +778,8 @@ as $$
   where word <> '';
 $$;
 
+drop function if exists search_articles(text, integer);
+
 create or replace function search_articles(p_query text, p_limit integer default 20)
 returns table (
   id uuid,
@@ -786,15 +788,31 @@ returns table (
   lead text,
   reading_minutes integer,
   published_at timestamptz,
-  category text
+  category text,
+  cover_url text,
+  cover_focus text,
+  series_slug text,
+  series_name text
 )
 language sql
 stable
 set search_path = public
 as $$
-  select a.id, a.slug, a.title, a.lead, a.reading_minutes, a.published_at, c.name
+  select
+    a.id,
+    a.slug,
+    a.title,
+    a.lead,
+    a.reading_minutes,
+    a.published_at,
+    c.name,
+    a.cover_url,
+    a.cover_focus,
+    t.slug,
+    t.name
   from articles a
   left join categories c on c.id = a.category_id
+  left join tags t on t.id = a.primary_series_tag_id
   cross join (select search_terms(p_query) as terms) q
   where q.terms is not null
     and a.status = 'published'

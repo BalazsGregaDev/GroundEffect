@@ -22,12 +22,12 @@
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--gold-deep);
   background: var(--black);
-  color: var(--gold);
+  color: var(--bone);
   font-size: 0.82rem;
 }
 
 .tag-chip-kind {
-  color: var(--bone);
+  color: var(--gold);
 }
 
 .tag-chip button {
@@ -77,32 +77,19 @@
   padding: 0.2rem 0.5rem;
   border: 1px solid var(--graphite);
   background: none;
-  color: var(--smoke);
+  color: var(--bone);
   font-family: var(--body);
   font-size: 0.8rem;
   cursor: pointer;
-  transition:
-    color 0.12s,
-    border-color 0.12s;
-}
-
-.tag-option:hover {
-  color: var(--bone);
 }
 
 .tag-option.is-active {
   border-color: var(--gold-deep);
-  color: var(--gold);
 }
 
 .tag-option-kind {
-  font-size: 0.68rem;
-  color: var(--graphite);
-}
-
-.tag-option:hover .tag-option-kind,
-.tag-option.is-active .tag-option-kind {
-  color: var(--smoke);
+  font-size: 0.74rem;
+  color: var(--gold);
 }
 
 .tag-new-row {
