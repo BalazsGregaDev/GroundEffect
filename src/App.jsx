@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout.jsx'
 import SitePopup from './components/SitePopup.jsx'
 import HashScroll from './components/HashScroll.jsx'
+import ScrollTop from './components/ScrollTop.jsx'
 import { publicRoutes } from './routes/publicRoutes.jsx'
 import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
@@ -31,6 +32,7 @@ export default function App() {
   return (
     <>
       <HashScroll />
+      <ScrollTop />
       <SitePopup />
 
       <Routes>
