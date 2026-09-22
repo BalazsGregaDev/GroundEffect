@@ -201,9 +201,9 @@
 }
 
 .rcal-session {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: baseline;
-  justify-content: space-between;
   gap: 1rem;
   padding: 0.55rem 0;
   border-top: 1px solid var(--graphite);
@@ -214,21 +214,21 @@
 }
 
 .rcal-session-label {
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-  flex-wrap: wrap;
+  min-width: 0;
   font-size: 0.92rem;
   color: var(--bone);
 }
 
 .rcal-session-when {
+  justify-self: center;
   font-family: var(--mono);
   font-size: 0.76rem;
-  color: var(--smoke);
+  white-space: nowrap;
+  color: color-mix(in oklab, var(--bone) 60%, var(--smoke));
 }
 
 .rcal-session-clock {
+  justify-self: end;
   font-family: var(--mono);
   font-variant-numeric: tabular-nums;
   font-size: 0.85rem;
@@ -285,8 +285,20 @@
   }
 
   .rcal-session {
-    flex-wrap: wrap;
+    grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.1rem 1rem;
+  }
+
+  .rcal-session-label {
+    grid-area: 1 / 1;
+  }
+
+  .rcal-session-clock {
+    grid-area: 1 / 2;
+  }
+
+  .rcal-session-when {
+    grid-area: 2 / 1 / 2 / -1;
   }
 }
 

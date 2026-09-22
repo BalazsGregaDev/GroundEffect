@@ -12,6 +12,7 @@ import CoverField from './CoverField.jsx'
 import TagField from './TagField.jsx'
 import FeaturedDialog from './FeaturedDialog.jsx'
 import FacebookDialog from './FacebookDialog.jsx'
+import SavedDialog from './SavedDialog.jsx'
 import { dateTimeBounds } from './dateInput.js'
 import { featuredArticleLimit } from '../data/site.js'
 import './ArticleEditor.css'
@@ -170,6 +171,7 @@ export default function ArticleEditor() {
   const [facebookPostId, setFacebookPostId] = useState(null)
   const [sharing, setSharing] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [saveDone, setSaveDone] = useState(false)
 
   useEffect(() => {
     if (!id) {
@@ -268,6 +270,7 @@ export default function ArticleEditor() {
 
     setPrevious(orphans.length > 0 ? null : saved)
     setSaved({ form, tags })
+    setSaveDone(true)
 
     if (!id) {
       navigate(`/admin/cikkek/${articleId}`, { replace: true })
@@ -389,6 +392,8 @@ export default function ArticleEditor() {
 
   return (
     <form className="editor" onSubmit={handleSubmit}>
+      {saveDone && <SavedDialog onClose={() => navigate('/admin/cikkek')} />}
+
       {crowded && (
         <FeaturedDialog
           articles={crowded}

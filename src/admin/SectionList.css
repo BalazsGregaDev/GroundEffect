@@ -2,19 +2,18 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  max-width: 44rem;
+  max-width: 53rem;
 }
 
 .section-row {
   display: grid;
-  grid-template-columns: 2.2rem 1fr auto auto;
-  gap: 1rem;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 1.2rem;
   align-items: center;
-  padding: 0.7rem 0.9rem;
+  padding: 0.84rem 1.08rem;
   border: 1px solid var(--graphite);
   border-bottom: none;
   background: var(--ink);
-  cursor: grab;
 }
 
 .section-row:last-child {
@@ -30,8 +29,22 @@
   box-shadow: inset 0 2px 0 var(--gold);
 }
 
+.section-grab {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  min-width: 0;
+  cursor: grab;
+}
+
+.section-grab:active {
+  cursor: grabbing;
+}
+
 .section-index {
+  width: 2.64rem;
   font-family: var(--mono);
+  font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
   color: var(--smoke);
 }
@@ -39,18 +52,35 @@
 .section-label {
   font-family: var(--display);
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 1.2rem;
   color: var(--bone);
 }
 
 .section-steps {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.48rem;
 }
 
 .section-step {
-  padding: 0.3rem 0.7rem;
-  font-size: 0.8rem;
+  padding: 0.36rem 0.84rem;
+  font-size: 0.96rem;
+}
+
+.section-row .switch {
+  width: 50px;
+  height: 26px;
+  border-radius: 13px;
+}
+
+.section-row .switch-knob {
+  top: 4px;
+  left: 4px;
+  width: 16px;
+  height: 16px;
+}
+
+.section-row .switch.is-on .switch-knob {
+  transform: translateX(24px);
 }
 
 @media (pointer: coarse) {
@@ -67,23 +97,24 @@
 
 @media (max-width: 700px) {
   .section-row {
-    grid-template-columns: 1.8rem 1fr auto;
-    gap: 0.6rem 0.7rem;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.72rem 0.84rem;
+  }
+
+  .section-grab {
+    grid-area: 1 / 1;
+    gap: 0.84rem;
   }
 
   .section-index {
-    grid-area: 1 / 1;
-  }
-
-  .section-label {
-    grid-area: 1 / 2;
+    width: 2.16rem;
   }
 
   .section-row > .switch {
-    grid-area: 1 / 3;
+    grid-area: 1 / 2;
   }
 
   .section-steps {
-    grid-area: 2 / 2 / 2 / -1;
+    grid-area: 2 / 1 / 2 / -1;
   }
 }

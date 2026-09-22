@@ -1,0 +1,28 @@
+.saved-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 2rem 1.2rem;
+  background: rgba(10, 10, 10, 0.85);
+}
+
+.saved-panel {
+  width: min(24rem, 100%);
+  padding: 1.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+  text-align: center;
+}
+
+.saved-panel h2 {
+  font-size: 1.25rem;
+  color: var(--gold);
+}
+
+.saved-panel p {
+  margin: 0.6rem 0 1.3rem;
+  color: var(--smoke);
+  font-size: 0.9rem;
+}

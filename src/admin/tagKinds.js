@@ -7,3 +7,7 @@ export const tagKinds = [
   { value: 'series', label: 'Versenysorozat' },
   { value: 'other', label: 'Egyéb' },
 ]
+
+export function kindLabel(kind) {
+  return tagKinds.find((item) => item.value === kind)?.label ?? 'Egyéb'
+}

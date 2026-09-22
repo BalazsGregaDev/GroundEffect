@@ -52,10 +52,8 @@ export default function NextSessionsCard({ series, now, chosen, onChoose }) {
 
                 return (
                   <li className={names.join(' ')} key={session.id}>
-                    <span className="rcal-session-label">
-                      {session.label}
-                      <span className="rcal-session-when">{raceMoment(session.starts_at)}</span>
-                    </span>
+                    <span className="rcal-session-label">{session.label}</span>
+                    <span className="rcal-session-when">{raceMoment(session.starts_at)}</span>
                     <span className="rcal-session-clock">
                       {done ? 'Vége' : raceCountdown(session.starts_at, now)}
                     </span>

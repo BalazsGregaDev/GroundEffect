@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-import { tagKinds } from './tagKinds.js'
+import { kindLabel, tagKinds } from './tagKinds.js'
 import './TagField.css'
 
 const optionLimit = 15
@@ -75,6 +75,7 @@ export default function TagField({ tags, onChange, disabled }) {
         {tags.map((tag) => (
           <span className="tag-chip" key={tag.id ?? tag.name}>
             {tag.name}
+            <span className="tag-chip-kind">- {kindLabel(tag.kind)}</span>
             {!disabled && (
               <button
                 type="button"
@@ -112,7 +113,7 @@ export default function TagField({ tags, onChange, disabled }) {
               >
                 {tag.name}
                 <span className="tag-option-kind">
-                  {tagKinds.find((kind) => kind.value === tag.kind).label}
+                  {kindLabel(tag.kind)}
                 </span>
               </button>
             ))}

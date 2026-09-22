@@ -114,8 +114,6 @@ export default function SectionList() {
               ]
                 .filter(Boolean)
                 .join(' ')}
-              draggable={canEdit}
-              onDragStart={() => setDragKey(section.key)}
               onDragOver={(event) => {
                 event.preventDefault()
                 setOverKey(section.key)
@@ -127,13 +125,19 @@ export default function SectionList() {
                 event.preventDefault()
                 drop(section.key)
               }}
-              onDragEnd={() => {
-                setDragKey(null)
-                setOverKey(null)
-              }}
             >
-              <span className="section-index">{index + 1}</span>
-              <span className="section-label">{section.label}</span>
+              <div
+                className="section-grab"
+                draggable={canEdit}
+                onDragStart={() => setDragKey(section.key)}
+                onDragEnd={() => {
+                  setDragKey(null)
+                  setOverKey(null)
+                }}
+              >
+                <span className="section-index">{index + 1}</span>
+                <span className="section-label">{section.label}</span>
+              </div>
 
               <span className="section-steps">
                 <button
