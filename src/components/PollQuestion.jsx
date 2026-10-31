@@ -165,7 +165,7 @@ export default function PollQuestion({ question, closed, view, myVotes, onVote, 
                     return next
                   })
                 }
-                placeholder={name || `Oszlop ${index + 1}`}
+                aria-label={name || `Oszlop ${index + 1}`}
               />
             ))}
 
