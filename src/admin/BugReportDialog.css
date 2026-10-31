@@ -1,0 +1,120 @@
+.bug-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem 1rem;
+  background: rgba(10, 10, 10, 0.85);
+  overflow-y: auto;
+}
+
+.bug-panel {
+  width: min(34rem, 100%);
+  max-height: calc(100dvh - 3rem);
+  overflow-y: auto;
+  padding: 1.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.bug-panel h2 {
+  font-size: 1.35rem;
+  color: var(--gold);
+}
+
+.bug-panel form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.bug-intro,
+.bug-done {
+  margin: 0.6rem 0 0;
+  font-size: 0.9rem;
+  color: var(--smoke);
+}
+
+.bug-done {
+  margin-bottom: 1.3rem;
+  color: var(--bone);
+}
+
+.bug-hint {
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: var(--smoke);
+}
+
+.bug-panel .bug-field > span {
+  color: var(--bone);
+}
+
+.bug-attach {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.bug-log {
+  font-size: 0.8rem;
+}
+
+.bug-log summary {
+  cursor: pointer;
+  color: var(--gold);
+}
+
+.bug-log ol {
+  max-height: 14rem;
+  overflow-y: auto;
+  margin: 0.6rem 0 0;
+  padding: 0.6rem 0.8rem;
+  list-style: none;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+}
+
+.bug-log li {
+  display: grid;
+  grid-template-columns: auto auto minmax(0, 1fr);
+  gap: 0.6rem;
+  padding: 0.2rem 0;
+  overflow-wrap: anywhere;
+}
+
+.bug-log time {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--smoke);
+}
+
+.bug-log-kind {
+  color: var(--gold);
+}
+
+.bug-error {
+  margin: 0;
+}
+
+.bug-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+}
+
+@media (max-width: 520px) {
+  .bug-panel {
+    padding: 1.2rem;
+  }
+
+  .bug-log li {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .bug-log li > span:last-child {
+    grid-column: 1 / -1;
+  }
+}

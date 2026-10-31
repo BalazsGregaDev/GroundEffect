@@ -1,11 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
-
-const raceColumns =
-  'id, series_id, name, location, circuit, country, starts_at, ' +
-  'race_sessions (id, kind, label, starts_at)'
-
-const lookahead = 120
+import { loadSeries, loadUpcomingRaces } from '../lib/raceData.js'
 
 export function useRaceCalendar() {
   const [series, setSeries] = useState([])
@@ -15,18 +10,9 @@ export function useRaceCalendar() {
     let active = true
 
     async function load() {
-      const [seriesResult, raceResult, articleResult] = await Promise.all([
-        supabase
-          .from('race_series')
-          .select('id, slug, name')
-          .eq('visible', true)
-          .order('sort_order'),
-        supabase
-          .from('races')
-          .select(raceColumns)
-          .gte('starts_at', new Date().toISOString())
-          .order('starts_at')
-          .limit(lookahead),
+      const [allSeries, races, articleResult] = await Promise.all([
+        loadSeries(),
+        loadUpcomingRaces(),
         supabase.rpc('series_articles'),
       ])
 
@@ -37,7 +23,7 @@ export function useRaceCalendar() {
       const articles = new Map((articleResult.data ?? []).map((row) => [row.series_id, row]))
       const next = new Map()
 
-      for (const race of raceResult.data ?? []) {
+      for (const race of races) {
         if (!next.has(race.series_id)) {
           next.set(race.series_id, {
             ...race,
@@ -49,11 +35,15 @@ export function useRaceCalendar() {
       }
 
       setSeries(
-        (seriesResult.data ?? []).map((row) => ({
-          ...row,
-          race: next.get(row.id) ?? null,
-          article: articles.get(row.id) ?? null,
-        })),
+        allSeries
+          .filter((row) => row.visible)
+          .map((row) => ({
+            id: row.id,
+            slug: row.slug,
+            name: row.name,
+            race: next.get(row.id) ?? null,
+            article: articles.get(row.id) ?? null,
+          })),
       )
       setLoading(false)
     }

@@ -353,6 +353,27 @@ create table if not exists site_settings (
 alter table site_settings add column if not exists cover_design jsonb not null default '{}'::jsonb;
 alter table site_settings add column if not exists cover_fallback_url text;
 
+create table if not exists bug_reports (
+  id uuid primary key default gen_random_uuid(),
+  reporter_email citext,
+  reporter_role text,
+  kind text not null,
+  happened_at timestamptz,
+  goal text not null,
+  trigger_step text,
+  note text,
+  page text,
+  user_agent text,
+  viewport text,
+  log jsonb not null default '[]'::jsonb,
+  email_status text not null default 'pending'
+    check (email_status in ('pending', 'sent', 'skipped', 'failed')),
+  email_error text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists bug_reports_created_idx on bug_reports (created_at desc);
+
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
 alter table articles add column if not exists facebook_post_id text;
@@ -1047,6 +1068,7 @@ alter table race_sessions enable row level security;
 alter table merch_products enable row level security;
 alter table site_popups enable row level security;
 alter table site_settings enable row level security;
+alter table bug_reports enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
 create policy admin_users_read on admin_users
@@ -1181,6 +1203,10 @@ create policy site_settings_read on site_settings
 drop policy if exists site_settings_write on site_settings;
 create policy site_settings_write on site_settings
   for all using (can_edit()) with check (can_edit());
+
+drop policy if exists bug_reports_read on bug_reports;
+create policy bug_reports_read on bug_reports
+  for select using (is_superadmin());
 
 insert into categories (slug, name, position) values
   ('forma-1', 'Forma-1', 1),

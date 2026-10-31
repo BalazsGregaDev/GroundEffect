@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { supabase } from './supabase.js'
+import { loadSeries } from './raceData.js'
 import { defaultDesign, mergeDesign } from './seriesCover.js'
 import { mergeSections } from '../data/sections.js'
 
@@ -14,26 +15,26 @@ let cache = null
 let inflight = null
 const listeners = new Set()
 
-async function fetchConfig() {
+async function fetchConfig(fresh) {
   const [settings, series] = await Promise.all([
     supabase
       .from('site_settings')
       .select('cover_design, cover_fallback_url, sections_order')
       .maybeSingle(),
-    supabase.from('race_series').select('slug, cover_tone, cover_url'),
+    loadSeries({ fresh }),
   ])
 
   return {
     design: mergeDesign(settings.data?.cover_design),
     fallbackUrl: settings.data?.cover_fallback_url ?? null,
-    series: new Map((series.data ?? []).map((row) => [row.slug, row])),
+    series: new Map(series.map((row) => [row.slug, row])),
     sections: mergeSections(settings.data?.sections_order),
   }
 }
 
-function load() {
+function load(fresh = false) {
   if (!inflight) {
-    inflight = fetchConfig()
+    inflight = fetchConfig(fresh)
       .catch(() => empty)
       .then((config) => {
         cache = config
@@ -51,7 +52,7 @@ export function refreshSiteConfig() {
   cache = null
   inflight = null
 
-  return load()
+  return load(true)
 }
 
 export function useSiteConfig() {

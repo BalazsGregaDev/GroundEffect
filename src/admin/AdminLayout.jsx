@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import MenuToggle from '../components/MenuToggle.jsx'
+import BugReportDialog from './BugReportDialog.jsx'
 import { adminNav } from './adminNav.js'
 import { useAuth } from './useAuth.js'
 import { roleLabel } from './roles.js'
+import { useAdminLog } from './useAdminLog.js'
 import logo from '../assets/logo-kor.jpg'
 import './admin.css'
 import './AdminLayout.css'
@@ -12,7 +14,10 @@ export default function AdminLayout() {
   const { session, role, signOut } = useAuth()
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
+  const [reporting, setReporting] = useState(false)
   const items = adminNav.filter((item) => !item.superadminOnly || role === 'superadmin')
+
+  useAdminLog()
 
   useEffect(() => {
     setOpen(false)
@@ -63,6 +68,16 @@ export default function AdminLayout() {
           <div className="admin-user">
             <p className="admin-user-email">{session.user.email}</p>
             <p className="admin-user-role">{roleLabel(role)}</p>
+            <button
+              type="button"
+              className="admin-button admin-button--ghost"
+              onClick={() => {
+                setOpen(false)
+                setReporting(true)
+              }}
+            >
+              Hibajegy
+            </button>
             <button type="button" className="admin-button admin-button--ghost" onClick={signOut}>
               Kijelentkezés
             </button>
@@ -74,6 +89,8 @@ export default function AdminLayout() {
       <main className="admin-main">
         <Outlet />
       </main>
+
+      {reporting && <BugReportDialog onClose={() => setReporting(false)} />}
     </div>
   )
 }
