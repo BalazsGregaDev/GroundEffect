@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import SectionTitle from './SectionTitle.jsx'
 import PollQuestion from './PollQuestion.jsx'
+import PollStepper from './PollStepper.jsx'
+import PollSummary from './PollSummary.jsx'
 import ChoiceSwitch from './ChoiceSwitch.jsx'
 import VoteArrow from './VoteArrow.jsx'
 import { supabase } from '../lib/supabase.js'
@@ -12,19 +14,33 @@ import './PollSection.css'
 const viewKey = 'ge_poll_view'
 const openKey = 'ge_poll_open'
 
+function doneKey(poll) {
+  return `ge_poll_done_${poll.id}`
+}
+
 export default function PollSection() {
   const { poll, loading, reload } = useActivePoll()
   const [view, setView] = useState(null)
-  const [open, setOpen] = useState(() => readPreference(openKey, true) !== false)
+  const [open, setOpen] = useState(() => readPreference(openKey, 'true') !== 'false')
+  const [step, setStep] = useState(0)
+  const [done, setDone] = useState(null)
   const [myVotes, setMyVotes] = useState(readVotes)
   const [now, setNow] = useState(() => Date.now())
   const [voter] = useState(voterId)
+  const sectionRef = useRef(null)
+  const moved = useRef(false)
 
   useEffect(() => {
     if (poll && view === null) {
       setView(readPreference(viewKey, poll.default_view))
     }
   }, [poll, view])
+
+  useEffect(() => {
+    if (poll && done === null) {
+      setDone(readPreference(doneKey(poll), '0') === '1')
+    }
+  }, [poll, done])
 
   useEffect(() => {
     if (!poll || (!poll.closes_at && !poll.starts_at)) {
@@ -35,12 +51,30 @@ export default function PollSection() {
     return () => clearInterval(timer)
   }, [poll?.closes_at, poll?.starts_at])
 
+  useEffect(() => {
+    if (!moved.current) {
+      return
+    }
+
+    moved.current = false
+
+    const section = sectionRef.current
+
+    if (section && section.getBoundingClientRect().top < 0) {
+      const smooth = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      section.scrollIntoView({ block: 'start', behavior: smooth ? 'smooth' : 'auto' })
+    }
+  }, [step, done])
+
   if (loading || !isLive(poll, now)) {
     return null
   }
 
   const closed = isClosed(poll, now)
-  const withVotes = poll.poll_questions.some((question) => question.has_votes)
+  const questions = poll.poll_questions
+  const withVotes = questions.some((question) => question.has_votes)
+  const current = Math.min(step, questions.length - 1)
+  const showSummary = closed || done
 
   function chooseView(next) {
     setView(next)
@@ -48,10 +82,29 @@ export default function PollSection() {
   }
 
   function toggleOpen() {
-    setOpen((current) => {
-      writePreference(openKey, !current)
-      return !current
+    setStep(0)
+    setOpen((value) => {
+      writePreference(openKey, !value)
+      return !value
     })
+  }
+
+  function goTo(index) {
+    moved.current = true
+    setStep(index)
+  }
+
+  function finish() {
+    moved.current = true
+    writePreference(doneKey(poll), '1')
+    setDone(true)
+  }
+
+  function edit() {
+    moved.current = true
+    writePreference(doneKey(poll), '0')
+    setStep(0)
+    setDone(false)
   }
 
   async function vote(option, direction) {
@@ -89,7 +142,7 @@ export default function PollSection() {
   }
 
   return (
-    <section className="poll" id="szavazas">
+    <section className="poll" id="szavazas" ref={sectionRef}>
       <SectionTitle
         action={
           <button
@@ -103,48 +156,83 @@ export default function PollSection() {
           </button>
         }
       >
-        {poll.title || 'Szavazás'}
-        {closed && <span className="poll-title-closed"> – Lezárult</span>}
+        <button
+          type="button"
+          className="poll-title-toggle"
+          aria-expanded={open}
+          onClick={toggleOpen}
+        >
+          {poll.title || 'Szavazás'}
+          {closed && <span className="poll-title-closed"> – Lezárult</span>}
+        </button>
       </SectionTitle>
 
       {!open && (
         <ul className="poll-collapsed">
-          {poll.poll_questions.map((question, index) => (
+          {questions.map((question, index) => (
             <li key={question.id}>{question.title || `${index + 1}. kérdés`}</li>
           ))}
         </ul>
       )}
 
-      {open && !closed && poll.closes_at && (
-        <p className="poll-countdown">
-          A szavazás zárul: <strong>{countdown(new Date(poll.closes_at).getTime() - now)}</strong>
-        </p>
-      )}
+      {open && (
+        <div className="poll-body">
+          {!closed && poll.closes_at && (
+            <p className="poll-countdown">
+              A szavazás zárul: <strong>{countdown(new Date(poll.closes_at).getTime() - now)}</strong>
+            </p>
+          )}
 
-      {open && withVotes && (
-        <div className="poll-toggles">
-          <ChoiceSwitch
-            value={view ?? poll.default_view}
-            left={{ value: 'count', label: 'Darabszám' }}
-            right={{ value: 'percent', label: 'Százalék' }}
-            onChange={chooseView}
-            label="Százalékos megjelenítés"
-          />
+          {withVotes && (
+            <div className="poll-toggles">
+              <ChoiceSwitch
+                value={view ?? poll.default_view}
+                left={{ value: 'count', label: 'Darabszám' }}
+                right={{ value: 'percent', label: 'Százalék' }}
+                onChange={chooseView}
+                label="Százalékos megjelenítés"
+              />
+            </div>
+          )}
+
+          {showSummary ? (
+            <>
+              <PollSummary
+                questions={questions}
+                view={view ?? poll.default_view}
+                closed={closed}
+                myVotes={myVotes}
+              />
+
+              {!closed && (
+                <button type="button" className="poll-edit" onClick={edit}>
+                  Szavazataim módosítása
+                </button>
+              )}
+            </>
+          ) : (
+            questions.length > 0 && (
+              <>
+                <PollQuestion
+                  question={questions[current]}
+                  position={questions.length > 1 ? `${current + 1} / ${questions.length}` : null}
+                  view={view ?? poll.default_view}
+                  myVotes={myVotes}
+                  onVote={vote}
+                  onSuggest={suggest}
+                />
+
+                <PollStepper
+                  index={current}
+                  total={questions.length}
+                  onStep={goTo}
+                  onFinish={finish}
+                />
+              </>
+            )
+          )}
         </div>
       )}
-
-      {open &&
-        poll.poll_questions.map((question) => (
-          <PollQuestion
-            key={question.id}
-            question={question}
-            closed={closed}
-            view={view ?? poll.default_view}
-            myVotes={myVotes}
-            onVote={vote}
-            onSuggest={suggest}
-          />
-        ))}
     </section>
   )
 }

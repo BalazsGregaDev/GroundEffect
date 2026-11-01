@@ -1,6 +1,7 @@
-import { useState } from 'react'
 import VoteArrow from './VoteArrow.jsx'
-import { columnNames, optionLabel, rankedOptions, sharePercent } from '../lib/poll.js'
+import PollSuggest from './PollSuggest.jsx'
+import { OptionName, Score, ShareBar } from './PollParts.jsx'
+import { columnNames, optionLabel, rankedOptions } from '../lib/poll.js'
 
 function VoteButton({ direction, option, mine, onVote }) {
   const active = mine === direction
@@ -32,165 +33,53 @@ function SimpleVote({ option, mine, onVote }) {
   )
 }
 
-function Score({ question, option, options, view, updown }) {
-  if (view === 'percent') {
-    return <span className="poll-score">{sharePercent(question, options, option)}%</span>
-  }
-
-  if (!updown) {
-    return <span className="poll-score">{option.up_votes}</span>
-  }
-
-  return (
-    <span className="poll-score">
-      <VoteArrow direction="up" />
-      <span>{option.up_votes}</span>
-      <VoteArrow direction="down" />
-      <span>{option.down_votes}</span>
-    </span>
-  )
-}
-
-export default function PollQuestion({ question, closed, view, myVotes, onVote, onSuggest }) {
-  const [draft, setDraft] = useState([])
-  const [state, setState] = useState('idle')
-
-  const options = rankedOptions(question, question.poll_options, closed)
+export default function PollQuestion({ question, position, view, myVotes, onVote, onSuggest }) {
+  const options = rankedOptions(question, question.poll_options, false)
   const names = columnNames(question)
   const updown = question.vote_style !== 'simple'
 
-  async function submit() {
-    setState('sending')
-    const result = await onSuggest(question, names.map((_, index) => ({ value: (draft[index] ?? '').trim() })))
-
-    if (result === 'ok') {
-      setDraft([])
-    }
-
-    setState(result)
-  }
-
   return (
     <article className="poll-question">
+      {position && <p className="poll-step-count">{position}</p>}
       {question.title && <h3>{question.title}</h3>}
 
       {options.length === 0 ? (
         <p className="poll-empty">Ehhez a kérdéshez még nincs opció.</p>
       ) : (
-        <div className="poll-table-wrap">
-          <table className="poll-table">
-            <thead>
-              <tr>
-                {names.map((name, index) => (
-                  <th key={index}>{name}</th>
-                ))}
-                {question.has_votes && (
-                  <th className="poll-result-col">{closed ? 'Eredmény' : 'Szavazat'}</th>
-                )}
-              </tr>
-            </thead>
-            <tbody>
-              {options.map((option) => (
-                <tr key={option.id}>
-                  {names.map((_, index) => (
-                    <td key={index}>{option.cells[index]?.value ?? ''}</td>
-                  ))}
-                  {question.has_votes && (
-                    <td className="poll-result-col">
-                      <div className="poll-result">
-                        <span className="poll-bar">
-                          <span
-                            className="poll-bar-fill"
-                            style={{ width: `${sharePercent(question, options, option)}%` }}
-                          />
-                        </span>
-
-                        {!closed && updown && (
-                          <VoteButton
-                            direction="up"
-                            option={option}
-                            mine={myVotes[option.id]}
-                            onVote={onVote}
-                          />
-                        )}
-
-                        <Score
-                          question={question}
-                          option={option}
-                          options={options}
-                          view={view}
-                          updown={updown}
-                        />
-
-                        {!closed && updown && (
-                          <VoteButton
-                            direction="down"
-                            option={option}
-                            mine={myVotes[option.id]}
-                            onVote={onVote}
-                          />
-                        )}
-
-                        {!closed && !updown && (
-                          <SimpleVote
-                            option={option}
-                            mine={myVotes[option.id]}
-                            onVote={onVote}
-                          />
-                        )}
-                      </div>
-                    </td>
-                  )}
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {question.allow_suggestions && !closed && (
-        <div className="poll-suggest">
-          <span className="poll-suggest-title">Javasolj új opciót</span>
-
-          <div className="poll-suggest-fields">
-            {names.map((name, index) => (
-              <input
-                key={index}
-                type="text"
-                value={draft[index] ?? ''}
-                onChange={(event) =>
-                  setDraft((current) => {
-                    const next = [...current]
-                    next[index] = event.target.value
-                    return next
-                  })
-                }
-                aria-label={name || `Oszlop ${index + 1}`}
-              />
-            ))}
-
-            <button
-              type="button"
-              onClick={submit}
-              disabled={state === 'sending' || !draft.some((value) => (value ?? '').trim())}
-            >
-              {state === 'sending' ? 'Küldés…' : 'Javaslom'}
-            </button>
+        <>
+          <div className="poll-opt-head">
+            <span>{names.filter(Boolean).join(' · ')}</span>
+            {question.has_votes && <span>Szavazat</span>}
           </div>
 
-          {state === 'ok' && (
-            <p className="poll-suggest-msg">Köszönjük, a javaslat jóváhagyásra vár.</p>
-          )}
-          {state === 'full' && (
-            <p className="poll-suggest-msg is-error">Egyelőre túl sok javaslat vár jóváhagyásra.</p>
-          )}
-          {state === 'error' && (
-            <p className="poll-suggest-msg is-error">A javaslatot nem sikerült elküldeni.</p>
-          )}
-          {state === 'closed' && (
-            <p className="poll-suggest-msg is-error">A szavazás időközben lezárult.</p>
-          )}
-        </div>
+          <ul className="poll-opts">
+            {options.map((option) => (
+              <li className="poll-opt" key={option.id}>
+                <OptionName option={option} />
+
+                {question.has_votes && (
+                  <div className="poll-opt-row">
+                    <ShareBar question={question} options={options} option={option} />
+                    <Score question={question} option={option} options={options} view={view} />
+
+                    {updown ? (
+                      <>
+                        <VoteButton direction="up" option={option} mine={myVotes[option.id]} onVote={onVote} />
+                        <VoteButton direction="down" option={option} mine={myVotes[option.id]} onVote={onVote} />
+                      </>
+                    ) : (
+                      <SimpleVote option={option} mine={myVotes[option.id]} onVote={onVote} />
+                    )}
+                  </div>
+                )}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+
+      {question.allow_suggestions && (
+        <PollSuggest key={question.id} question={question} names={names} onSuggest={onSuggest} />
       )}
     </article>
   )
