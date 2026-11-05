@@ -3,7 +3,6 @@ export const adminAreas = [
     key: 'articles',
     label: 'Cikkek',
     path: '/admin/cikkek',
-    baseLabel: 'Írás',
     extra: { key: 'articles.publish', label: 'Publikálás' },
   },
   { key: 'videos', label: 'Videók', path: '/admin/videok' },
@@ -16,7 +15,6 @@ export const adminAreas = [
     key: 'polls',
     label: 'Szavazás',
     path: '/admin/szavazas',
-    baseLabel: 'Olvasás',
     extra: { key: 'polls.edit', label: 'Szerkesztés' },
   },
   { key: 'popups', label: 'Popup üzenetek', path: '/admin/popup' },
@@ -24,7 +22,6 @@ export const adminAreas = [
     key: 'users',
     label: 'Felhasználók',
     path: '/admin/felhasznalok',
-    baseLabel: 'Kezelés',
     extra: { key: 'users.roles', label: 'Szerepkörök' },
   },
 ]

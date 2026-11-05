@@ -72,6 +72,39 @@
   text-decoration: underline;
 }
 
+.users-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+}
+
+.users-reset {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.users-reset input {
+  width: 11rem;
+  padding: 0.4rem 0.6rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.86rem;
+}
+
+.users-reset input:focus {
+  border-color: var(--gold);
+  outline: none;
+}
+
+.users-reset .admin-button {
+  padding-block: 0.4rem;
+  font-size: 0.82rem;
+}
+
 .users-empty {
   color: var(--smoke);
   font-size: 0.9rem;
@@ -119,5 +152,22 @@
 
   .users-table select {
     width: 100%;
+  }
+
+  .users-actions,
+  .users-reset {
+    width: 100%;
+  }
+
+  .users-reset input {
+    flex: 1 1 10rem;
+    width: auto;
+    min-width: 0;
+  }
+}
+
+@media (pointer: coarse) {
+  .users-reset input {
+    font-size: 16px;
   }
 }

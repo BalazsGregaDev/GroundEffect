@@ -18,6 +18,8 @@ export default function AdminUsers() {
   const [newPassword, setNewPassword] = useState('')
   const [adding, setAdding] = useState(false)
   const [notice, setNotice] = useState(null)
+  const [resets, setResets] = useState({})
+  const [resetting, setResetting] = useState(null)
 
   const canManage = canWrite('users')
   const access = { role, permissions, readOnly }
@@ -90,6 +92,32 @@ export default function AdminUsers() {
     load()
   }
 
+  async function resetPassword(email) {
+    const password = resets[email] ?? ''
+
+    setResetting(email)
+    setError(null)
+    setNotice(null)
+
+    const { error: functionError } = await supabase.functions.invoke('reset-admin-password', {
+      body: { email, password },
+    })
+
+    setResetting(null)
+
+    if (functionError) {
+      setError({
+        message: await functionErrorMessage(functionError, 'A jelszó visszaállítása nem sikerült.'),
+      })
+      return
+    }
+
+    setResets((current) => ({ ...current, [email]: '' }))
+    setNotice(
+      `${email} jelszava visszaállítva. A következő belépéskor új jelszót kell beállítania, addig semmi mást nem ér el.`,
+    )
+  }
+
   async function revoke(email) {
     const { error } = await supabase.from('admin_users').delete().eq('email', email)
 
@@ -120,7 +148,9 @@ export default function AdminUsers() {
             Az itt megadott jelszó ideiglenes: az illető első belépésekor a rendszer a
             jelszócserét kéri, és addig semmi mást nem enged. Ha a címhez már tartozik fiók,
             a felvétel nem megy át — annak a szerepkörét a lenti listában állítsd. Csak olyan
-            szerepkört adhatsz, amelynek minden joga a tiédben is megvan.
+            szerepkört adhatsz, amelynek minden joga a tiédben is megvan. Elfelejtett jelszónál
+            a listában adj meg egy új ideiglenes jelszót (legalább 8 karakter): a következő
+            belépéskor ugyanúgy kötelező lesz lecserélni.
           </p>
 
           <form className="users-add" onSubmit={addUser}>
@@ -210,9 +240,32 @@ export default function AdminUsers() {
                   </td>
                   <td>
                     {manageable && (
-                      <button type="button" className="users-revoke" onClick={() => revoke(user.email)}>
-                        Hozzáférés visszavonása
-                      </button>
+                      <div className="users-actions">
+                        <div className="users-reset">
+                          <input
+                            type="text"
+                            value={resets[user.email] ?? ''}
+                            onChange={(event) =>
+                              setResets((current) => ({ ...current, [user.email]: event.target.value }))
+                            }
+                            aria-label={`${user.email} új ideiglenes jelszava`}
+                            autoComplete="off"
+                            minLength={8}
+                          />
+                          <button
+                            type="button"
+                            className="admin-button admin-button--ghost"
+                            onClick={() => resetPassword(user.email)}
+                            disabled={resetting !== null || (resets[user.email] ?? '').length < 8}
+                          >
+                            {resetting === user.email ? 'Visszaállítás…' : 'Jelszó visszaállítása'}
+                          </button>
+                        </div>
+
+                        <button type="button" className="users-revoke" onClick={() => revoke(user.email)}>
+                          Hozzáférés visszavonása
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>

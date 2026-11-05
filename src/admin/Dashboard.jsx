@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase.js'
 import { statuses } from './statuses.js'
 import { useAuth } from './useAuth.js'
 import { adminNav } from './adminNav.js'
+import StatsPanel from './StatsPanel.jsx'
 import './Dashboard.css'
 
 function ArticleCounts({ canEdit }) {
@@ -53,7 +54,10 @@ export default function Dashboard() {
       <h1>Áttekintés</h1>
 
       {can('articles') ? (
-        <ArticleCounts canEdit={canWrite('articles')} />
+        <>
+          <ArticleCounts canEdit={canWrite('articles')} />
+          <StatsPanel />
+        </>
       ) : (
         <p className="admin-readonly">
           {reachable.length > 0

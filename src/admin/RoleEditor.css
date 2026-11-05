@@ -1,3 +1,7 @@
+.roles {
+  container-type: inline-size;
+}
+
 .roles-notice {
   margin: 1rem 0 0;
   font-size: 0.88rem;
@@ -6,82 +10,93 @@
 
 .roles-wrap {
   margin-top: 1.4rem;
-  overflow-x: auto;
   border: 1px solid var(--graphite);
 }
 
 .roles-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.86rem;
 }
 
 .roles-table thead th {
-  padding: 0.55rem 0.6rem;
+  padding: 0.6rem 0.2rem;
   border-bottom: 1px solid var(--graphite);
   border-left: 1px solid var(--graphite);
   background: var(--ink);
   font-family: var(--display);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  text-align: center;
-  white-space: nowrap;
   color: var(--bone);
+  vertical-align: bottom;
 }
 
-.roles-table thead .roles-sub {
+.roles-head span {
+  display: inline-block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+.roles-table thead .is-extra {
+  border-left-style: dashed;
   font-family: var(--body);
-  font-size: 0.7rem;
   font-weight: 400;
   letter-spacing: 0;
   text-transform: none;
   color: var(--smoke);
 }
 
-.roles-table td,
-.roles-table tbody th {
-  padding: 0.55rem 0.6rem;
-  border-bottom: 1px solid var(--graphite);
-  border-left: 1px solid var(--graphite);
-}
-
 .roles-name-col {
-  position: sticky;
-  left: 0;
-  z-index: 1;
-  min-width: 11rem;
-  background: var(--black);
+  width: 11rem;
   text-align: left;
 }
 
 .roles-table thead .roles-name-col {
-  z-index: 2;
-  background: var(--ink);
-  text-align: left;
+  padding: 0.6rem 0.7rem;
+  border-left: none;
+  vertical-align: bottom;
+}
+
+.roles-table td,
+.roles-table tbody th {
+  padding: 0.5rem 0.2rem;
+  border-bottom: 1px solid var(--graphite);
+  border-left: 1px solid var(--graphite);
+}
+
+.roles-table td.is-extra {
+  border-left-style: dashed;
 }
 
 .roles-table tbody th {
+  padding: 0.5rem 0.7rem;
+  border-left: none;
   font-weight: 400;
+  vertical-align: middle;
 }
 
-.roles-table tbody th span {
+.roles-name {
+  display: block;
   font-family: var(--display);
   font-weight: 700;
   color: var(--bone);
+  overflow-wrap: anywhere;
 }
 
-.roles-table tbody th small {
+.roles-meta {
   display: block;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
   font-size: 0.72rem;
   color: var(--smoke);
 }
 
 .roles-table tbody th input {
   width: 100%;
-  padding: 0.4rem 0.55rem;
+  padding: 0.35rem 0.5rem;
   border: 1px solid var(--graphite);
   background: var(--ink);
   color: var(--bone);
@@ -103,24 +118,14 @@
   vertical-align: middle;
 }
 
-.roles-count {
-  text-align: center;
-  font-family: var(--mono);
-  font-variant-numeric: tabular-nums;
-  color: var(--smoke);
-}
-
-.roles-actions {
-  white-space: nowrap;
-}
-
 .roles-remove {
+  margin-top: 0.3rem;
   padding: 0;
   border: none;
   background: none;
   color: var(--smoke);
   font-family: var(--body);
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   cursor: pointer;
 }
 
@@ -134,13 +139,10 @@
   background: color-mix(in oklab, var(--gold) 6%, var(--black));
 }
 
-.roles-row.is-removed th,
-.roles-row.is-removed td {
+.roles-row.is-removed td,
+.roles-row.is-removed .roles-name,
+.roles-row.is-removed .roles-meta {
   opacity: 0.45;
-}
-
-.roles-row.is-removed .roles-actions {
-  opacity: 1;
 }
 
 .roles-add {
@@ -155,9 +157,131 @@
   min-width: 16rem;
 }
 
-@media (max-width: 700px) {
+@container (max-width: 860px) {
   .roles-name-col {
-    min-width: 8.5rem;
+    width: 8rem;
+  }
+
+  .roles-table thead th {
+    padding-inline: 0;
+    font-size: 0.64rem;
+  }
+
+  .roles-table td {
+    padding-inline: 1px;
+  }
+
+  .roles-cell .switch {
+    width: 28px;
+    height: 16px;
+    border-radius: 8px;
+  }
+
+  .roles-cell .switch-knob {
+    top: 2px;
+    left: 2px;
+    width: 10px;
+    height: 10px;
+  }
+
+  .roles-cell .switch.is-on .switch-knob {
+    transform: translateX(12px);
+  }
+}
+
+@media (pointer: coarse) {
+  .roles-cell .switch input {
+    inset: -8px -2px;
+  }
+
+  .roles-remove {
+    padding-block: 0.5rem;
+  }
+
+  .roles-table tbody th input,
+  .roles-add .admin-field input {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .roles-wrap {
+    border: none;
+  }
+
+  .roles-table,
+  .roles-table tbody {
+    display: block;
+  }
+
+  .roles-table thead {
+    display: none;
+  }
+
+  .roles-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: 0.9rem;
+    border: 1px solid var(--graphite);
+  }
+
+  .roles-table tbody th.roles-name-col {
+    grid-column: 1 / -1;
+    width: auto;
+    padding: 0.75rem 0.8rem;
+    border-bottom: 1px solid var(--graphite);
+    background: var(--ink);
+  }
+
+  .roles-table td,
+  .roles-table td.is-extra {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-width: 0;
+    padding: 0.55rem 0.8rem;
+    border-left: none;
+    border-bottom: 1px solid var(--graphite);
+    text-align: left;
+  }
+
+  .roles-table td:nth-of-type(even) {
+    border-left: 1px solid var(--graphite);
+  }
+
+  .roles-table td::before {
+    content: attr(data-label);
+    min-width: 0;
+    font-size: 0.8rem;
+    line-height: 1.25;
+    color: var(--bone);
+  }
+
+  .roles-table td.is-extra::before {
+    color: var(--smoke);
+  }
+
+  .roles-cell .switch {
+    flex: none;
+    width: 42px;
+    height: 22px;
+    border-radius: 11px;
+  }
+
+  .roles-cell .switch-knob {
+    top: 3px;
+    left: 3px;
+    width: 14px;
+    height: 14px;
+  }
+
+  .roles-cell .switch.is-on .switch-knob {
+    transform: translateX(20px);
+  }
+
+  .roles-cell .switch input {
+    inset: -10px;
   }
 
   .roles-add .admin-field {
@@ -167,16 +291,5 @@
   .roles-add .admin-field input {
     min-width: 0;
     width: 100%;
-  }
-}
-
-@media (pointer: coarse) {
-  .roles-remove {
-    padding-block: 0.6rem;
-  }
-
-  .roles-table tbody th input,
-  .roles-add .admin-field input {
-    font-size: 16px;
   }
 }

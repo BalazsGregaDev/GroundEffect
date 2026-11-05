@@ -19,6 +19,21 @@ function editableCopy(item) {
   return { ...item, permissions: normalizePermissions(item.permissions) }
 }
 
+const columns = adminAreas.flatMap((area) =>
+  area.extra
+    ? [
+        { key: area.key, label: area.label, title: area.label, area },
+        {
+          key: area.extra.key,
+          label: area.extra.label,
+          title: `${area.label}: ${area.extra.label.toLowerCase()}`,
+          area,
+          extra: true,
+        },
+      ]
+    : [{ key: area.key, label: area.label, title: area.label, area }],
+)
+
 export default function RoleEditor() {
   const { role, permissions, readOnly, canWrite, isSuperadmin } = useAuth()
   const { roles, loading, error: loadError, reload } = useAdminRoles()
@@ -216,29 +231,21 @@ export default function RoleEditor() {
         <table className="roles-table">
           <thead>
             <tr>
-              <th rowSpan={2} className="roles-name-col">
-                Szerepkör
-              </th>
-              {adminAreas.map((area) => (
-                <th key={area.key} colSpan={area.extra ? 2 : 1} rowSpan={area.extra ? 1 : 2}>
-                  {area.label}
+              <th className="roles-name-col">Szerepkör</th>
+              {columns.map((column) => (
+                <th
+                  key={column.key}
+                  className={column.extra ? 'roles-head is-extra' : 'roles-head'}
+                  title={column.title}
+                >
+                  <span>{column.label}</span>
                 </th>
               ))}
-              {isSuperadmin && <th rowSpan={2}>Csak olvasás</th>}
-              <th rowSpan={2}>Felhasználók</th>
-              <th rowSpan={2} aria-label="Műveletek" />
-            </tr>
-            <tr>
-              {adminAreas
-                .filter((area) => area.extra)
-                .flatMap((area) => [
-                  <th key={area.key} className="roles-sub">
-                    {area.baseLabel}
-                  </th>,
-                  <th key={area.extra.key} className="roles-sub">
-                    {area.extra.label}
-                  </th>,
-                ])}
+              {isSuperadmin && (
+                <th className="roles-head" title="Csak olvasás">
+                  <span>Csak olvasás</span>
+                </th>
+              )}
             </tr>
           </thead>
 
@@ -267,34 +274,43 @@ export default function RoleEditor() {
                         aria-label="Szerepkör neve"
                       />
                     ) : (
-                      <span>{row.name}</span>
+                      <span className="roles-name">{row.name}</span>
                     )}
-                    {row.locked && <small>rögzített, minden joga megvan</small>}
-                    {row.key === role && !row.locked && <small>a te szerepköröd</small>}
+
+                    <span className="roles-meta">
+                      {row.isNew ? 'új, még nincs mentve' : `${users} felhasználó`}
+                      {row.locked && ' · rögzített'}
+                      {row.key === role && !row.locked && ' · a te szerepköröd'}
+                    </span>
+
+                    {open && (row.isNew || users === 0) && (
+                      <button type="button" className="roles-remove" onClick={() => removeRow(row)}>
+                        {row.removed ? 'Visszaállítás' : 'Törlés'}
+                      </button>
+                    )}
                   </th>
 
-                  {adminAreas.flatMap((area) => {
-                    const keys = area.extra ? [area.key, area.extra.key] : [area.key]
+                  {columns.map((column) => {
+                    const parentOff = column.extra && !row.permissions.includes(column.area.key)
 
-                    return keys.map((permission) => {
-                      const parentOff =
-                        permission.includes('.') && !row.permissions.includes(area.key)
-
-                      return (
-                        <td key={permission} className="roles-cell">
-                          <ToggleSwitch
-                            checked={row.locked || row.permissions.includes(permission)}
-                            onChange={(on) => toggle(row, permission, on)}
-                            disabled={!open || row.removed || !grantable(permission) || parentOff}
-                            label={`${row.name}: ${area.label}${permission.includes('.') ? ` – ${area.extra.label}` : ''}`}
-                          />
-                        </td>
-                      )
-                    })
+                    return (
+                      <td
+                        key={column.key}
+                        className={column.extra ? 'roles-cell is-extra' : 'roles-cell'}
+                        data-label={column.title}
+                      >
+                        <ToggleSwitch
+                          checked={row.locked || row.permissions.includes(column.key)}
+                          onChange={(on) => toggle(row, column.key, on)}
+                          disabled={!open || row.removed || !grantable(column.key) || parentOff}
+                          label={`${row.name}: ${column.title}`}
+                        />
+                      </td>
+                    )
                   })}
 
                   {isSuperadmin && (
-                    <td className="roles-cell">
+                    <td className="roles-cell" data-label="Csak olvasás">
                       <ToggleSwitch
                         checked={row.read_only}
                         onChange={(on) => updateRow(row.key, { read_only: on })}
@@ -303,16 +319,6 @@ export default function RoleEditor() {
                       />
                     </td>
                   )}
-
-                  <td className="roles-count">{row.isNew ? '–' : users}</td>
-
-                  <td className="roles-actions">
-                    {open && (row.isNew || users === 0) && (
-                      <button type="button" className="roles-remove" onClick={() => removeRow(row)}>
-                        {row.removed ? 'Visszaállítás' : 'Törlés'}
-                      </button>
-                    )}
-                  </td>
                 </tr>
               )
             })}

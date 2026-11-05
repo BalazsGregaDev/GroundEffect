@@ -19,6 +19,7 @@ label:has(> .switch) {
 .switch input {
   position: absolute;
   inset: 0;
+  z-index: 1;
   width: 100%;
   height: 100%;
   margin: 0;
@@ -55,6 +56,7 @@ label:has(> .switch) {
 
 .switch-knob {
   position: absolute;
+  pointer-events: none;
   top: 3px;
   left: 3px;
   width: 14px;

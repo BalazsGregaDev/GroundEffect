@@ -1,11 +1,14 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 import { isSearching, searchDebounce, searchWords } from '../lib/search.js'
+import { track } from '../lib/track.js'
 
 const videoColumns = 'id, youtube_id, title, duration, thumbnail_url, views, published_at'
 const videoLimit = 12
 
 const empty = { videos: [], articles: [], loading: false }
+const settleAfter = 2000
+const keepAfter = 1500
 
 async function findVideos(words) {
   if (words.length === 0) {
@@ -40,6 +43,8 @@ export function useSearchResults(query, { withVideos = true, limit = 20 } = {}) 
     }
 
     let active = true
+    let report = null
+    let settled = null
 
     setResults((current) => ({ ...current, loading: true }))
 
@@ -49,14 +54,36 @@ export function useSearchResults(query, { withVideos = true, limit = 20 } = {}) 
         findArticles(term, limit),
       ])
 
-      if (active) {
-        setResults({ videos, articles, loading: false })
+      if (!active) {
+        return
       }
+
+      setResults({ videos, articles, loading: false })
+
+      settled = {
+        at: Date.now(),
+        event: {
+          type: 'search',
+          q: term.toLowerCase().slice(0, 60),
+          n: videos.length + articles.length,
+          scope: withVideos ? 'home' : 'archive',
+        },
+      }
+
+      report = setTimeout(() => {
+        track(settled.event)
+        settled = null
+      }, settleAfter)
     }, searchDebounce)
 
     return () => {
       active = false
       clearTimeout(timer)
+      clearTimeout(report)
+
+      if (settled && Date.now() - settled.at >= keepAfter) {
+        track(settled.event)
+      }
     }
   }, [term, withVideos, limit])
 

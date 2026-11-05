@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase.js'
 
 const columns =
@@ -9,7 +9,6 @@ const columns =
 export function useArticle(slug) {
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
-  const counted = useRef(null)
 
   useEffect(() => {
     let active = true
@@ -27,11 +26,6 @@ export function useArticle(slug) {
 
         setArticle(data)
         setLoading(false)
-
-        if (data && counted.current !== slug) {
-          counted.current = slug
-          supabase.rpc('increment_article_views', { article_slug: slug })
-        }
       })
 
     return () => {

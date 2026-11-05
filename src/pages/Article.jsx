@@ -1,6 +1,8 @@
+import { useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import SeriesCover from '../components/SeriesCover.jsx'
 import { useArticle } from '../hooks/useArticle.js'
+import { useReadingStats } from '../hooks/useReadingStats.js'
 import { sanitizeHtml } from '../lib/richText.js'
 import { coverUrl } from '../lib/cloudinary.js'
 import { relativeTime } from '../lib/format.js'
@@ -10,6 +12,9 @@ import './Article.css'
 export default function Article() {
   const { slug } = useParams()
   const { article, loading } = useArticle(slug)
+  const bodyRef = useRef(null)
+
+  useReadingStats(article?.slug, bodyRef)
 
   if (loading) {
     return <p className="article-message">Betöltés…</p>
@@ -60,6 +65,7 @@ export default function Article() {
       {article.lead && <p className="article-lead">{article.lead}</p>}
 
       <div
+        ref={bodyRef}
         className="article-body"
         dangerouslySetInnerHTML={{ __html: sanitizeHtml(article.body) }}
       />

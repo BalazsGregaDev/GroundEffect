@@ -593,6 +593,32 @@ create table if not exists bug_reports (
 
 create index if not exists bug_reports_created_idx on bug_reports (created_at desc);
 
+create table if not exists article_stats_daily (
+  article_id uuid not null references articles (id) on delete cascade,
+  day date not null,
+  views integer not null default 0,
+  read_seconds bigint not null default 0,
+  depth_25 integer not null default 0,
+  depth_50 integer not null default 0,
+  depth_75 integer not null default 0,
+  depth_100 integer not null default 0,
+  rec_out_latest integer not null default 0,
+  rec_out_related integer not null default 0,
+  rec_in integer not null default 0,
+  primary key (article_id, day)
+);
+
+create index if not exists article_stats_daily_day_idx on article_stats_daily (day);
+
+create table if not exists search_stats_daily (
+  day date not null,
+  scope text not null check (scope in ('home', 'archive')),
+  query text not null,
+  searches integer not null default 0,
+  zero_results integer not null default 0,
+  primary key (day, scope, query)
+);
+
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
 alter table articles add column if not exists facebook_post_id text;
@@ -1308,6 +1334,192 @@ as $$
   where slug = article_slug and status = 'published';
 $$;
 
+create or replace function track_events(p_events jsonb)
+returns void
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_event jsonb;
+  v_day date := (now() at time zone 'Europe/Budapest')::date;
+  v_article uuid;
+  v_target uuid;
+  v_seconds integer;
+  v_depth integer;
+  v_query text;
+begin
+  if jsonb_typeof(p_events) is distinct from 'array' then
+    return;
+  end if;
+
+  for v_event in select value from jsonb_array_elements(p_events) limit 20 loop
+    begin
+      if v_event ->> 'type' = 'search' then
+        v_query := left(lower(regexp_replace(trim(v_event ->> 'q'), '\s+', ' ', 'g')), 60);
+
+        if length(v_query) >= 3 and v_event ->> 'scope' in ('home', 'archive') then
+          insert into search_stats_daily (day, scope, query, searches, zero_results)
+          values (
+            v_day,
+            v_event ->> 'scope',
+            v_query,
+            1,
+            case when (v_event ->> 'n')::integer = 0 then 1 else 0 end
+          )
+          on conflict (day, scope, query) do update
+          set searches = search_stats_daily.searches + 1,
+              zero_results = search_stats_daily.zero_results + excluded.zero_results;
+        end if;
+
+        continue;
+      end if;
+
+      select id into v_article
+      from articles
+      where slug = v_event ->> 'slug' and status = 'published' and published_at <= now();
+
+      if v_article is null then
+        continue;
+      end if;
+
+      insert into article_stats_daily (article_id, day)
+      values (v_article, v_day)
+      on conflict (article_id, day) do nothing;
+
+      case v_event ->> 'type'
+        when 'view' then
+          update article_stats_daily set views = views + 1
+          where article_id = v_article and day = v_day;
+
+          update articles set views = views + 1 where id = v_article;
+
+        when 'time' then
+          v_seconds := least(greatest((v_event ->> 'seconds')::integer, 0), 3600);
+
+          update article_stats_daily set read_seconds = read_seconds + v_seconds
+          where article_id = v_article and day = v_day;
+
+        when 'depth' then
+          v_depth := (v_event ->> 'value')::integer;
+
+          update article_stats_daily
+          set depth_25 = depth_25 + (v_depth = 25)::integer,
+              depth_50 = depth_50 + (v_depth = 50)::integer,
+              depth_75 = depth_75 + (v_depth = 75)::integer,
+              depth_100 = depth_100 + (v_depth = 100)::integer
+          where article_id = v_article and day = v_day;
+
+        when 'rec' then
+          select id into v_target
+          from articles
+          where slug = v_event ->> 'to' and status = 'published' and published_at <= now();
+
+          if v_target is not null and v_event ->> 'slot' in ('latest', 'related') then
+            update article_stats_daily
+            set rec_out_latest = rec_out_latest + (v_event ->> 'slot' = 'latest')::integer,
+                rec_out_related = rec_out_related + (v_event ->> 'slot' = 'related')::integer
+            where article_id = v_article and day = v_day;
+
+            insert into article_stats_daily (article_id, day, rec_in)
+            values (v_target, v_day, 1)
+            on conflict (article_id, day) do update
+            set rec_in = article_stats_daily.rec_in + 1;
+          end if;
+
+        else
+          null;
+      end case;
+    exception when others then
+      continue;
+    end;
+  end loop;
+end;
+$$;
+
+grant execute on function track_events(jsonb) to anon, authenticated;
+
+create or replace function stats_overview(p_days integer default 7)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with bounds as (
+    select
+      (now() at time zone 'Europe/Budapest')::date - (least(greatest(coalesce(p_days, 7), 1), 365) - 1)
+        as first_day
+  ),
+  per_article as (
+    select
+      a.id,
+      a.title,
+      a.slug,
+      a.reading_minutes,
+      sum(s.views) as views,
+      sum(s.read_seconds) as read_seconds,
+      sum(s.depth_50) as depth_50,
+      sum(s.depth_100) as depth_100,
+      sum(s.rec_out_latest + s.rec_out_related) as rec_out,
+      sum(s.rec_in) as rec_in
+    from article_stats_daily s
+    join articles a on a.id = s.article_id
+    cross join bounds b
+    where s.day >= b.first_day
+    group by a.id
+  ),
+  slots as (
+    select
+      coalesce(sum(s.rec_out_latest), 0) as latest,
+      coalesce(sum(s.rec_out_related), 0) as related
+    from article_stats_daily s, bounds b
+    where s.day >= b.first_day
+  ),
+  searches as (
+    select q.scope, q.query, sum(q.searches) as searches, sum(q.zero_results) as zero_results
+    from search_stats_daily q, bounds b
+    where q.day >= b.first_day
+    group by q.scope, q.query
+  )
+  select case when not has_permission('articles') then null else jsonb_build_object(
+    'days', least(greatest(coalesce(p_days, 7), 1), 365),
+    'totals', (
+      select jsonb_build_object(
+        'views', coalesce(sum(views), 0),
+        'read_seconds', coalesce(sum(read_seconds), 0),
+        'depth_50', coalesce(sum(depth_50), 0),
+        'depth_100', coalesce(sum(depth_100), 0),
+        'rec_out', coalesce(sum(rec_out), 0)
+      )
+      from per_article
+    ),
+    'slots', (select jsonb_build_object('latest', latest, 'related', related) from slots),
+    'articles', coalesce((
+      select jsonb_agg(row_to_json(t) order by t.views desc, t.title)
+      from (select * from per_article order by views desc, title limit 10) t
+    ), '[]'::jsonb),
+    'searches', coalesce((
+      select jsonb_agg(row_to_json(t) order by t.searches desc, t.query)
+      from (
+        select query, sum(searches) as searches, sum(zero_results) as zero_results
+        from searches group by query order by sum(searches) desc, query limit 10
+      ) t
+    ), '[]'::jsonb),
+    'zero', coalesce((
+      select jsonb_agg(row_to_json(t) order by t.zero_results desc, t.query)
+      from (
+        select query, sum(zero_results) as zero_results
+        from searches group by query having sum(zero_results) > 0
+        order by sum(zero_results) desc, query limit 10
+      ) t
+    ), '[]'::jsonb)
+  ) end;
+$$;
+
+revoke all on function stats_overview(integer) from public, anon;
+grant execute on function stats_overview(integer) to authenticated;
+
 create or replace function complete_password_change()
 returns boolean
 language sql
@@ -1321,6 +1533,19 @@ as $$
 $$;
 
 grant execute on function complete_password_change() to authenticated;
+
+create or replace function auth_user_id(p_email text)
+returns uuid
+language sql
+stable
+security definer
+set search_path = public, auth
+as $$
+  select id from auth.users where lower(email) = lower(p_email) limit 1;
+$$;
+
+revoke all on function auth_user_id(text) from public, anon, authenticated;
+grant execute on function auth_user_id(text) to service_role;
 
 alter table admin_roles enable row level security;
 alter table admin_users enable row level security;
@@ -1341,6 +1566,8 @@ alter table merch_products enable row level security;
 alter table site_popups enable row level security;
 alter table site_settings enable row level security;
 alter table bug_reports enable row level security;
+alter table article_stats_daily enable row level security;
+alter table search_stats_daily enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
 create policy admin_users_read on admin_users
@@ -1544,6 +1771,14 @@ create policy site_settings_read on site_settings
 drop policy if exists site_settings_write on site_settings;
 create policy site_settings_write on site_settings
   for all using (can_write('covers') or can_write('sections')) with check (can_write('covers') or can_write('sections'));
+
+drop policy if exists article_stats_daily_read on article_stats_daily;
+create policy article_stats_daily_read on article_stats_daily
+  for select using (has_permission('articles'));
+
+drop policy if exists search_stats_daily_read on search_stats_daily;
+create policy search_stats_daily_read on search_stats_daily
+  for select using (has_permission('articles'));
 
 drop policy if exists bug_reports_read on bug_reports;
 create policy bug_reports_read on bug_reports
