@@ -32,7 +32,8 @@ function places(popup) {
 }
 
 export default function PopupList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('popups')
   const { popups, loading, error, reload } = usePopups()
   const [draft, setDraft] = useState(null)
   const [saving, setSaving] = useState(false)

@@ -23,7 +23,8 @@ export default function RaceEditor() {
   const { id } = useParams()
   const [params] = useSearchParams()
   const navigate = useNavigate()
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('calendar')
   const { series } = useRaceSeries()
 
   const [race, setRace] = useState(id ? null : emptyRace(params.get('sorozat') ?? ''))
@@ -223,7 +224,7 @@ export default function RaceEditor() {
         )}
       </div>
 
-      {!canEdit && <p className="admin-readonly">Demó szerepkörrel csak olvasni tudod.</p>}
+      {!canEdit && <p className="admin-readonly">Ezzel a szerepkörrel csak olvasni tudod.</p>}
 
       {synced && (
         <p className="admin-readonly">

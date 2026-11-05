@@ -11,7 +11,8 @@ import './MerchList.css'
 const emptyDraft = { name: '', price: '', url: '' }
 
 export default function MerchList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('merch')
   const { products, loading, error, reload } = useMerchProducts()
   const [draft, setDraft] = useState(emptyDraft)
   const [busy, setBusy] = useState(false)

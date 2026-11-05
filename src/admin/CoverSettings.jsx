@@ -38,7 +38,8 @@ function Preview({ name, tone, url, design }) {
 }
 
 export default function CoverSettings() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('covers')
   const { settings, series, loading, error, reload } = useCoverSettings()
   const [design, setDesign] = useState(defaultDesign)
   const [fallbackUrl, setFallbackUrl] = useState(null)

@@ -22,13 +22,13 @@ async function callerIsEditor(authorization: string) {
     global: { headers: { Authorization: authorization } },
   })
 
-  const { data: role, error } = await caller.rpc('current_admin_role')
+  const { data: allowed, error } = await caller.rpc('admin_can', { p_permission: 'facebook' })
 
   if (error) {
-    throw new Error('A szerepkör lekérdezése nem sikerült.')
+    throw new Error('A jogosultság lekérdezése nem sikerült.')
   }
 
-  return role === 'superadmin' || role === 'admin'
+  return allowed === true
 }
 
 Deno.serve(async (req) => {

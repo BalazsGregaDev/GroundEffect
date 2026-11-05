@@ -37,7 +37,8 @@ function lastSync(videos) {
 }
 
 export default function VideoList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('videos')
   const { videos, loading, error, reload } = useAdminVideos()
   const [syncing, setSyncing] = useState(false)
   const [notice, setNotice] = useState(null)

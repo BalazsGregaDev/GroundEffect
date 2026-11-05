@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const roles = ['superadmin', 'admin', 'demo']
 const maxEvents = 200
 const defaultSender = 'GroundEffect hibajegy <onboarding@resend.dev>'
 
@@ -186,13 +185,15 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: authorization } },
   })
 
-  const { data: role, error: roleError } = await caller.rpc('current_admin_role')
+  const { data: access, error: roleError } = await caller.rpc('current_admin_access')
 
   if (roleError) {
     return json({ error: 'A szerepkör lekérdezése nem sikerült.' }, 500)
   }
 
-  if (!roles.includes(role)) {
+  const role: string | undefined = access?.[0]?.name
+
+  if (!role) {
     return json({ error: 'Hibajegyet csak az admin felület felhasználói küldhetnek.' }, 403)
   }
 

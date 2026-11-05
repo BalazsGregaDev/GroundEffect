@@ -1,13 +1,74 @@
 create extension if not exists citext;
 
+create or replace function admin_permission_keys()
+returns text[]
+language sql
+immutable
+as $$
+  select array[
+    'articles', 'articles.publish',
+    'videos',
+    'facebook',
+    'calendar',
+    'covers',
+    'merch',
+    'sections',
+    'polls', 'polls.edit',
+    'popups',
+    'users', 'users.roles'
+  ];
+$$;
+
+create table if not exists admin_roles (
+  key text primary key default gen_random_uuid()::text,
+  name text not null unique,
+  permissions text[] not null default '{}',
+  read_only boolean not null default false,
+  locked boolean not null default false,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+alter table admin_roles drop constraint if exists admin_roles_permissions_check;
+alter table admin_roles add constraint admin_roles_permissions_check
+  check (permissions <@ admin_permission_keys());
+
+insert into admin_roles (key, name, permissions, read_only, locked) values
+  ('superadmin', 'Superadmin', admin_permission_keys(), false, true),
+  (
+    'admin',
+    'Szerkesztő',
+    array['articles', 'videos', 'facebook', 'calendar', 'covers', 'merch', 'sections',
+          'polls', 'polls.edit', 'popups'],
+    false,
+    false
+  ),
+  (
+    'demo',
+    'Demó, csak olvasás',
+    array['articles', 'videos', 'facebook', 'calendar', 'covers', 'merch', 'sections',
+          'polls', 'polls.edit', 'popups'],
+    true,
+    false
+  )
+on conflict (key) do nothing;
+
+update admin_roles
+set name = 'Superadmin', permissions = admin_permission_keys(), read_only = false, locked = true
+where key = 'superadmin';
+
 create table if not exists admin_users (
   email citext primary key,
-  role text not null default 'demo' check (role in ('superadmin', 'admin', 'demo')),
+  role text not null default 'demo',
   display_name text,
   created_at timestamptz not null default now()
 );
 
 alter table admin_users add column if not exists must_change_password boolean not null default false;
+alter table admin_users drop constraint if exists admin_users_role_check;
+alter table admin_users drop constraint if exists admin_users_role_fkey;
+alter table admin_users add constraint admin_users_role_fkey
+  foreign key (role) references admin_roles (key) on update cascade;
 
 create or replace function current_admin_role()
 returns text
@@ -19,20 +80,29 @@ as $$
   select role from admin_users where email = (auth.jwt() ->> 'email')::citext;
 $$;
 
+create or replace function current_admin_access()
+returns table (role text, name text, permissions text[], read_only boolean)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select
+    r.key,
+    r.name,
+    case when r.key = 'superadmin' then admin_permission_keys() else r.permissions end,
+    r.read_only
+  from admin_users u
+  join admin_roles r on r.key = u.role
+  where u.email = (auth.jwt() ->> 'email')::citext;
+$$;
+
 create or replace function is_staff()
 returns boolean
 language sql
 stable
 as $$
   select current_admin_role() is not null;
-$$;
-
-create or replace function can_edit()
-returns boolean
-language sql
-stable
-as $$
-  select current_admin_role() in ('superadmin', 'admin');
 $$;
 
 create or replace function is_superadmin()
@@ -42,6 +112,123 @@ stable
 as $$
   select current_admin_role() = 'superadmin';
 $$;
+
+create or replace function has_permission(p_permission text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select p_permission = any(a.permissions) from current_admin_access() a), false);
+$$;
+
+create or replace function can_write(p_permission text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(
+    (select p_permission = any(a.permissions) and not a.read_only from current_admin_access() a),
+    false
+  );
+$$;
+
+create or replace function can_edit()
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select not a.read_only from current_admin_access() a), false);
+$$;
+
+create or replace function within_my_reach(p_permissions text[], p_read_only boolean)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case
+    when is_superadmin() then true
+    else coalesce(
+      (
+        select not a.read_only and not p_read_only and p_permissions <@ a.permissions
+        from current_admin_access() a
+      ),
+      false
+    )
+  end;
+$$;
+
+create or replace function role_assignable(p_role text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select exists (
+    select 1
+    from admin_roles r
+    where r.key = p_role
+      and (r.key <> 'superadmin' or is_superadmin())
+      and within_my_reach(r.permissions, r.read_only)
+  );
+$$;
+
+create or replace function role_is_read_only(p_role text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((select read_only from admin_roles where key = p_role), false);
+$$;
+
+create or replace function admin_can(p_permission text default null)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case when p_permission is null then can_edit() else can_write(p_permission) end;
+$$;
+
+create or replace function can_assign_role(p_role text)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select can_write('users') and role_assignable(p_role);
+$$;
+
+create or replace function admin_role_usage()
+returns table (role text, users bigint)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select u.role, count(*)
+  from admin_users u
+  join admin_roles r on r.key = u.role
+  where has_permission('users.roles') and (is_superadmin() or not r.read_only)
+  group by u.role;
+$$;
+
+grant execute on function current_admin_access() to authenticated;
+grant execute on function admin_can(text) to authenticated;
+grant execute on function can_assign_role(text) to authenticated;
+grant execute on function admin_role_usage() to authenticated;
 
 create or replace function handle_new_auth_user()
 returns trigger
@@ -76,6 +263,36 @@ begin
   return new;
 end;
 $$;
+
+create or replace function normalize_role_permissions()
+returns trigger
+language plpgsql
+as $$
+begin
+  new.permissions := array(
+    select distinct permission
+    from unnest(new.permissions) as permission
+    where permission = any(admin_permission_keys())
+      and (
+        position('.' in permission) = 0
+        or split_part(permission, '.', 1) = any(new.permissions)
+      )
+    order by permission
+  );
+
+  return new;
+end;
+$$;
+
+drop trigger if exists admin_roles_normalize on admin_roles;
+create trigger admin_roles_normalize
+  before insert or update on admin_roles
+  for each row execute function normalize_role_permissions();
+
+drop trigger if exists admin_roles_set_updated_at on admin_roles;
+create trigger admin_roles_set_updated_at
+  before update on admin_roles
+  for each row execute function set_updated_at();
 
 create table if not exists categories (
   id uuid primary key default gen_random_uuid(),
@@ -278,6 +495,8 @@ alter table race_series add column if not exists share_image_url text;
 create or replace function ensure_series_tag()
 returns trigger
 language plpgsql
+security definer
+set search_path = public
 as $$
 declare
   v_tag uuid;
@@ -702,9 +921,9 @@ begin
 
   if new.status = 'published'
     and (tg_op = 'INSERT' or old.status is distinct from 'published')
-    and not is_superadmin()
+    and not has_permission('articles.publish')
   then
-    raise exception 'Publikalni csak superadmin tud.' using errcode = '42501';
+    raise exception 'Publikálni ezzel a szerepkörrel nem lehet.' using errcode = '42501';
   end if;
 
   return new;
@@ -715,6 +934,58 @@ drop trigger if exists articles_enforce_publish_rights on articles;
 create trigger articles_enforce_publish_rights
   before insert or update on articles
   for each row execute function enforce_publish_rights();
+
+create or replace function enforce_series_columns()
+returns trigger
+language plpgsql
+as $$
+declare
+  v_cover_fields text[] := array['cover_tone', 'cover_url', 'share_image_url', 'updated_at'];
+begin
+  if auth.jwt() is null or (auth.jwt() ->> 'role') = 'service_role' or can_write('calendar') then
+    return new;
+  end if;
+
+  if (to_jsonb(new) - v_cover_fields) is distinct from (to_jsonb(old) - v_cover_fields) then
+    raise exception 'Ehhez a módosításhoz Versenynaptár jog kell.' using errcode = '42501';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists race_series_enforce_columns on race_series;
+create trigger race_series_enforce_columns
+  before update on race_series
+  for each row execute function enforce_series_columns();
+
+create or replace function enforce_settings_columns()
+returns trigger
+language plpgsql
+as $$
+begin
+  if auth.jwt() is null or (auth.jwt() ->> 'role') = 'service_role' then
+    return new;
+  end if;
+
+  if new.sections_order is distinct from old.sections_order and not can_write('sections') then
+    raise exception 'A szekciók módosításához Szekciók jog kell.' using errcode = '42501';
+  end if;
+
+  if (new.cover_design is distinct from old.cover_design
+      or new.cover_fallback_url is distinct from old.cover_fallback_url)
+    and not can_write('covers') then
+    raise exception 'A borítóképek módosításához Borítóképek jog kell.' using errcode = '42501';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists site_settings_enforce_columns on site_settings;
+create trigger site_settings_enforce_columns
+  before update on site_settings
+  for each row execute function enforce_settings_columns();
 
 create or replace function enforce_featured_limit()
 returns trigger
@@ -1051,6 +1322,7 @@ $$;
 
 grant execute on function complete_password_change() to authenticated;
 
+alter table admin_roles enable row level security;
 alter table admin_users enable row level security;
 alter table categories enable row level security;
 alter table tags enable row level security;
@@ -1072,11 +1344,68 @@ alter table bug_reports enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
 create policy admin_users_read on admin_users
-  for select using (is_staff());
+  for select using (
+    email = (auth.jwt() ->> 'email')::citext
+    or (has_permission('users') and (is_superadmin() or not role_is_read_only(role)))
+  );
 
 drop policy if exists admin_users_write on admin_users;
-create policy admin_users_write on admin_users
-  for all using (is_superadmin()) with check (is_superadmin());
+
+drop policy if exists admin_users_insert on admin_users;
+create policy admin_users_insert on admin_users
+  for insert with check (
+    can_write('users') and email <> (auth.jwt() ->> 'email')::citext and role_assignable(role)
+  );
+
+drop policy if exists admin_users_update on admin_users;
+create policy admin_users_update on admin_users
+  for update
+  using (can_write('users') and email <> (auth.jwt() ->> 'email')::citext and role_assignable(role))
+  with check (can_write('users') and email <> (auth.jwt() ->> 'email')::citext and role_assignable(role));
+
+drop policy if exists admin_users_delete on admin_users;
+create policy admin_users_delete on admin_users
+  for delete using (
+    can_write('users') and email <> (auth.jwt() ->> 'email')::citext and role_assignable(role)
+  );
+
+drop policy if exists admin_roles_read on admin_roles;
+create policy admin_roles_read on admin_roles
+  for select using (
+    is_superadmin()
+    or (not read_only and (has_permission('users') or has_permission('users.roles')))
+  );
+
+drop policy if exists admin_roles_insert on admin_roles;
+create policy admin_roles_insert on admin_roles
+  for insert with check (
+    can_write('users.roles') and not locked and within_my_reach(permissions, read_only)
+  );
+
+drop policy if exists admin_roles_update on admin_roles;
+create policy admin_roles_update on admin_roles
+  for update
+  using (
+    can_write('users.roles')
+    and not locked
+    and key is distinct from current_admin_role()
+    and within_my_reach(permissions, read_only)
+  )
+  with check (
+    can_write('users.roles')
+    and not locked
+    and key is distinct from current_admin_role()
+    and within_my_reach(permissions, read_only)
+  );
+
+drop policy if exists admin_roles_delete on admin_roles;
+create policy admin_roles_delete on admin_roles
+  for delete using (
+    can_write('users.roles')
+    and not locked
+    and key is distinct from current_admin_role()
+    and within_my_reach(permissions, read_only)
+  );
 
 drop policy if exists categories_read on categories;
 create policy categories_read on categories
@@ -1084,7 +1413,7 @@ create policy categories_read on categories
 
 drop policy if exists categories_write on categories;
 create policy categories_write on categories
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('articles')) with check (can_write('articles'));
 
 drop policy if exists tags_read on tags;
 create policy tags_read on tags
@@ -1092,17 +1421,17 @@ create policy tags_read on tags
 
 drop policy if exists tags_write on tags;
 create policy tags_write on tags
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('articles')) with check (can_write('articles'));
 
 drop policy if exists articles_read on articles;
 create policy articles_read on articles
   for select using (
-    (status = 'published' and published_at <= now()) or is_staff()
+    (status = 'published' and published_at <= now()) or has_permission('articles')
   );
 
 drop policy if exists articles_write on articles;
 create policy articles_write on articles
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('articles')) with check (can_write('articles'));
 
 drop policy if exists article_tags_read on article_tags;
 create policy article_tags_read on article_tags
@@ -1110,7 +1439,7 @@ create policy article_tags_read on article_tags
 
 drop policy if exists article_tags_write on article_tags;
 create policy article_tags_write on article_tags
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('articles')) with check (can_write('articles'));
 
 drop policy if exists videos_read on videos;
 create policy videos_read on videos
@@ -1118,15 +1447,15 @@ create policy videos_read on videos
 
 drop policy if exists videos_write on videos;
 create policy videos_write on videos
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('videos')) with check (can_write('videos'));
 
 drop policy if exists facebook_posts_read on facebook_posts;
 create policy facebook_posts_read on facebook_posts
-  for select using (visible or is_staff());
+  for select using (visible or has_permission('facebook'));
 
 drop policy if exists facebook_posts_write on facebook_posts;
 create policy facebook_posts_write on facebook_posts
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('facebook')) with check (can_write('facebook'));
 
 drop policy if exists polls_read on polls;
 create policy polls_read on polls
@@ -1134,7 +1463,7 @@ create policy polls_read on polls
 
 drop policy if exists polls_write on polls;
 create policy polls_write on polls
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('polls.edit')) with check (can_write('polls.edit'));
 
 drop policy if exists poll_questions_read on poll_questions;
 create policy poll_questions_read on poll_questions
@@ -1142,27 +1471,39 @@ create policy poll_questions_read on poll_questions
 
 drop policy if exists poll_questions_write on poll_questions;
 create policy poll_questions_write on poll_questions
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('polls.edit')) with check (can_write('polls.edit'));
 
 drop policy if exists poll_options_read on poll_options;
 create policy poll_options_read on poll_options
-  for select using (approved or is_staff());
+  for select using (approved or has_permission('polls'));
 
 drop policy if exists poll_options_write on poll_options;
 create policy poll_options_write on poll_options
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('polls.edit')) with check (can_write('polls.edit'));
 
 drop policy if exists poll_votes_read on poll_votes;
 create policy poll_votes_read on poll_votes
-  for select using (is_staff());
+  for select using (has_permission('polls'));
 
 drop policy if exists race_series_read on race_series;
 create policy race_series_read on race_series
   for select using (true);
 
 drop policy if exists race_series_write on race_series;
-create policy race_series_write on race_series
-  for all using (can_edit()) with check (can_edit());
+
+drop policy if exists race_series_insert on race_series;
+create policy race_series_insert on race_series
+  for insert with check (can_write('calendar'));
+
+drop policy if exists race_series_update on race_series;
+create policy race_series_update on race_series
+  for update
+  using (can_write('calendar') or can_write('covers'))
+  with check (can_write('calendar') or can_write('covers'));
+
+drop policy if exists race_series_delete on race_series;
+create policy race_series_delete on race_series
+  for delete using (can_write('calendar'));
 
 drop policy if exists races_read on races;
 create policy races_read on races
@@ -1170,7 +1511,7 @@ create policy races_read on races
 
 drop policy if exists races_write on races;
 create policy races_write on races
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('calendar')) with check (can_write('calendar'));
 
 drop policy if exists race_sessions_read on race_sessions;
 create policy race_sessions_read on race_sessions
@@ -1178,23 +1519,23 @@ create policy race_sessions_read on race_sessions
 
 drop policy if exists race_sessions_write on race_sessions;
 create policy race_sessions_write on race_sessions
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('calendar')) with check (can_write('calendar'));
 
 drop policy if exists site_popups_read on site_popups;
 create policy site_popups_read on site_popups
-  for select using (enabled or is_staff());
+  for select using (enabled or has_permission('popups'));
 
 drop policy if exists site_popups_write on site_popups;
 create policy site_popups_write on site_popups
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('popups')) with check (can_write('popups'));
 
 drop policy if exists merch_products_read on merch_products;
 create policy merch_products_read on merch_products
-  for select using (visible or is_staff());
+  for select using (visible or has_permission('merch'));
 
 drop policy if exists merch_products_write on merch_products;
 create policy merch_products_write on merch_products
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('merch')) with check (can_write('merch'));
 
 drop policy if exists site_settings_read on site_settings;
 create policy site_settings_read on site_settings
@@ -1202,7 +1543,7 @@ create policy site_settings_read on site_settings
 
 drop policy if exists site_settings_write on site_settings;
 create policy site_settings_write on site_settings
-  for all using (can_edit()) with check (can_edit());
+  for all using (can_write('covers') or can_write('sections')) with check (can_write('covers') or can_write('sections'));
 
 drop policy if exists bug_reports_read on bug_reports;
 create policy bug_reports_read on bug_reports

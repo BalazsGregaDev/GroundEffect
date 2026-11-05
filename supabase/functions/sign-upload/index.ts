@@ -48,14 +48,14 @@ Deno.serve(async (req) => {
     { global: { headers: { Authorization: authorization } } },
   )
 
-  const { data: role, error: roleError } = await supabase.rpc('current_admin_role')
+  const { data: allowed, error: roleError } = await supabase.rpc('admin_can')
 
   if (roleError) {
-    return json({ error: 'A szerepkör lekérdezése nem sikerült.' }, 500)
+    return json({ error: 'A jogosultság lekérdezése nem sikerült.' }, 500)
   }
 
-  if (role !== 'superadmin' && role !== 'admin') {
-    return json({ error: 'Ehhez szerkesztői jog kell.' }, 403)
+  if (allowed !== true) {
+    return json({ error: 'Ehhez szerkesztési jog kell.' }, 403)
   }
 
   const cloudName = Deno.env.get('CLOUDINARY_CLOUD_NAME')

@@ -39,7 +39,8 @@ function stepped(list, index, step) {
 }
 
 export default function SectionList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('sections')
   const { list, setList, loading, error } = useSectionOrder()
   const [dragKey, setDragKey] = useState(null)
   const [overKey, setOverKey] = useState(null)

@@ -18,7 +18,8 @@ function lastSync(series) {
 }
 
 export default function RaceList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('calendar')
   const { series, loading: seriesLoading, reload: reloadSeries } = useRaceSeries()
   const { seasons, reload: reloadSeasons } = useRaceSeasons()
   const [season, setSeason] = useState(() => new Date().getFullYear())

@@ -23,7 +23,9 @@ function fromLocalInput(value) {
 export default function PollEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { canEdit } = useAuth()
+  const { can, canWrite } = useAuth()
+  const canEdit = canWrite('polls.edit')
+  const opensEditor = can('polls.edit')
 
   const [poll, setPoll] = useState(id ? null : emptyPoll)
   const [liveActive, setLiveActive] = useState(false)
@@ -322,12 +324,13 @@ export default function PollEditor() {
     setClosing(false)
   }
 
-  if (closed) {
+  if (closed || !opensEditor) {
     return (
       <>
         {error && <p className="admin-error">{error}</p>}
         <PollResults
           poll={poll}
+          closed={closed}
           expired={expired}
           canEdit={canEdit}
           busy={closing}
@@ -357,7 +360,7 @@ export default function PollEditor() {
         )}
       </div>
 
-      {readOnly && <p className="admin-readonly">Demó szerepkörrel csak olvasni tudod.</p>}
+      {readOnly && <p className="admin-readonly">Ezzel a szerepkörrel csak olvasni tudod.</p>}
 
       {error && <p className="admin-error">{error}</p>}
 

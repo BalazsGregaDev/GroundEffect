@@ -12,7 +12,9 @@ function normalizeCells(cells, columns) {
 }
 
 export default function PollList() {
-  const { canEdit } = useAuth()
+  const { can, canWrite } = useAuth()
+  const canEdit = canWrite('polls.edit')
+  const moderates = can('polls.edit')
   const [polls, setPolls] = useState([])
   const [pending, setPending] = useState([])
   const [loading, setLoading] = useState(true)
@@ -137,7 +139,7 @@ export default function PollList() {
         </table>
       )}
 
-      {pending.length > 0 && (
+      {moderates && pending.length > 0 && (
         <div className="pollmod">
           <h2>Jóváhagyásra váró javaslatok ({pending.length})</h2>
 

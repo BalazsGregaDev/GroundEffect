@@ -28,7 +28,8 @@ function lastSync(posts) {
 }
 
 export default function FacebookPostList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('facebook')
   const { posts, loading, error, reload } = useFacebookPosts()
   const [syncing, setSyncing] = useState(false)
   const [notice, setNotice] = useState(null)

@@ -22,7 +22,7 @@ function stamp(value) {
   return value ? new Date(value).toLocaleString('hu-HU') : '—'
 }
 
-export default function PollResults({ poll, expired, canEdit, busy, onReopen, onDelete }) {
+export default function PollResults({ poll, closed, expired, canEdit, busy, onReopen, onDelete }) {
   const [view, setView] = useState('percent')
   const [mode, setMode] = useState('list')
   const [confirmDelete, setConfirmDelete] = useState(false)
@@ -31,7 +31,7 @@ export default function PollResults({ poll, expired, canEdit, busy, onReopen, on
     ['Cím', poll.title || '—'],
     ['Kezdés', stamp(poll.starts_at)],
     ['Lezárási időpont', stamp(poll.closes_at)],
-    ['Lezárult', stamp(poll.closed_at ?? poll.closes_at)],
+    ...(closed ? [['Lezárult', stamp(poll.closed_at ?? poll.closes_at)]] : []),
     ['Főoldalon', poll.active ? 'igen' : 'nem'],
     [
       'Eredmény eltűnése',
@@ -51,7 +51,9 @@ export default function PollResults({ poll, expired, canEdit, busy, onReopen, on
       </div>
 
       <p className="admin-readonly">
-        Ez a szavazás lezárult, ezért csak az eredménye látható. Szerkeszteni újranyitás után lehet.
+        {closed
+          ? 'Ez a szavazás lezárult, ezért csak az eredménye látható. Szerkeszteni újranyitás után lehet.'
+          : 'Ehhez a szavazáshoz csak olvasási jogod van, ezért az eddigi eredményét látod.'}
       </p>
 
       <div className="polled-tools">
@@ -67,7 +69,7 @@ export default function PollResults({ poll, expired, canEdit, busy, onReopen, on
           </button>
         ))}
 
-        {canEdit && (
+        {canEdit && closed && (
           <button type="button" className="admin-button" onClick={onReopen} disabled={busy}>
             Újranyitás
           </button>

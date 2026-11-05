@@ -3,10 +3,10 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { statuses } from './statuses.js'
 import { useAuth } from './useAuth.js'
+import { adminNav } from './adminNav.js'
 import './Dashboard.css'
 
-export default function Dashboard() {
-  const { canEdit } = useAuth()
+function ArticleCounts({ canEdit }) {
   const [counts, setCounts] = useState(null)
 
   useEffect(() => {
@@ -25,9 +25,7 @@ export default function Dashboard() {
   }, [])
 
   return (
-    <div>
-      <h1>Áttekintés</h1>
-
+    <>
       <div className="dashboard-cards">
         {statuses.map((status) => (
           <Link key={status.value} to={`/admin/cikkek?allapot=${status.value}`} className="dashboard-card">
@@ -41,6 +39,27 @@ export default function Dashboard() {
         <Link to="/admin/cikkek/uj" className="admin-button dashboard-new">
           Új cikk
         </Link>
+      )}
+    </>
+  )
+}
+
+export default function Dashboard() {
+  const { can, canWrite } = useAuth()
+  const reachable = adminNav.filter((item) => item.permission && can(item.permission))
+
+  return (
+    <div>
+      <h1>Áttekintés</h1>
+
+      {can('articles') ? (
+        <ArticleCounts canEdit={canWrite('articles')} />
+      ) : (
+        <p className="admin-readonly">
+          {reachable.length > 0
+            ? `A szerepköröddel elérhető: ${reachable.map((item) => item.label).join(', ')}.`
+            : 'A szerepköröd jelenleg egy menüponthoz sem ad hozzáférést, csak hibajegyet küldhetsz.'}
+        </p>
       )}
     </div>
   )

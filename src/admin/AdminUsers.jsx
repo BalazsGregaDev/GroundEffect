@@ -1,20 +1,32 @@
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { useAuth } from './useAuth.js'
-import { adminRoles } from './roles.js'
+import { useAdminRoles } from './useAdminRoles.js'
+import { withinReach } from './permissions.js'
 import { functionErrorMessage } from '../lib/functionError.js'
 import './AdminUsers.css'
 
 export default function AdminUsers() {
-  const { session, isSuperadmin } = useAuth()
+  const { session, role, permissions, readOnly, can, canWrite, isSuperadmin } = useAuth()
+  const { roles } = useAdminRoles()
   const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [newEmail, setNewEmail] = useState('')
-  const [newRole, setNewRole] = useState('admin')
+  const [newRole, setNewRole] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [adding, setAdding] = useState(false)
   const [notice, setNotice] = useState(null)
+
+  const canManage = canWrite('users')
+  const access = { role, permissions, readOnly }
+  const assignable = roles.filter(
+    (item) => (item.key !== 'superadmin' || isSuperadmin) && withinReach(access, item),
+  )
+  const chosenRole = assignable.some((item) => item.key === newRole)
+    ? newRole
+    : (assignable.at(-1)?.key ?? '')
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -33,13 +45,8 @@ export default function AdminUsers() {
     load()
   }, [load])
 
-  if (!isSuperadmin) {
-    return (
-      <div>
-        <h1>Felhasználók</h1>
-        <p className="admin-readonly">Ezt az oldalt csak superadmin nézheti.</p>
-      </div>
-    )
+  function roleName(key) {
+    return roles.find((item) => item.key === key)?.name ?? '—'
   }
 
   async function addUser(event) {
@@ -47,7 +54,7 @@ export default function AdminUsers() {
 
     const email = newEmail.trim()
 
-    if (!email) {
+    if (!email || !chosenRole) {
       return
     }
 
@@ -56,7 +63,7 @@ export default function AdminUsers() {
     setNotice(null)
 
     const { error: functionError } = await supabase.functions.invoke('create-admin-user', {
-      body: { email, password: newPassword, role: newRole },
+      body: { email, password: newPassword, role: chosenRole },
     })
 
     setAdding(false)
@@ -72,8 +79,8 @@ export default function AdminUsers() {
     load()
   }
 
-  async function changeRole(email, role) {
-    const { error } = await supabase.from('admin_users').update({ role }).eq('email', email)
+  async function changeRole(email, nextRole) {
+    const { error } = await supabase.from('admin_users').update({ role: nextRole }).eq('email', email)
 
     if (error) {
       setError(error)
@@ -96,54 +103,67 @@ export default function AdminUsers() {
 
   return (
     <div>
-      <h1>Felhasználók</h1>
+      <div className="list-head">
+        <h1>Felhasználók</h1>
 
-      <p className="admin-readonly">
-        A felvétellel egyszerre készül el a belépéshez használható fiók és a szerepkör.
-        Az itt megadott jelszó ideiglenes: az illető első belépésekor a rendszer a
-        jelszócserét kéri, és addig semmi mást nem enged. Ha a címhez már tartozik fiók,
-        a felvétel nem megy át — annak a szerepkörét a lenti listában állítsd.
-      </p>
+        {can('users.roles') && (
+          <Link to="/admin/felhasznalok/szerepkorok" className="admin-button admin-button--ghost">
+            Szerepkörök szerkesztése
+          </Link>
+        )}
+      </div>
 
-      <form className="users-add" onSubmit={addUser}>
-        <label className="admin-field">
-          <span>Új admin e-mail címe</span>
-          <input
-            type="email"
-            value={newEmail}
-            onChange={(event) => setNewEmail(event.target.value)}
-            placeholder="szerkeszto@groundeffect.hu"
-            required
-          />
-        </label>
+      {canManage && (
+        <>
+          <p className="admin-readonly">
+            A felvétellel egyszerre készül el a belépéshez használható fiók és a szerepkör.
+            Az itt megadott jelszó ideiglenes: az illető első belépésekor a rendszer a
+            jelszócserét kéri, és addig semmi mást nem enged. Ha a címhez már tartozik fiók,
+            a felvétel nem megy át — annak a szerepkörét a lenti listában állítsd. Csak olyan
+            szerepkört adhatsz, amelynek minden joga a tiédben is megvan.
+          </p>
 
-        <label className="admin-field">
-          <span>Szerepkör</span>
-          <select value={newRole} onChange={(event) => setNewRole(event.target.value)}>
-            {adminRoles.map((role) => (
-              <option key={role.value} value={role.value}>
-                {role.label}
-              </option>
-            ))}
-          </select>
-        </label>
+          <form className="users-add" onSubmit={addUser}>
+            <label className="admin-field">
+              <span>Új admin e-mail címe</span>
+              <input
+                type="email"
+                value={newEmail}
+                onChange={(event) => setNewEmail(event.target.value)}
+                placeholder="szerkeszto@groundeffect.hu"
+                required
+              />
+            </label>
 
-        <label className="admin-field">
-          <span>Ideiglenes jelszó</span>
-          <input
-            type="text"
-            value={newPassword}
-            onChange={(event) => setNewPassword(event.target.value)}
-            autoComplete="off"
-            minLength={8}
-            required
-          />
-        </label>
+            <label className="admin-field">
+              <span>Szerepkör</span>
+              <select value={chosenRole} onChange={(event) => setNewRole(event.target.value)}>
+                {assignable.map((item) => (
+                  <option key={item.key} value={item.key}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <button type="submit" className="admin-button" disabled={adding}>
-          {adding ? 'Felvétel…' : 'Felvétel'}
-        </button>
-      </form>
+            <label className="admin-field">
+              <span>Ideiglenes jelszó</span>
+              <input
+                type="text"
+                value={newPassword}
+                onChange={(event) => setNewPassword(event.target.value)}
+                autoComplete="off"
+                minLength={8}
+                required
+              />
+            </label>
+
+            <button type="submit" className="admin-button" disabled={adding || !chosenRole}>
+              {adding ? 'Felvétel…' : 'Felvétel'}
+            </button>
+          </form>
+        </>
+      )}
 
       {notice && <p className="admin-readonly">{notice}</p>}
 
@@ -163,6 +183,11 @@ export default function AdminUsers() {
           <tbody>
             {users.map((user) => {
               const isSelf = user.email.toLowerCase() === session.user.email.toLowerCase()
+              const manageable =
+                canManage && !isSelf && assignable.some((item) => item.key === user.role)
+              const options = manageable
+                ? assignable
+                : [{ key: user.role, name: roleName(user.role) }]
 
               return (
                 <tr key={user.email}>
@@ -174,17 +199,17 @@ export default function AdminUsers() {
                     <select
                       value={user.role}
                       onChange={(event) => changeRole(user.email, event.target.value)}
-                      disabled={isSelf}
+                      disabled={!manageable}
                     >
-                      {adminRoles.map((role) => (
-                        <option key={role.value} value={role.value}>
-                          {role.label}
+                      {options.map((item) => (
+                        <option key={item.key} value={item.key}>
+                          {item.name}
                         </option>
                       ))}
                     </select>
                   </td>
                   <td>
-                    {!isSelf && (
+                    {manageable && (
                       <button type="button" className="users-revoke" onClick={() => revoke(user.email)}>
                         Hozzáférés visszavonása
                       </button>

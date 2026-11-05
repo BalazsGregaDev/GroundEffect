@@ -183,7 +183,8 @@ async function saveTags(articleId, tags) {
 export default function ArticleEditor() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { session, canEdit, isSuperadmin } = useAuth()
+  const { session, can, canWrite } = useAuth()
+  const canEdit = canWrite('articles')
   const { rows: categories, reload: reloadCategories } = useLookup('categories')
   const { rows: allTags, reload: reloadTags } = useLookup('tags', 'id, slug, name, kind')
 
@@ -528,7 +529,7 @@ export default function ArticleEditor() {
         (form.primary_series_tag_id && item.tagId === form.primary_series_tag_id) ||
         (form.category_id && item.categoryId === form.category_id),
     ) ?? null
-  const canPublish = isSuperadmin || saved?.form.status === 'published'
+  const canPublish = can('articles.publish') || saved?.form.status === 'published'
   const isLive =
     saved?.form.status === 'published' &&
     (!saved.form.published_at || new Date(saved.form.published_at) <= new Date())
@@ -584,7 +585,7 @@ export default function ArticleEditor() {
       </div>
 
       {readOnly && (
-        <p className="admin-readonly">Demó szerepkörrel csak olvasni tudod a cikkeket.</p>
+        <p className="admin-readonly">Ezzel a szerepkörrel csak olvasni tudod a cikkeket.</p>
       )}
 
       {error && <p className="admin-error">{error}</p>}
@@ -646,21 +647,15 @@ export default function ArticleEditor() {
               onChange={(event) => update('status', event.target.value)}
               disabled={readOnly}
             >
-              {statuses.map((status) => (
-                <option
-                  key={status.value}
-                  value={status.value}
-                  disabled={status.value === 'published' && !canPublish}
-                >
-                  {status.label}
-                </option>
-              ))}
+              {statuses
+                .filter((status) => status.value !== 'published' || canPublish)
+                .map((status) => (
+                  <option key={status.value} value={status.value}>
+                    {status.label}
+                  </option>
+                ))}
             </select>
           </label>
-
-          {!canPublish && (
-            <p className="editor-hint">Publikálni csak superadmin tud.</p>
-          )}
 
           <label className="admin-field">
             <span>Publikálás ideje</span>

@@ -4,7 +4,7 @@ import { AuthContext } from './authContext.js'
 
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(undefined)
-  const [role, setRole] = useState(undefined)
+  const [access, setAccess] = useState(undefined)
   const [mustChangePassword, setMustChangePassword] = useState(false)
   const [roleError, setRoleError] = useState(null)
 
@@ -20,16 +20,23 @@ export default function AuthProvider({ children }) {
 
   const readProfile = useCallback(async () => {
     if (!session) {
-      return { role: null, mustChange: false, error: null }
+      return { access: null, mustChange: false, error: null }
     }
 
-    const { data, error } = await supabase
-      .from('admin_users')
-      .select('role, must_change_password')
-      .eq('email', session.user.email)
-      .maybeSingle()
+    const [accessResult, profileResult] = await Promise.all([
+      supabase.rpc('current_admin_access'),
+      supabase
+        .from('admin_users')
+        .select('must_change_password')
+        .eq('email', session.user.email)
+        .maybeSingle(),
+    ])
 
-    return { role: data?.role ?? null, mustChange: data?.must_change_password ?? false, error }
+    return {
+      access: accessResult.data?.[0] ?? null,
+      mustChange: profileResult.data?.must_change_password ?? false,
+      error: accessResult.error ?? profileResult.error,
+    }
   }, [session])
 
   useEffect(() => {
@@ -38,7 +45,7 @@ export default function AuthProvider({ children }) {
     }
 
     if (session === null) {
-      setRole(null)
+      setAccess(null)
       setMustChangePassword(false)
       setRoleError(null)
       return
@@ -48,7 +55,7 @@ export default function AuthProvider({ children }) {
 
     readProfile().then((profile) => {
       if (active) {
-        setRole(profile.role)
+        setAccess(profile.access)
         setMustChangePassword(profile.mustChange)
         setRoleError(profile.error)
       }
@@ -59,20 +66,28 @@ export default function AuthProvider({ children }) {
     }
   }, [session, readProfile])
 
+  const role = access === undefined ? undefined : (access?.role ?? null)
+  const permissions = access?.permissions ?? []
+  const readOnly = access?.read_only ?? true
+
   const value = {
     session,
     role,
+    roleName: access?.name ?? null,
+    permissions,
+    readOnly,
     roleError,
-    loading: session === undefined || role === undefined,
-    canEdit: role === 'superadmin' || role === 'admin',
+    loading: session === undefined || access === undefined,
     isSuperadmin: role === 'superadmin',
+    can: (permission) => permissions.includes(permission),
+    canWrite: (permission) => !readOnly && permissions.includes(permission),
     mustChangePassword,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     signOut: () => supabase.auth.signOut(),
     refreshProfile: async () => {
       const profile = await readProfile()
 
-      setRole(profile.role)
+      setAccess(profile.access)
       setMustChangePassword(profile.mustChange)
       setRoleError(profile.error)
     },

@@ -4,18 +4,17 @@ import MenuToggle from '../components/MenuToggle.jsx'
 import BugReportDialog from './BugReportDialog.jsx'
 import { adminNav } from './adminNav.js'
 import { useAuth } from './useAuth.js'
-import { roleLabel } from './roles.js'
 import { useAdminLog } from './useAdminLog.js'
 import logo from '../assets/logo-kor.jpg'
 import './admin.css'
 import './AdminLayout.css'
 
 export default function AdminLayout() {
-  const { session, role, signOut } = useAuth()
+  const { session, roleName, can, signOut } = useAuth()
   const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [reporting, setReporting] = useState(false)
-  const items = adminNav.filter((item) => !item.superadminOnly || role === 'superadmin')
+  const items = adminNav.filter((item) => !item.permission || can(item.permission))
 
   useAdminLog()
 
@@ -67,7 +66,7 @@ export default function AdminLayout() {
 
           <div className="admin-user">
             <p className="admin-user-email">{session.user.email}</p>
-            <p className="admin-user-role">{roleLabel(role)}</p>
+            <p className="admin-user-role">{roleName}</p>
             <button
               type="button"
               className="admin-button admin-button--ghost"

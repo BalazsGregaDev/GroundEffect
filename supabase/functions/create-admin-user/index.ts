@@ -5,7 +5,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const roles = ['superadmin', 'admin', 'demo']
 const minimumPassword = 8
 
 function json(body: unknown, status = 200) {
@@ -30,20 +29,10 @@ Deno.serve(async (req) => {
     global: { headers: { Authorization: authorization } },
   })
 
-  const { data: role, error: roleError } = await caller.rpc('current_admin_role')
-
-  if (roleError) {
-    return json({ error: 'A szerepkör lekérdezése nem sikerült.' }, 500)
-  }
-
-  if (role !== 'superadmin') {
-    return json({ error: 'Felhasználót csak superadmin vehet fel.' }, 403)
-  }
-
   const body = await req.json().catch(() => null)
   const email = typeof body?.email === 'string' ? body.email.trim() : ''
   const password = typeof body?.password === 'string' ? body.password : ''
-  const wanted = typeof body?.role === 'string' ? body.role : 'demo'
+  const wanted = typeof body?.role === 'string' ? body.role : ''
 
   if (!email.includes('@')) {
     return json({ error: 'Érvényes e-mail címet adj meg.' }, 400)
@@ -53,8 +42,18 @@ Deno.serve(async (req) => {
     return json({ error: `Az ideiglenes jelszó legyen legalább ${minimumPassword} karakter.` }, 400)
   }
 
-  if (!roles.includes(wanted)) {
-    return json({ error: 'Ismeretlen szerepkör.' }, 400)
+  if (!wanted) {
+    return json({ error: 'Válassz szerepkört.' }, 400)
+  }
+
+  const { data: allowed, error: roleError } = await caller.rpc('can_assign_role', { p_role: wanted })
+
+  if (roleError) {
+    return json({ error: 'A jogosultság lekérdezése nem sikerült.' }, 500)
+  }
+
+  if (allowed !== true) {
+    return json({ error: 'Ezt a szerepkört nem oszthatod ki.' }, 403)
   }
 
   const admin = createClient(

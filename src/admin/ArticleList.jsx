@@ -12,7 +12,8 @@ import './ArticleList.css'
 const filters = [{ value: 'all', label: 'Mind' }, ...statuses]
 
 export default function ArticleList() {
-  const { canEdit } = useAuth()
+  const { canWrite } = useAuth()
+  const canEdit = canWrite('articles')
   const [params, setParams] = useSearchParams()
   const [searchInput, setSearchInput] = useState('')
   const [managingTags, setManagingTags] = useState(false)
