@@ -10,11 +10,11 @@ export default function SearchResults() {
   const { videos, articles, loading } = useSearchResults(query)
 
   return (
-    <section className="search-results">
+    <section className="search-results" data-track="search">
       <SectionTitle>Videók</SectionTitle>
 
       {videos.length > 0 ? (
-        <VideoCards videos={videos} />
+        <VideoCards videos={videos} where="search" />
       ) : (
         <p className="search-empty">
           {loading ? 'Keresés…' : 'Egy videó címében sincs benne, amit keresel.'}

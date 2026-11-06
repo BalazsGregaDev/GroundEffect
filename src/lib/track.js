@@ -12,6 +12,10 @@ let timer = null
 let visitor = null
 const collectors = new Set()
 
+function privatePage() {
+  return window.location.pathname.startsWith('/admin')
+}
+
 function send(events) {
   const body = JSON.stringify({ events })
 
@@ -61,6 +65,55 @@ function leave() {
   flush()
 }
 
+function device() {
+  const coarse = window.matchMedia('(pointer: coarse)').matches
+  const shortSide = Math.min(window.screen.width, window.screen.height)
+
+  if (coarse && shortSide < 600) {
+    return 'mobile'
+  }
+
+  if (coarse && shortSide < 1100) {
+    return 'tablet'
+  }
+
+  return 'desktop'
+}
+
+function referrer() {
+  try {
+    const { hostname } = new URL(document.referrer)
+
+    return hostname === window.location.hostname ? '' : hostname.replace(/^(www|m|l|lm|mobile)\./, '')
+  } catch {
+    return ''
+  }
+}
+
+function outbound(event) {
+  const link = event.target.closest?.('a[href]')
+
+  if (!link || privatePage() || link.closest('[data-track="off"]')) {
+    return
+  }
+
+  let url
+
+  try {
+    url = new URL(link.href, window.location.href)
+  } catch {
+    return
+  }
+
+  if (!url.protocol.startsWith('http') || url.hostname === window.location.hostname) {
+    return
+  }
+
+  const label = link.closest('[data-track]')?.dataset.track ?? ''
+
+  trackEvent('out', url.hostname.replace(/^www\./, ''), label)
+}
+
 if (supported) {
   supabase.auth.onAuthStateChange((_event, session) => {
     visitor = !session
@@ -78,10 +131,16 @@ if (supported) {
       leave()
     }
   })
+  document.addEventListener('click', outbound, true)
+  document.addEventListener('auxclick', outbound, true)
+
+  if (!privatePage()) {
+    queue.push({ type: 'visit', device: device(), ref: referrer() })
+  }
 }
 
 export function track(event) {
-  if (!supported || visitor === false) {
+  if (!supported || visitor === false || privatePage()) {
     return
   }
 
@@ -89,6 +148,12 @@ export function track(event) {
 
   if (visitor) {
     schedule()
+  }
+}
+
+export function trackEvent(category, name, label = '') {
+  if (name) {
+    track({ type: 'event', category, name: String(name), label })
   }
 }
 

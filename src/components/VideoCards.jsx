@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import VideoCard from './VideoCard.jsx'
+import { trackEvent } from '../lib/track.js'
 import './VideoCards.css'
 
-export default function VideoCards({ videos }) {
+export default function VideoCards({ videos, where }) {
   const [playing, setPlaying] = useState(null)
 
   return (
@@ -12,7 +13,10 @@ export default function VideoCards({ videos }) {
           key={video.id}
           video={video}
           playing={playing === video.id}
-          onPlay={() => setPlaying(video.id)}
+          onPlay={() => {
+            setPlaying(video.id)
+            trackEvent('video', video.youtube_id, where)
+          }}
         />
       ))}
     </div>

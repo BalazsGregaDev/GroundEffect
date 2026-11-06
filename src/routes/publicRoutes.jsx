@@ -3,6 +3,7 @@ import Home from '../pages/Home.jsx'
 
 const ArticleArchive = lazy(() => import('../pages/ArticleArchive.jsx'))
 const MerchPage = lazy(() => import('../pages/MerchPage.jsx'))
+const NotFound = lazy(() => import('../pages/NotFound.jsx'))
 
 function suspended(Page) {
   return (
@@ -17,6 +18,8 @@ export const publicRoutes = [
   { path: '/cikkek', label: 'Cikkek', element: suspended(ArticleArchive) },
   { path: '/merch', label: 'Merch', element: suspended(MerchPage) },
 ]
+
+export const fallbackRoute = { path: '*', element: suspended(NotFound) }
 
 export const publicPatterns = [{ path: '/cikkek/*', label: 'Cikkoldalak (mind)' }]
 

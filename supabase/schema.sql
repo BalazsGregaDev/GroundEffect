@@ -619,6 +619,32 @@ create table if not exists search_stats_daily (
   primary key (day, scope, query)
 );
 
+create table if not exists site_stats_daily (
+  day date primary key,
+  visits integer not null default 0,
+  visitors integer not null default 0
+);
+
+create table if not exists event_stats_daily (
+  day date not null,
+  category text not null,
+  name text not null,
+  label text not null default '',
+  count integer not null default 0,
+  primary key (day, category, name, label)
+);
+
+create table if not exists analytics_salts (
+  day date primary key,
+  salt text not null
+);
+
+create table if not exists visitor_days (
+  day date not null,
+  hash bytea not null,
+  primary key (day, hash)
+);
+
 alter table articles add column if not exists cover_focus text not null default '50% 50%';
 alter table articles alter column cover_focus set default '50% 50%';
 alter table articles add column if not exists facebook_post_id text;
@@ -1334,7 +1360,54 @@ as $$
   where slug = article_slug and status = 'published';
 $$;
 
-create or replace function track_events(p_events jsonb)
+create or replace function analytics_salt(p_day date)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_salt text;
+begin
+  select salt into v_salt from analytics_salts where day = p_day;
+
+  if v_salt is null then
+    insert into analytics_salts (day, salt)
+    values (
+      p_day,
+      encode(sha256(convert_to(gen_random_uuid()::text || gen_random_uuid()::text, 'UTF8')), 'hex')
+    )
+    on conflict (day) do nothing;
+
+    select salt into v_salt from analytics_salts where day = p_day;
+
+    delete from analytics_salts where day < p_day;
+    delete from visitor_days where day < p_day;
+  end if;
+
+  return v_salt;
+end;
+$$;
+
+revoke all on function analytics_salt(date) from public, anon, authenticated;
+
+create or replace function bump_event(p_day date, p_category text, p_name text, p_label text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  insert into event_stats_daily (day, category, name, label, count)
+  values (p_day, p_category, p_name, p_label, 1)
+  on conflict (day, category, name, label) do update
+  set count = event_stats_daily.count + 1;
+$$;
+
+revoke all on function bump_event(date, text, text, text) from public, anon, authenticated;
+
+drop function if exists track_events(jsonb);
+
+create or replace function track_events(p_events jsonb, p_client text default null)
 returns void
 language plpgsql
 security definer
@@ -1348,6 +1421,8 @@ declare
   v_seconds integer;
   v_depth integer;
   v_query text;
+  v_name text;
+  v_new boolean;
 begin
   if jsonb_typeof(p_events) is distinct from 'array' then
     return;
@@ -1355,25 +1430,76 @@ begin
 
   for v_event in select value from jsonb_array_elements(p_events) limit 20 loop
     begin
-      if v_event ->> 'type' = 'search' then
-        v_query := left(lower(regexp_replace(trim(v_event ->> 'q'), '\s+', ' ', 'g')), 60);
+      case v_event ->> 'type'
+        when 'visit' then
+          insert into site_stats_daily (day, visits) values (v_day, 1)
+          on conflict (day) do update set visits = site_stats_daily.visits + 1;
 
-        if length(v_query) >= 3 and v_event ->> 'scope' in ('home', 'archive') then
-          insert into search_stats_daily (day, scope, query, searches, zero_results)
-          values (
+          perform bump_event(
             v_day,
-            v_event ->> 'scope',
-            v_query,
-            1,
-            case when (v_event ->> 'n')::integer = 0 then 1 else 0 end
-          )
-          on conflict (day, scope, query) do update
-          set searches = search_stats_daily.searches + 1,
-              zero_results = search_stats_daily.zero_results + excluded.zero_results;
-        end if;
+            'referrer',
+            coalesce(nullif(left(lower(trim(v_event ->> 'ref')), 80), ''), 'direct'),
+            ''
+          );
 
-        continue;
-      end if;
+          v_new := false;
+
+          if length(coalesce(p_client, '')) between 7 and 600 then
+            insert into visitor_days (day, hash)
+            values (v_day, sha256(convert_to(analytics_salt(v_day) || '|' || p_client, 'UTF8')))
+            on conflict do nothing;
+
+            v_new := found;
+          end if;
+
+          if v_new then
+            update site_stats_daily set visitors = visitors + 1 where day = v_day;
+
+            if v_event ->> 'device' in ('mobile', 'tablet', 'desktop') then
+              perform bump_event(v_day, 'device', v_event ->> 'device', '');
+            end if;
+          end if;
+
+          continue;
+
+        when 'event' then
+          v_name := left(trim(v_event ->> 'name'), 120);
+
+          if v_event ->> 'category' in (
+            'video', 'out', 'coupon', 'popup', 'poll', 'section', 'home', 'share', 'notfound'
+          ) and length(v_name) > 0 then
+            perform bump_event(
+              v_day,
+              v_event ->> 'category',
+              v_name,
+              coalesce(left(trim(v_event ->> 'label'), 40), '')
+            );
+          end if;
+
+          continue;
+
+        when 'search' then
+          v_query := left(lower(regexp_replace(trim(v_event ->> 'q'), '\s+', ' ', 'g')), 60);
+
+          if length(v_query) >= 3 and v_event ->> 'scope' in ('home', 'archive') then
+            insert into search_stats_daily (day, scope, query, searches, zero_results)
+            values (
+              v_day,
+              v_event ->> 'scope',
+              v_query,
+              1,
+              case when (v_event ->> 'n')::integer = 0 then 1 else 0 end
+            )
+            on conflict (day, scope, query) do update
+            set searches = search_stats_daily.searches + 1,
+                zero_results = search_stats_daily.zero_results + excluded.zero_results;
+          end if;
+
+          continue;
+
+        else
+          null;
+      end case;
 
       select id into v_article
       from articles
@@ -1437,7 +1563,7 @@ begin
 end;
 $$;
 
-grant execute on function track_events(jsonb) to anon, authenticated;
+grant execute on function track_events(jsonb, text) to anon, authenticated;
 
 create or replace function stats_overview(p_days integer default 7)
 returns jsonb
@@ -1448,8 +1574,11 @@ set search_path = public
 as $$
   with bounds as (
     select
-      (now() at time zone 'Europe/Budapest')::date - (least(greatest(coalesce(p_days, 7), 1), 365) - 1)
-        as first_day
+      least(greatest(coalesce(p_days, 7), 1), 365) as days,
+      (now() at time zone 'Europe/Budapest')::date as today
+  ),
+  span as (
+    select days, today, today - (days - 1) as first_day from bounds
   ),
   per_article as (
     select
@@ -1465,7 +1594,7 @@ as $$
       sum(s.rec_in) as rec_in
     from article_stats_daily s
     join articles a on a.id = s.article_id
-    cross join bounds b
+    cross join span b
     where s.day >= b.first_day
     group by a.id
   ),
@@ -1473,26 +1602,96 @@ as $$
     select
       coalesce(sum(s.rec_out_latest), 0) as latest,
       coalesce(sum(s.rec_out_related), 0) as related
-    from article_stats_daily s, bounds b
+    from article_stats_daily s, span b
     where s.day >= b.first_day
   ),
   searches as (
     select q.scope, q.query, sum(q.searches) as searches, sum(q.zero_results) as zero_results
-    from search_stats_daily q, bounds b
+    from search_stats_daily q, span b
     where q.day >= b.first_day
     group by q.scope, q.query
+  ),
+  site as (
+    select coalesce(sum(t.visits), 0) as visits, coalesce(sum(t.visitors), 0) as visitors
+    from site_stats_daily t, span b
+    where t.day >= b.first_day
+  ),
+  events as (
+    select
+      e.category,
+      e.name,
+      e.label,
+      sum(e.count) as count
+    from event_stats_daily e, span b
+    where e.day >= b.first_day
+    group by e.category, e.name, e.label
+  ),
+  per_name as (
+    select category, name, sum(count) as total
+    from events
+    group by category, name
+  ),
+  ranked as (
+    select
+      e.*,
+      dense_rank() over (partition by n.category order by n.total desc, n.name) as place
+    from events e
+    join per_name n on n.category = e.category and n.name = e.name
+  ),
+  named as (
+    select
+      r.category,
+      r.name,
+      r.label,
+      r.count,
+      case r.category
+        when 'popup' then (
+          select coalesce(nullif(trim(concat_ws(' ', p.title1, p.title2)), ''), nullif(p.name, ''), 'Popup')
+          from site_popups p where p.id::text = r.name
+        )
+        when 'poll' then (
+          select coalesce(nullif(p.title, ''), 'Szavazás') from polls p where p.id::text = r.name
+        )
+        when 'video' then (select v.title from videos v where v.youtube_id = r.name)
+        when 'share' then (select a.title from articles a where a.slug = r.name)
+        else null
+      end as title
+    from ranked r
+    where r.place <= 15
+  ),
+  days as (
+    select (b.first_day + offs)::date as day
+    from span b, generate_series(0, (select days from span) - 1) as offs
   )
   select case when not has_permission('articles') then null else jsonb_build_object(
-    'days', least(greatest(coalesce(p_days, 7), 1), 365),
+    'days', (select days from span),
     'totals', (
       select jsonb_build_object(
         'views', coalesce(sum(views), 0),
         'read_seconds', coalesce(sum(read_seconds), 0),
         'depth_50', coalesce(sum(depth_50), 0),
         'depth_100', coalesce(sum(depth_100), 0),
-        'rec_out', coalesce(sum(rec_out), 0)
+        'rec_out', coalesce(sum(rec_out), 0),
+        'visits', (select visits from site),
+        'visitors', (select visitors from site)
       )
       from per_article
+    ),
+    'daily', (
+      select jsonb_agg(
+        jsonb_build_object(
+          'day', d.day,
+          'visitors', coalesce(t.visitors, 0),
+          'visits', coalesce(t.visits, 0),
+          'views', coalesce(v.views, 0)
+        )
+        order by d.day
+      )
+      from days d
+      left join site_stats_daily t on t.day = d.day
+      left join (
+        select day, sum(views) as views from article_stats_daily group by day
+      ) v on v.day = d.day
     ),
     'slots', (select jsonb_build_object('latest', latest, 'related', related) from slots),
     'articles', coalesce((
@@ -1513,12 +1712,72 @@ as $$
         from searches group by query having sum(zero_results) > 0
         order by sum(zero_results) desc, query limit 10
       ) t
+    ), '[]'::jsonb),
+    'events', coalesce((
+      select jsonb_agg(row_to_json(n) order by n.category, n.count desc, n.name, n.label)
+      from named n
     ), '[]'::jsonb)
   ) end;
 $$;
 
 revoke all on function stats_overview(integer) from public, anon;
 grant execute on function stats_overview(integer) to authenticated;
+
+create or replace function article_stats(p_article uuid, p_days integer default 30)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  with span as (
+    select
+      least(greatest(coalesce(p_days, 30), 1), 365) as days,
+      (now() at time zone 'Europe/Budapest')::date
+        - (least(greatest(coalesce(p_days, 30), 1), 365) - 1) as first_day
+  ),
+  rows as (
+    select s.*
+    from article_stats_daily s, span b
+    where s.article_id = p_article and s.day >= b.first_day
+  ),
+  days as (
+    select (b.first_day + offs)::date as day
+    from span b, generate_series(0, (select days from span) - 1) as offs
+  )
+  select case when not has_permission('articles') then null else jsonb_build_object(
+    'days', (select days from span),
+    'total_views', (select views from articles where id = p_article),
+    'totals', (
+      select jsonb_build_object(
+        'views', coalesce(sum(views), 0),
+        'read_seconds', coalesce(sum(read_seconds), 0),
+        'depth_50', coalesce(sum(depth_50), 0),
+        'depth_100', coalesce(sum(depth_100), 0),
+        'rec_out', coalesce(sum(rec_out_latest + rec_out_related), 0),
+        'rec_in', coalesce(sum(rec_in), 0)
+      )
+      from rows
+    ),
+    'shares', coalesce((
+      select jsonb_object_agg(label, count)
+      from (
+        select e.label, sum(e.count) as count
+        from event_stats_daily e, span b, articles a
+        where a.id = p_article and e.category = 'share' and e.name = a.slug and e.day >= b.first_day
+        group by e.label
+      ) t
+    ), '{}'::jsonb),
+    'daily', (
+      select jsonb_agg(jsonb_build_object('day', d.day, 'views', coalesce(r.views, 0)) order by d.day)
+      from days d
+      left join rows r on r.day = d.day
+    )
+  ) end;
+$$;
+
+revoke all on function article_stats(uuid, integer) from public, anon;
+grant execute on function article_stats(uuid, integer) to authenticated;
 
 create or replace function complete_password_change()
 returns boolean
@@ -1568,6 +1827,10 @@ alter table site_settings enable row level security;
 alter table bug_reports enable row level security;
 alter table article_stats_daily enable row level security;
 alter table search_stats_daily enable row level security;
+alter table site_stats_daily enable row level security;
+alter table event_stats_daily enable row level security;
+alter table analytics_salts enable row level security;
+alter table visitor_days enable row level security;
 
 drop policy if exists admin_users_read on admin_users;
 create policy admin_users_read on admin_users
@@ -1778,6 +2041,14 @@ create policy article_stats_daily_read on article_stats_daily
 
 drop policy if exists search_stats_daily_read on search_stats_daily;
 create policy search_stats_daily_read on search_stats_daily
+  for select using (has_permission('articles'));
+
+drop policy if exists site_stats_daily_read on site_stats_daily;
+create policy site_stats_daily_read on site_stats_daily
+  for select using (has_permission('articles'));
+
+drop policy if exists event_stats_daily_read on event_stats_daily;
+create policy event_stats_daily_read on event_stats_daily
   for select using (has_permission('articles'));
 
 drop policy if exists bug_reports_read on bug_reports;

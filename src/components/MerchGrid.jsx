@@ -40,6 +40,7 @@ export default function MerchGrid() {
               className="mcard"
               key={product.id}
               href={product.url}
+              data-track={`merch: ${product.name ?? ''}`.slice(0, 40)}
               target="_blank"
               rel="noreferrer"
             >

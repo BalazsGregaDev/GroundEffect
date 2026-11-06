@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import ArticleStats from './ArticleStats.jsx'
 import { supabase } from '../lib/supabase.js'
 import { readingMinutes, slugify } from '../lib/text.js'
 import { deleteImages } from '../lib/cloudinary.js'
@@ -795,6 +796,8 @@ export default function ArticleEditor() {
           <p className="editor-hint">
             Egyszerre legfeljebb {featuredArticleLimit} cikk lehet kiemelt.
           </p>
+
+          {id && isLive && <ArticleStats articleId={id} />}
 
           {id && canEdit && (
             <div className="editor-share">

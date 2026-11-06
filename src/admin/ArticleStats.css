@@ -1,0 +1,38 @@
+.artstats {
+  padding-top: 1rem;
+  border-top: 1px solid var(--graphite);
+}
+
+.artstats h3 {
+  margin: 0 0 0.7rem;
+  font-size: 0.9rem;
+  color: var(--bone);
+}
+
+.artstats-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+}
+
+.artstats-cards > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid var(--graphite);
+  background: var(--ink);
+}
+
+.artstats-value {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--gold);
+}
+
+.artstats-label {
+  font-size: 0.75rem;
+  color: var(--smoke);
+}

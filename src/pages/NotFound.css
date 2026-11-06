@@ -1,0 +1,14 @@
+.notfound {
+  padding: 4rem 0;
+  color: var(--smoke);
+}
+
+.notfound h1 {
+  margin-bottom: 0.6rem;
+  color: var(--bone);
+  font-size: 1.8rem;
+}
+
+.notfound a {
+  color: var(--gold);
+}

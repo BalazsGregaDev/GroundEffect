@@ -4,7 +4,7 @@ import './CommunityLinks.css'
 
 export default function CommunityLinks() {
   return (
-    <section className="community" id="kozosseg">
+    <section className="community" id="kozosseg" data-track="community">
       <SectionTitle>Csatlakozz</SectionTitle>
 
       <div className="community-grid">

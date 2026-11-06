@@ -1,0 +1,155 @@
+.daychart {
+  margin-top: 0.8rem;
+}
+
+.daychart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.2rem;
+  margin: 0 0 0.6rem;
+  padding: 0;
+  list-style: none;
+  font-size: 0.8rem;
+  color: var(--smoke);
+}
+
+.daychart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.daychart-key {
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 2px;
+  background: var(--series);
+}
+
+.daychart-key.is-line {
+  width: 1rem;
+  height: 2px;
+  border-radius: 1px;
+}
+
+.daychart-frame {
+  position: relative;
+  outline: none;
+  touch-action: pan-y;
+}
+
+.daychart-frame:focus-visible {
+  box-shadow: 0 0 0 1px var(--gold);
+}
+
+.daychart-frame svg {
+  display: block;
+  overflow: visible;
+}
+
+.daychart-grid {
+  stroke: var(--graphite);
+  stroke-width: 1;
+}
+
+.daychart-axis {
+  fill: var(--smoke);
+  font-family: var(--mono);
+  font-size: 10px;
+}
+
+.daychart-cross {
+  stroke: var(--smoke);
+  stroke-width: 1;
+}
+
+.daychart-line {
+  fill: none;
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.daychart-dot {
+  stroke: var(--ink);
+  stroke-width: 2;
+}
+
+.daychart-tip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 9rem;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--graphite);
+  background: var(--black);
+  transform: translateX(-50%);
+  pointer-events: none;
+  font-size: 0.78rem;
+  color: var(--smoke);
+  white-space: nowrap;
+}
+
+.daychart-tip-day {
+  color: var(--smoke);
+}
+
+.daychart-tip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.daychart-tip-row strong {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+.daychart-tip-key {
+  width: 0.8rem;
+  height: 2px;
+  background: var(--series);
+}
+
+.daychart-table {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--smoke);
+}
+
+.daychart-table summary {
+  cursor: pointer;
+}
+
+.daychart-table table {
+  width: 100%;
+  margin-top: 0.5rem;
+  border-collapse: collapse;
+}
+
+.daychart-table th,
+.daychart-table td {
+  padding: 0.3rem 0.4rem;
+  border-bottom: 1px solid var(--graphite);
+  text-align: right;
+}
+
+.daychart-table th:first-child,
+.daychart-table td:first-child {
+  text-align: left;
+}
+
+.daychart-table td {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bone);
+}
+
+.daychart-table td:first-child {
+  font-family: var(--body);
+  color: var(--smoke);
+}

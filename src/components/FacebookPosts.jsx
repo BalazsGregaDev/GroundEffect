@@ -19,7 +19,7 @@ export default function FacebookPosts() {
   }
 
   return (
-    <section className="fbwall">
+    <section className="fbwall" data-track="facebook">
       <SectionTitle linkLabel="Facebook oldal" linkHref={facebookPage}>
         Facebook
       </SectionTitle>

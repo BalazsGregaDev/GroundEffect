@@ -13,7 +13,7 @@ export default function FacebookEmbed() {
   const [loaded, setLoaded] = useState(false)
 
   return (
-    <section className="facebook">
+    <section className="facebook" data-track="facebook">
       <SectionTitle>Facebook</SectionTitle>
 
       <div className="fb-frame">

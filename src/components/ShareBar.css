@@ -1,0 +1,30 @@
+.share {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.share-label {
+  margin-right: 0.4rem;
+  font-size: 0.82rem;
+  color: var(--smoke);
+}
+
+.share-button {
+  padding: 0.4rem 0.8rem;
+  border: 1px solid var(--graphite);
+  background: transparent;
+  color: var(--bone);
+  font-family: var(--body);
+  font-size: 0.85rem;
+  text-decoration: none;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.share-button:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}

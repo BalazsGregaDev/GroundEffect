@@ -9,12 +9,12 @@ export default function VideoGrid({ videos }) {
   }
 
   return (
-    <section className="video-grid-section" id="videok">
+    <section className="video-grid-section" id="videok" data-track="videos">
       <SectionTitle linkLabel="Összes videó" linkHref={youtubeChannel}>
         Korábbi adások
       </SectionTitle>
 
-      <VideoCards videos={videos} />
+      <VideoCards videos={videos} where="grid" />
     </section>
   )
 }

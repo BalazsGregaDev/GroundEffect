@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import SeriesCover from '../components/SeriesCover.jsx'
+import ShareBar from '../components/ShareBar.jsx'
+import { useNotFound } from './NotFound.jsx'
 import { useArticle } from '../hooks/useArticle.js'
 import { useReadingStats } from '../hooks/useReadingStats.js'
 import { sanitizeHtml } from '../lib/richText.js'
@@ -8,6 +10,18 @@ import { coverUrl } from '../lib/cloudinary.js'
 import { relativeTime } from '../lib/format.js'
 import '../styles/figure.css'
 import './Article.css'
+
+function ArticleMissing({ slug }) {
+  useNotFound(`/cikkek/${slug}`)
+
+  return (
+    <div className="article-message">
+      <h1>Ez a cikk nem található</h1>
+      <p>Lehet, hogy még nincs publikálva, vagy megváltozott a webcíme.</p>
+      <Link to="/">Vissza a főoldalra</Link>
+    </div>
+  )
+}
 
 export default function Article() {
   const { slug } = useParams()
@@ -21,13 +35,7 @@ export default function Article() {
   }
 
   if (!article) {
-    return (
-      <div className="article-message">
-        <h1>Ez a cikk nem található</h1>
-        <p>Lehet, hogy még nincs publikálva, vagy megváltozott a webcíme.</p>
-        <Link to="/">Vissza a főoldalra</Link>
-      </div>
-    )
+    return <ArticleMissing slug={slug} />
   }
 
   const tags = article.article_tags.map((row) => row.tags)
@@ -40,7 +48,7 @@ export default function Article() {
   ].filter(Boolean)
 
   return (
-    <article className="article">
+    <article className="article" data-track="article">
       <Link to="/" className="article-back">
         Vissza a főoldalra
       </Link>
@@ -77,6 +85,8 @@ export default function Article() {
           ))}
         </div>
       )}
+
+      <ShareBar slug={article.slug} title={article.title} />
     </article>
   )
 }

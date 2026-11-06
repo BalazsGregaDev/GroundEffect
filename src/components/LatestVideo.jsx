@@ -4,6 +4,7 @@ import PlayIcon from './PlayIcon.jsx'
 import { youtubeChannel } from '../data/site.js'
 import { embedUrl, playerPermissions, thumbnailUrl } from '../lib/youtube.js'
 import { formatCount, relativeTime } from '../lib/format.js'
+import { trackEvent } from '../lib/track.js'
 import '../styles/skeleton.css'
 import './LatestVideo.css'
 
@@ -11,7 +12,7 @@ export default function LatestVideo({ video, loading }) {
   const [playing, setPlaying] = useState(false)
 
   return (
-    <section className="latest">
+    <section className="latest" data-track="latest">
       <SectionTitle linkLabel="YouTube csatorna" linkHref={youtubeChannel}>
         Legfrissebb adás
       </SectionTitle>
@@ -45,7 +46,10 @@ export default function LatestVideo({ video, loading }) {
             <button
               className="player"
               type="button"
-              onClick={() => setPlaying(true)}
+              onClick={() => {
+                setPlaying(true)
+                trackEvent('video', video.youtube_id, 'latest')
+              }}
               aria-label={`${video.title} lejátszása`}
             >
               <img src={thumbnailUrl(video)} alt="" />

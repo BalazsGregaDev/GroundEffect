@@ -7,6 +7,7 @@ import { useSearch } from '../hooks/useSearch.js'
 import { useSiteConfig } from '../lib/siteConfig.js'
 import { isClosed, isLive } from '../lib/poll.js'
 import { seriesShortNames, socialLinks } from '../data/site.js'
+import { trackEvent } from '../lib/track.js'
 import logo from '../assets/logo-kor.jpg'
 import './Rail.css'
 
@@ -107,7 +108,7 @@ export default function Rail() {
   ].filter(Boolean)
 
   return (
-    <aside className={classes.join(' ')}>
+    <aside className={classes.join(' ')} data-track="rail">
       <div className="rail-bar">
         <Link className="brand" to="/" onClick={leave}>
           <img className="brand-logo" src={logo} width="48" height="48" alt="" />
@@ -140,7 +141,13 @@ export default function Rail() {
             <ul>
               {navItems(sections, poll, race, now).map((item) => (
                 <li key={item.key}>
-                  <Link to={`/${item.href}`} onClick={leave}>
+                  <Link
+                    to={`/${item.href}`}
+                    onClick={() => {
+                      trackEvent('section', item.key, open ? 'menu' : 'nav')
+                      leave()
+                    }}
+                  >
                     {item.label}
                     {item.meta && <span className="nav-meta">{item.meta}</span>}
                   </Link>

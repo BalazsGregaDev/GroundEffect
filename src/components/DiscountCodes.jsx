@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import SectionTitle from './SectionTitle.jsx'
 import { discountCodes } from '../data/site.js'
+import { trackEvent } from '../lib/track.js'
 import './DiscountCodes.css'
 
 function CodeCard({ partner, code, note, href }) {
@@ -10,6 +11,7 @@ function CodeCard({ partner, code, note, href }) {
     try {
       await navigator.clipboard.writeText(code)
       setCopied(true)
+      trackEvent('coupon', partner)
       setTimeout(() => setCopied(false), 1600)
     } catch {
       setCopied(false)
@@ -35,7 +37,7 @@ function CodeCard({ partner, code, note, href }) {
 
 export default function DiscountCodes() {
   return (
-    <section className="discounts" id="kedvezmenyek">
+    <section className="discounts" id="kedvezmenyek" data-track="discounts">
       <SectionTitle>Kedvezménykódok</SectionTitle>
 
       <div className="discounts-grid">

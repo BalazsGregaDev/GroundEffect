@@ -4,7 +4,7 @@ import './SiteFooter.css'
 
 export default function SiteFooter() {
   return (
-    <footer className="site-footer">
+    <footer className="site-footer" data-track="footer">
       <div className="footer-inner">
         <img className="foot-logo" src={logo} width="132" height="132" alt="Ground Effect" />
         <p>Ground Effect · rajongóktól rajongóknak</p>

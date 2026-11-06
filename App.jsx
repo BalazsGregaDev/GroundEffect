@@ -3,9 +3,11 @@ import { Route, Routes } from 'react-router-dom'
 import PublicLayout from './layouts/PublicLayout.jsx'
 import SitePopup from './components/SitePopup.jsx'
 import HashScroll from './components/HashScroll.jsx'
-import { publicRoutes } from './routes/publicRoutes.jsx'
+import ScrollTop from './components/ScrollTop.jsx'
+import { fallbackRoute, publicRoutes } from './routes/publicRoutes.jsx'
 import ArticleLayout from './layouts/ArticleLayout.jsx'
 import { adminNav } from './admin/adminNav.js'
+import Gate from './admin/Gate.jsx'
 
 const Article = lazy(() => import('./pages/Article.jsx'))
 const AdminRoot = lazy(() => import('./admin/AdminRoot.jsx'))
@@ -25,12 +27,18 @@ const MerchList = lazy(() => import('./admin/MerchList.jsx'))
 const SectionList = lazy(() => import('./admin/SectionList.jsx'))
 const PopupList = lazy(() => import('./admin/PopupList.jsx'))
 const AdminUsers = lazy(() => import('./admin/AdminUsers.jsx'))
+const RoleEditor = lazy(() => import('./admin/RoleEditor.jsx'))
 const Placeholder = lazy(() => import('./admin/Placeholder.jsx'))
+
+function guarded(permission, element) {
+  return <Gate permission={permission}>{element}</Gate>
+}
 
 export default function App() {
   return (
     <>
       <HashScroll />
+      <ScrollTop />
       <SitePopup />
 
       <Routes>
@@ -42,6 +50,7 @@ export default function App() {
               <Route key={route.path} path={route.path.slice(1)} element={route.element} />
             ),
           )}
+          <Route path={fallbackRoute.path} element={fallbackRoute.element} />
         </Route>
 
         <Route path="cikkek/:slug" element={<ArticleLayout />}>
@@ -67,22 +76,23 @@ export default function App() {
 
           <Route element={<AdminArea />}>
             <Route index element={<Dashboard />} />
-            <Route path="cikkek" element={<ArticleList />} />
-            <Route path="cikkek/uj" element={<ArticleEditor />} />
-            <Route path="cikkek/:id" element={<ArticleEditor />} />
-            <Route path="videok" element={<VideoList />} />
-            <Route path="facebook" element={<FacebookPostList />} />
-            <Route path="szavazas" element={<PollList />} />
-            <Route path="szavazas/uj" element={<PollEditor />} />
-            <Route path="szavazas/:id" element={<PollEditor />} />
-            <Route path="naptar" element={<RaceList />} />
-            <Route path="naptar/uj" element={<RaceEditor />} />
-            <Route path="naptar/:id" element={<RaceEditor />} />
-            <Route path="boritokepek" element={<CoverSettings />} />
-            <Route path="merch" element={<MerchList />} />
-            <Route path="szekciok" element={<SectionList />} />
-            <Route path="popup" element={<PopupList />} />
-            <Route path="felhasznalok" element={<AdminUsers />} />
+            <Route path="cikkek" element={guarded('articles', <ArticleList />)} />
+            <Route path="cikkek/uj" element={guarded('articles', <ArticleEditor />)} />
+            <Route path="cikkek/:id" element={guarded('articles', <ArticleEditor />)} />
+            <Route path="videok" element={guarded('videos', <VideoList />)} />
+            <Route path="facebook" element={guarded('facebook', <FacebookPostList />)} />
+            <Route path="szavazas" element={guarded('polls', <PollList />)} />
+            <Route path="szavazas/uj" element={guarded('polls.edit', <PollEditor />)} />
+            <Route path="szavazas/:id" element={guarded('polls', <PollEditor />)} />
+            <Route path="naptar" element={guarded('calendar', <RaceList />)} />
+            <Route path="naptar/uj" element={guarded('calendar', <RaceEditor />)} />
+            <Route path="naptar/:id" element={guarded('calendar', <RaceEditor />)} />
+            <Route path="boritokepek" element={guarded('covers', <CoverSettings />)} />
+            <Route path="merch" element={guarded('merch', <MerchList />)} />
+            <Route path="szekciok" element={guarded('sections', <SectionList />)} />
+            <Route path="popup" element={guarded('popups', <PopupList />)} />
+            <Route path="felhasznalok" element={guarded('users', <AdminUsers />)} />
+            <Route path="felhasznalok/szerepkorok" element={guarded('users.roles', <RoleEditor />)} />
 
             {adminNav
               .filter((item) => item.pending)

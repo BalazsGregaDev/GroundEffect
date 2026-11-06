@@ -9,6 +9,7 @@ import { supabase } from '../lib/supabase.js'
 import { useActivePoll } from '../hooks/useActivePoll.js'
 import { countdown, isClosed, isLive } from '../lib/poll.js'
 import { readPreference, readVotes, voterId, writePreference, writeVote } from '../lib/pollVoter.js'
+import { trackEvent } from '../lib/track.js'
 import './PollSection.css'
 
 const viewKey = 'ge_poll_view'
@@ -29,6 +30,7 @@ export default function PollSection() {
   const [voter] = useState(voterId)
   const sectionRef = useRef(null)
   const moved = useRef(false)
+  const reported = useRef(new Set())
 
   useEffect(() => {
     if (poll && view === null) {
@@ -41,6 +43,14 @@ export default function PollSection() {
       setDone(readPreference(doneKey(poll), '0') === '1')
     }
   }, [poll, done])
+
+  const live = isLive(poll, now)
+
+  useEffect(() => {
+    if (poll && live) {
+      report('shown')
+    }
+  }, [poll?.id, live])
 
   useEffect(() => {
     if (!poll || (!poll.closes_at && !poll.starts_at)) {
@@ -66,7 +76,16 @@ export default function PollSection() {
     }
   }, [step, done])
 
-  if (loading || !isLive(poll, now)) {
+  function report(step) {
+    const key = `${poll.id}:${step}`
+
+    if (!poll.test_mode && !reported.current.has(key)) {
+      reported.current.add(key)
+      trackEvent('poll', poll.id, step)
+    }
+  }
+
+  if (loading || !live) {
     return null
   }
 
@@ -83,6 +102,11 @@ export default function PollSection() {
 
   function toggleOpen() {
     setStep(0)
+
+    if (!open) {
+      report('opened')
+    }
+
     setOpen((value) => {
       writePreference(openKey, !value)
       return !value
@@ -98,6 +122,7 @@ export default function PollSection() {
     moved.current = true
     writePreference(doneKey(poll), '1')
     setDone(true)
+    report('finished')
   }
 
   function edit() {
@@ -127,6 +152,8 @@ export default function PollSection() {
       return
     }
 
+    report('voted')
+
     if (!poll.test_mode) {
       setMyVotes(writeVote(option.id, myVotes[option.id] === direction ? null : direction))
     }
@@ -137,6 +164,10 @@ export default function PollSection() {
       p_question: question.id,
       p_cells: cells,
     })
+
+    if (data?.status === 'ok') {
+      report('suggested')
+    }
 
     return data?.status ?? 'error'
   }

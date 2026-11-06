@@ -1,6 +1,8 @@
 import './SitePopup.css'
 
-export default function PopupCard({ popup, onClose, shown = true }) {
+export default function PopupCard({ popup, onClose, onAction, shown = true }) {
+  const act = onAction ?? onClose
+
   const external = popup.link?.startsWith('http')
 
   return (
@@ -38,14 +40,15 @@ export default function PopupCard({ popup, onClose, shown = true }) {
           <a
             className="popup-cta"
             href={popup.link}
-            onClick={onClose}
+            data-track="popup"
+            onClick={act}
             target={external ? '_blank' : undefined}
             rel={external ? 'noreferrer' : undefined}
           >
             {popup.button}
           </a>
         ) : (
-          <button type="button" className="popup-cta" onClick={onClose}>
+          <button type="button" className="popup-cta" onClick={act}>
             {popup.button}
           </button>
         ))}

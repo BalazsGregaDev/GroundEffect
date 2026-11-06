@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom'
 import { supabase } from '../lib/supabase.js'
 import { pageMatches, privatePrefixes } from '../lib/popupMatch.js'
 import PopupCard from './PopupCard.jsx'
+import { trackEvent } from '../lib/track.js'
 import './SitePopup.css'
 
 function seenKey(popup) {
@@ -61,6 +62,7 @@ export default function SitePopup() {
 
     const timer = setTimeout(() => setShown(true), 20)
     document.body.style.overflow = 'hidden'
+    trackEvent('popup', current.id, 'shown')
 
     return () => {
       clearTimeout(timer)
@@ -88,7 +90,9 @@ export default function SitePopup() {
     return null
   }
 
-  function close() {
+  function close(clicked = false) {
+    trackEvent('popup', current.id, clicked === true ? 'clicked' : 'closed')
+
     if (current.trigger_kind === 'first_visit') {
       try {
         localStorage.setItem(seenKey(current), '1')
@@ -108,7 +112,7 @@ export default function SitePopup() {
       onClick={close}
       role="presentation"
     >
-      <PopupCard popup={current} onClose={close} shown={shown} />
+      <PopupCard popup={current} onClose={close} onAction={() => close(true)} shown={shown} />
     </div>
   )
 }
