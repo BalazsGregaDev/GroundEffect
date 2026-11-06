@@ -235,7 +235,7 @@ export default function PollSection() {
                 myVotes={myVotes}
               />
 
-              {!closed && (
+              {!closed && poll.test_mode && (
                 <button type="button" className="poll-edit" onClick={edit}>
                   Szavazataim módosítása
                 </button>
